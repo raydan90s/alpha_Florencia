@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: #FCF8E6;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+} 
+/* Estiliza la barra de desplazamiento */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Estiliza el riel de la barra */
+::-webkit-scrollbar-track {
+  background: #1A1A1A; /* Color de fondo */
+  border-radius: 4px;
+}
+
+/* Estiliza el 'thumb' de la barra */
+::-webkit-scrollbar-thumb {
+  background: #ff9800; /* Color del thumb */
+  border-radius: 4px;
+}
+
+/* Cambia el color al pasar el cursor */
+::-webkit-scrollbar-thumb:hover {
+  background: #e68900;
+}
