@@ -1,7 +1,6 @@
 // components/MetodoEnvio.tsx
-import React from "react";
-import Image from "next/image";
-import { useConfiguracion } from "@/context/SettingContext";
+import { useConfiguracion } from "../../context/SettingContext";
+
 
 const MetodoEnvio = () => {
   const { configuracion, loading } = useConfiguracion();
@@ -30,7 +29,7 @@ const MetodoEnvio = () => {
 
             <div className="rounded-md border px-5 py-3.5 hover:bg-gray-2">
               <div className="flex items-center">
-                <Image
+                <img
                   src="/images/checkout/servientrega.png"
                   alt="servientrega"
                   width={64}

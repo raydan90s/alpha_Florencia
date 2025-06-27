@@ -1,11 +1,10 @@
-// components/SearchForm/ProductForm.tsx
-import { Images, Product } from '@/types/product';
-import { obtenerModelosPorMarca, obtenerMarcasDisponibleApi, obtenerInventariosPorProductoId } from '@/components/SearchForm/motor';
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from 'axios';
 import ProductDetailsFields from './ProductForm/ProductDetailsFields';
 import ProductImageManager from './ProductForm/ProductImageManager';
 import ProductFormActions from './ProductForm/ProductFormActions';
+import type { Images, Product } from '../../../types/product';
+import { obtenerModelosPorMarca, obtenerMarcasDisponibleApi } from '../../../components/SearchForm/motor';
 
 interface ProductFormProps {
   currentProduct: Partial<Product> & { images?: Images[] };
@@ -35,31 +34,40 @@ const ProductForm: React.FC<ProductFormProps> = ({
   }[]>([]);
   const topRef = useRef<HTMLDivElement>(null);
 
+  // Validar el formulario
   const isFormValid = (): boolean => {
-    const requiredFields = ['name', 'price', 'category', 'stock', 'model', 'brand', 'description'];
-    const allFieldsFilled = requiredFields.every((field) => {
-      const value = (currentProduct as any)[field];
-      return value !== undefined && value !== '';
-    });
+  const requiredFields = ['name', 'price', 'category', 'stock', 'model', 'brand', 'description'];
 
-    const isInventarioValido = inventarioSeleccionado !== 'Total';
-    const hayImagenesValidas = currentProduct.images && currentProduct.images.some(img => img.url && img.url.trim() !== '');
+  // Aseguramos que todos los campos requeridos tengan un valor válido (ni undefined, null, ni vacío)
+  const allFieldsFilled = requiredFields.every((field) => {
+    const value = (currentProduct as any)[field];
+    return value !== undefined && value !== '' && value !== null; // Asegura que no sea undefined ni null
+  });
 
-    return allFieldsFilled && isInventarioValido && hayImagenesValidas;
-  };
+  // Validar que el inventario no sea "Total"
+  const isInventarioValido = inventarioSeleccionado !== 'Total';
+
+  // Validar si las imágenes son válidas
+  const hayImagenesValidas = currentProduct.images && currentProduct.images.some(img => img.url && img.url.trim() !== '');
+
+  // Devuelve true solo si todos los campos están completos y el inventario es válido y hay imágenes válidas
+  return Boolean(allFieldsFilled && isInventarioValido && hayImagenesValidas);
+};
+
 
   const scrollToTop = () => {
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
   };
-  
+
+  // Cargar inventarios disponibles
   useEffect(() => {
     const cargarInventarios = async () => {
       if (isNewProduct) {
         try {
           const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventario`);
-          const adaptados = response.data.map((inv: any) => ({
+          const adaptados = (response.data as any[]).map((inv: any) => ({ // Afirmamos el tipo
             id: inv.id,
             nombre: inv.ubicacion,
           }));
@@ -71,7 +79,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         if (!currentProduct?.id) return;
         try {
           const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventario/producto/${currentProduct.id}`);
-          const inventarios = response.data;
+          const inventarios = response.data as any[]; // Afirmamos el tipo
           const adaptados = inventarios.map((inv: any) => ({
             id: inv.id_inventario,
             nombre: inv.ubicacion,
@@ -90,8 +98,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     cargarInventarios();
   }, [currentProduct?.id, isNewProduct, setCurrentProduct]);
 
-
-  // Effect to update stock based on selected inventory
+  // Actualizar el stock basado en el inventario seleccionado
   useEffect(() => {
     if (inventarioSeleccionado === "Total") {
       const totalStock = inventariosDB.reduce((sum, inv) => sum + (inv.stock || 0), 0);
@@ -110,8 +117,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
   }, [inventarioSeleccionado, inventariosDB, setCurrentProduct]);
 
-
-  // Effect to load available brands
+  // Cargar marcas disponibles
   useEffect(() => {
     const cargarMarcas = async () => {
       const marcas = await obtenerMarcasDisponibleApi();
@@ -120,7 +126,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     cargarMarcas();
   }, []);
 
-  // Effect to load models based on selected brand
+  // Cargar modelos basados en la marca seleccionada
   useEffect(() => {
     const cargarModelos = async () => {
       if (currentProduct.brand) {
@@ -129,7 +135,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         );
         if (marcaSeleccionada) {
           const modelosData = await obtenerModelosPorMarca(marcaSeleccionada.id);
-          setModelos(modelosData);
+          setModelos(modelosData as { id: number; nombre: string }[]); // Afirmamos el tipo
         } else {
           setModelos([]);
         }
@@ -140,7 +146,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     cargarModelos();
   }, [currentProduct.brand, marcasDisponibles]);
 
-  // Image handling functions
+  // Manejo de imágenes
   const handleImageChange = (index: number, newUrl: string) => {
     const newImages = currentProduct.images ? [...currentProduct.images] : [];
     newImages[index] = { ...newImages[index], url: newUrl };
@@ -163,9 +169,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   if (!isEditing && !isNewProduct) return null;
 
   return (
-
     <div ref={topRef} className="bg-white rounded-lg shadow-md p-6 mb-8">
-
       <h2 className="text-xl font-semibold mb-4">
         {isEditing ? "Editar Producto" : "Agregar Nuevo Producto"}
       </h2>
@@ -187,14 +191,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
           onRemoveImage={handleRemoveImage}
         />
 
-
         {(isEditing || isNewProduct) && (
           <ProductFormActions
             isLoading={isLoading}
             isNewProduct={isNewProduct}
             resetForm={resetForm}
             scrollToTop={scrollToTop}
-            isFormInvalid={!isFormValid()} // 👈 Aquí se pasa la validación invertida
+            isFormInvalid={!isFormValid()} // Validación invertida
           />
         )}
       </form>

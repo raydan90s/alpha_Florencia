@@ -1,7 +1,5 @@
-// components/OrderList.tsx
-import React from "react";
-import { useCart } from "@/context/CartContext";
-import { useConfiguracion } from "@/context/SettingContext";
+import { useCart } from "../../context/CartContext";
+import { useConfiguracion } from "../../context/SettingContext";
 
 const OrderList = () => {
   const { cartItems, calcularSubtotal, calcularIVA } = useCart();

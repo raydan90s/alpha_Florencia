@@ -1,13 +1,12 @@
-"use client";
 import React from "react";
-import { Product } from "@/types/product";
-import Image from "next/image";
-import Link from "next/link";
+import { Link } from "react-router-dom"; // Usamos Link de react-router-dom
+import type { Product } from "../../types/product"; // Asegúrate de tener la interfaz Product
 
+// Definimos las interfaces para las props
 interface ProductGridProps {
-  products: Product[];
-  addedProductId: number | null;
-  onAddToCart: (product: Product) => void;
+  products: Product[]; // Array de productos
+  addedProductId: number | null; // ID del producto que fue agregado al carrito
+  onAddToCart: (product: Product) => void; // Función para agregar el producto al carrito
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({
@@ -18,24 +17,29 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {products.map((product) => {
-        const sortedImages = product.images?.slice().sort((a, b) => a.orden - b.orden);
+        // Ordenamos las imágenes por la propiedad 'orden', asegurándonos de que 'orden' esté definido
+        const sortedImages = product.images?.slice().sort((a, b) => {
+          const aOrden = a.orden ?? 0; // Si 'a.orden' no está definido, usamos 0 por defecto
+          const bOrden = b.orden ?? 0; // Lo mismo para 'b.orden'
+          return aOrden - bOrden;
+        });
 
         return (
           <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-            <Link href={`/productos/${product.id}`}>
+            <Link to={`/productos/${product.id}`}>
               <div className="relative h-48 cursor-pointer">
+                {/* Usamos el elemento img estándar */}
                 {sortedImages?.[0]?.url && (
-                  <Image
+                  <img
                     src={sortedImages[0].url}
                     alt={product.name}
-                    fill
-                    className="object-cover"
+                    className="object-cover w-full h-full"
                   />
                 )}
               </div>
             </Link>
             <div className="p-6">
-              <Link href={`/productos/${product.id}`}>
+              <Link to={`/productos/${product.id}`}>
                 <h3 className="text-lg font-semibold cursor-pointer">{product.name}</h3>
               </Link>
               <p className="text-sm text-gray-600">{product.description}</p>
@@ -45,8 +49,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                   ${product.price?.toFixed(2)}
                 </span>
                 <button
-                  onClick={() => onAddToCart(product)}
-                  disabled={addedProductId === product.id}
+                  onClick={() => onAddToCart(product)} // Llamada a la función de agregar al carrito
+                  disabled={addedProductId === product.id} // Deshabilitar si el producto ya está agregado
                   className={`px-4 py-2 rounded-md text-white transition-colors duration-200 
                       ${addedProductId === product.id
                         ? "bg-green-500"

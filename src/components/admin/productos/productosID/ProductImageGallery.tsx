@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useState, useEffect, useRef, useCallback } from "react";
 
@@ -65,13 +64,12 @@ export default function ProductImageGallery({
                 fade ? "opacity-100" : "opacity-0"
               }`}
             >
-              <Image
+              {/* Usamos la etiqueta <img> estándar para Vite */}
+              <img
                 src={imageUrls[currentIndex]}
                 alt={altText}
-                fill
-                sizes="(max-width: 768px) 100vw, 800px"
-                className="object-contain"
-                priority={currentIndex === 0}
+                className="object-contain w-full h-full"
+                loading={currentIndex === 0 ? "eager" : "lazy"} // Usamos eager para la primera imagen y lazy para las demás
               />
             </div>
 
@@ -111,7 +109,7 @@ export default function ProductImageGallery({
               onClick={() => handleThumbnailClick(index)}
               className="cursor-pointer transition-transform"
             >
-              <Image
+              <img
                 src={url}
                 alt={`Miniatura ${index + 1}`}
                 width={160}

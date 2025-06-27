@@ -32,8 +32,6 @@ function App() {
                         <Routes>
                           <Route path="/" element={<Home />} />
                           <Route path="/carrito" element={<Carrito />} />
-
-
                         </Routes>
                       </main>s
                       <Footer />

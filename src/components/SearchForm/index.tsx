@@ -1,9 +1,8 @@
 "use client";
 import React, { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { useProducts } from '@/context/ProductContext';
-
-import { obtenerMarcasDisponibles, obtenerModelosDisponibles } from '@/components/SearchForm/motor';
+import { useNavigate } from "react-router-dom"; // Usamos useNavigate de react-router-dom
+import { useProducts } from '../../context/ProductContext';
+import { obtenerMarcasDisponibles, obtenerModelosDisponibles } from '../../components/SearchForm/motor';
 
 const SearchForm: React.FC = () => {
     const { products: productosContext } = useProducts();
@@ -14,7 +13,7 @@ const SearchForm: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [marca, setMarca] = useState("");
     const [modelo, setModelo] = useState("");
-    const router = useRouter();
+    const navigate = useNavigate(); // Usamos useNavigate para manejar la navegación
 
     const marcasDisponibles = useMemo(() => obtenerMarcasDisponibles(productos), [productos]);
     const modelosDisponibles = useMemo(() => obtenerModelosDisponibles(productos, marca), [productos, marca]);
@@ -26,7 +25,7 @@ const SearchForm: React.FC = () => {
             marca: marca,
             modelo: modelo,
         }).toString();
-        router.push(`/productos/?${query}`);
+        navigate(`/productos/?${query}`); // Usamos navigate de react-router-dom para hacer la navegación
     };
 
     const handleClear = () => {

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useFilter } from "@/context/FilterContext";
+import { useFilter } from "../../context/FilterContext";
 
 const SortDropdown: React.FC = () => {
   const { sortCriteria, setSortCriteria } = useFilter();

@@ -1,7 +1,5 @@
-import React, { useState } from "react";
-import Image from "next/image";
+import { useState } from "react";
 import { FaCcVisa, FaCcMastercard, FaCcAmex } from "react-icons/fa";
-
 
 const MetodoPago = () => {
   const [metodoPago, setMetodoPago] = useState("transferencia");

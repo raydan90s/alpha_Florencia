@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useConfiguracion } from "@/context/SettingContext";
+import { useConfiguracion } from "../../../context/SettingContext";
 import axios from "axios";
 
 export default function IVAConfig() {

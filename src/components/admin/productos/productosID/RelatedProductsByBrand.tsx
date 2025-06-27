@@ -1,28 +1,23 @@
-"use client";
-import { useProducts } from "@/context/ProductContext";
-import { Product } from "@/types/product";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useCart } from "@/context/CartContext";
-
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom"; // Cambiar a useNavigate de react-router-dom
+import { Link } from "react-router-dom"; // Cambiar Link de next/link por el de react-router-dom
+import { useProducts } from "../../../../context/ProductContext";
+import type { Product } from "../../../../types/product";
+import { useCart } from "../../../../context/CartContext";
 
 interface RelatedProductsByBrandProps {
   currentProduct: Product;
   maxProducts?: number;  // Opcional, con un valor por defecto luego
-
 }
 
 export default function RelatedProductsByBrand({
   currentProduct,
 }: RelatedProductsByBrandProps) {
   const { products } = useProducts();
-  const router = useRouter();
+  const navigate = useNavigate(); // Reemplazamos useRouter por useNavigate de react-router-dom
   const [failedImages, setFailedImages] = useState<string[]>([]);
   const { agregarAlCarrito } = useCart();
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
-
 
   // Filtrar productos de la misma marca excluyendo el producto actual
   const relatedProducts = useMemo(() => {
@@ -65,7 +60,6 @@ export default function RelatedProductsByBrand({
     return imageUrls[0] || null;
   };
 
-
   const handleImageError = (productId: number) => {
     setFailedImages(prev => {
       const idStr = String(productId);
@@ -73,7 +67,6 @@ export default function RelatedProductsByBrand({
       return [...prev, idStr];
     });
   };
-
 
   return (
     <div className="mt-16 bg-gradient-to-b from-gray-50 to-white">
@@ -101,13 +94,12 @@ export default function RelatedProductsByBrand({
                 key={product.id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
               >
-                <Link href={`/productos/${product.id}`}>
+                <Link to={`/productos/${product.id}`}>
                   <div className="relative h-48 cursor-pointer group overflow-hidden bg-gray-100">
                     {imageUrl ? (
-                      <Image
+                      <img
                         src={imageUrl}
                         alt={product.name}
-                        fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={() => handleImageError(product.id)}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -149,7 +141,7 @@ export default function RelatedProductsByBrand({
                 </Link>
 
                 <div className="p-6">
-                  <Link href={`/productos/${product.id}`}>
+                  <Link to={`/productos/${product.id}`}>
                     <h3 className="text-lg font-semibold cursor-pointer hover:text-[#003366] transition-colors duration-200 line-clamp-2 mb-2">
                       {product.name}
                     </h3>
@@ -196,9 +188,7 @@ export default function RelatedProductsByBrand({
         <div className="text-center mt-12 px-6 md:px-0">
           <button
             onClick={() =>
-              router.push(
-                `/productos?brand=${encodeURIComponent(currentProduct.brand || "")}`
-              )
+              navigate(`/productos?brand=${encodeURIComponent(currentProduct.brand || "")}`)
             }
             className="inline-flex items-center px-8 py-3 bg-[#FF6B00] hover:bg-[#E55B00] text-white font-semibold rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-300"
           >

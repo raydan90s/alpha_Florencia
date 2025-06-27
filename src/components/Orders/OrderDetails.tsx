@@ -1,5 +1,3 @@
-import React from "react";
-
 const OrderDetails = ({ orderItem }: any) => {
   return (
     <>

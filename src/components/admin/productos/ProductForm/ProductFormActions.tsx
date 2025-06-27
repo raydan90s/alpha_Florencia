@@ -18,7 +18,9 @@ const ProductFormActions: React.FC<ProductFormActionsProps> = ({
 }) => {
   const handleCancel = () => {
     resetForm();
-    scrollToTop(); // Scroll al tope si está definida
+    if (scrollToTop) {  // Comprobación para asegurarnos que scrollToTop no sea undefined
+      scrollToTop(); // Solo invocamos si scrollToTop está definido
+    }
   };
 
   return (

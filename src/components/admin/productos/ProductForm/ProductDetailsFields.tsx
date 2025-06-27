@@ -1,7 +1,6 @@
 // components/ProductForm/ProductDetailsFields.tsx
 import React from 'react';
-import { Product, Images } from '@/types/product';
-
+import type { Product, Images } from '../../../../types/product';
 interface ProductDetailsFieldsProps {
   currentProduct: Partial<Product> & { images?: Images[] };
   setCurrentProduct: React.Dispatch<React.SetStateAction<Partial<Product> & { images?: Images[] }>>;

@@ -1,7 +1,6 @@
 // components/ProductForm/ProductImageManager.tsx
 import React from 'react';
-import { Images } from '@/types/product'; // Assuming your Image type is here
-import Image from "next/image";
+import type { Images } from '../../../../types/product'; // Assuming your Image type is here
 
 interface ProductImageManagerProps {
   images: Images[];
@@ -23,7 +22,7 @@ const ProductImageManager: React.FC<ProductImageManagerProps> = ({
         <div key={idx} className="flex items-center gap-4 mb-4">
           <div className="w-20 h-20 flex-shrink-0 border rounded overflow-hidden bg-gray-100">
             {img.url ? (
-              <Image
+              <img
                 src={img.url}
                 alt={`Imagen ${idx + 1}`}
                 className="object-cover w-full h-full"

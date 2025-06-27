@@ -1,8 +1,6 @@
 "use client";
-import Image from "next/image";
-
 import React, { useState, useEffect } from "react";
-import { useHistorial } from "@/context/HistorialContext";
+import { useHistorial } from "../../../context/HistorialContext";
 
 // Interfaz para los detalles del pedido (ajusta según tu estructura de datos)
 interface DetallePedido {
@@ -436,7 +434,7 @@ const HistorialManager: React.FC = () => {
                       pedidoSeleccionado.detalles.map((detalle, index) => (
                         <div key={detalle.id_detalle || index} className="bg-gray-50 p-4 rounded-lg flex items-center space-x-4">
                           {/* Imagen del Producto */}
-                          <Image
+                          <img
                             src={detalle.imagen_producto || "https://via.placeholder.com/80x80?text=Sin+Imagen"}
                             alt={detalle.nombre_producto}
                             className="w-20 h-20 object-cover rounded-lg border border-gray-200"

@@ -1,16 +1,18 @@
-// app/resultados/page.tsx o similar
 "use client";
 import React, { useMemo, useState } from "react";
-import { useProducts } from "@/context/ProductContext";
-import { Product } from "@/types/product";
-import { filtrarProductos } from "@/components/SearchForm/motor";
-import { useCart } from "@/context/CartContext";
-import { useSearchParams } from "next/navigation";
-import { useFilter } from "@/context/FilterContext";
-import ProductGrid from "@/components/Productos/ProductGrid";
+import { useLocation } from "react-router-dom"; // Usamos useLocation de react-router-dom
+import ProductGrid from "../../components/Productos/ProductGrid";
+import { useFilter } from "../../context/FilterContext";
+import { useCart } from "../../context/CartContext";
+import { filtrarProductos } from "../../components/SearchForm/motor";
+import type { Product } from "../../types/product";
+import { useProducts } from "../../context/ProductContext";
+
 
 const ResultsPage: React.FC = () => {
-  const searchParams = useSearchParams();
+  const location = useLocation(); // Usamos useLocation para acceder a los parámetros de la URL
+  const searchParams = new URLSearchParams(location.search); // Accedemos a los parámetros de búsqueda desde la URL
+
   const searchQuery = searchParams.get("q") || "";
   const categoria = searchParams.get("marca") || "";
   const modelo = searchParams.get("modelo") || "";
@@ -67,17 +69,16 @@ const ResultsPage: React.FC = () => {
   }, [products, searchQuery, categoria, modelo, sortCriteria]);
 
   const handleAddToCart = (product: Product) => {
-  agregarAlCarrito({
-    id: product.id,
-    name: product.name,
-    cantidad: 1,
-    precio: product.price,
-    images: product.images || [], // ← CORREGIDO
-  });
-  setAddedProductId(product.id);
-  setTimeout(() => setAddedProductId(null), 2000);
-};
-
+    agregarAlCarrito({
+      id: product.id,
+      name: product.name,
+      cantidad: 1,
+      precio: product.price,
+      images: product.images || [], // ← CORREGIDO
+    });
+    setAddedProductId(product.id);
+    setTimeout(() => setAddedProductId(null), 2000);
+  };
 
   return (
     <div className="container mx-auto p-4">

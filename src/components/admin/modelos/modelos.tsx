@@ -24,7 +24,7 @@ export default function ModelManager() {
   // Obtener marcas al cargar el componente
   useEffect(() => {
     axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/marcas`)
-      .then(res => setBrands(res.data))
+      .then(res => setBrands(res.data as Brand[])) // Afirmación de tipo
       .catch(err => console.error("Error al obtener marcas:", err));
   }, []);
 
@@ -32,7 +32,7 @@ export default function ModelManager() {
   useEffect(() => {
     if (selectedBrandId) {
       axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/modelos/${selectedBrandId}`)
-        .then(res => setModels(res.data))
+        .then(res => setModels(res.data as Model[])) // Afirmación de tipo
         .catch(err => console.error("Error al obtener modelos:", err));
     } else {
       setModels([]);
@@ -63,7 +63,7 @@ export default function ModelManager() {
 
       // Recargar los modelos
       const updatedModels = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/modelos/${selectedBrandId}`);
-      setModels(updatedModels.data);
+      setModels(updatedModels.data as Model[]); // Afirmación de tipo
 
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {

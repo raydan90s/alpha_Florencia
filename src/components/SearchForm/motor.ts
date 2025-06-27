@@ -1,6 +1,5 @@
-import { Product } from "@/types/product";
+import type { Product } from "../../types/product";
 import axios from 'axios';
-
 
 export const filtrarProductos = (
   productos: Product[],

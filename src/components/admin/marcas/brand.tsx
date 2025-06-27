@@ -20,7 +20,7 @@ export default function BrandManager() {
   const fetchMarcas = async () => {
     try {
       const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/marcas`);
-      setMarcas(res.data);
+      setMarcas(res.data as Brand[]);
     } catch (err) {
       console.error("Error al obtener marcas:", err);
     }

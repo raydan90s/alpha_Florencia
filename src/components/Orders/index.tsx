@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import  { useState } from "react";
 import SingleOrder from "./SingleOrder";
 import ordersData from "./ordersData";
 

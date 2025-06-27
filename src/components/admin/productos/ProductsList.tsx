@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
-import { Product } from "@/types/product";
-import { useProducts } from "@/context/ProductContext";
-import { useFilter } from "@/context/FilterContext";
-import Image from "next/image";
+import { useFilter } from "../../../context/FilterContext";
+import { useProducts } from "../../../context/ProductContext";
+import type { Product } from "../../../types/product";
+
 
 interface ProductsListProps {
   handleEdit?: (product: Product) => void;
@@ -138,7 +138,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
                     <div className="flex items-center">
                       {product.images?.[0]?.url && (
                         <div className="flex-shrink-0 h-10 w-10 mr-4">
-                          <Image
+                          <img
                             className="h-10 w-10 object-cover rounded-md"
                             src={product.images[0].url}
                             alt={product.name}

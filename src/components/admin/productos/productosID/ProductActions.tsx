@@ -1,8 +1,8 @@
 "use client";
 import { FaShoppingCart, FaWhatsapp, FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { useState } from "react";
-import { useCart } from "@/context/CartContext"; // Ejemplo: usa contexto para agregar al carrito
-import { ProductoAgregar } from "@/types/carContext";
+import { useCart } from "../../../../context/CartContext"; // Ejemplo: usa contexto para agregar al carrito
+import type { ProductoAgregar } from "../../../../types/carContext";
 
 interface ProductActionsProps {
   productId: number;

@@ -1,10 +1,26 @@
 import { useState } from "react";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+import { Link } from "react-router-dom"; // Reemplazar Link de Next.js por react-router-dom
 
-const Dropdown = ({ menuItem, stickyMenu }) => {
+// Definimos los tipos para los elementos del menú
+interface SubmenuItem {
+  title: string;
+  path: string;
+}
+
+interface MenuItem {
+  title: string;
+  submenu: SubmenuItem[];
+}
+
+// Tipo para las props del componente Dropdown
+interface DropdownProps {
+  menuItem: MenuItem;  // El objeto que contiene el menú y el submenú
+  stickyMenu: boolean;  // Indica si el menú es "pegajoso"
+}
+
+const Dropdown: React.FC<DropdownProps> = ({ menuItem, stickyMenu }) => {
   const [dropdownToggler, setDropdownToggler] = useState(false);
-  const pathUrl = usePathname();
+  const pathUrl = window.location.pathname; // Obtener la ruta actual con window.location.pathname
 
   return (
     <li
@@ -37,18 +53,16 @@ const Dropdown = ({ menuItem, stickyMenu }) => {
         </svg>
       </a>
 
-      {/* <!-- Dropdown Start --> */}
+      {/* Dropdown */}
       <ul
         className={`dropdown ${dropdownToggler && "flex"} ${
-          stickyMenu
-            ? "xl:group-hover:translate-y-0"
-            : "xl:group-hover:translate-y-0"
+          stickyMenu ? "xl:group-hover:translate-y-0" : "xl:group-hover:translate-y-0"
         }`}
       >
         {menuItem.submenu.map((item, i) => (
           <li key={i}>
             <Link
-              href={item.path}
+              to={item.path} // Usamos 'to' en lugar de 'href'
               className={`flex text-custom-sm hover:text-blue hover:bg-gray-1 py-[7px] px-4.5 ${
                 pathUrl === item.path && "text-blue bg-gray-1"
               } `}
