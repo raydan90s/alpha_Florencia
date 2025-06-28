@@ -1,17 +1,23 @@
 /* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-rgb: #FCF8E6;
+  --background-rgb: 252, 248, 230; /* corresponde a #FCF8E6 */
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
 }
+
 
 /* Estiliza la barra de desplazamiento */
 ::-webkit-scrollbar {

@@ -1,50 +1,42 @@
 // src/App.tsx
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-import Footer from './components/Footer';
+import React from 'react';
 import Header from './components/Header';
-import Carrito from './pages/carrito';
-import Home from './pages/index';
+import Footer from './components/Footer';
 
-
-// CONTEXTOS
 import { AuthProvider } from './context/AuthContext';
-import { ProductProvider } from './context/ProductContext';
-import { CartProvider } from './context/CartContext';
 import { FilterProvider } from './context/FilterContext';
-import { ConfiguracionProvider } from './context/SettingContext';
+import { ProductProvider } from './context/ProductContext';
 import { PermissionProvider } from './context/PermissionContext';
+import { ConfiguracionProvider } from './context/SettingContext';
 import { HistorialProvider } from './context/HistorialContext';
+import { CartProvider } from './context/CartContext';
+import { Route, Routes } from 'react-router-dom';
+import Home from './pages/Home';
 
-function App() {
+// Para la fuente Inter: importarla por CSS o usar @fontsource/inter
+
+export default function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <FilterProvider>
-          <ProductProvider>
-            <PermissionProvider>
-              <ConfiguracionProvider>
-                <HistorialProvider>
-                  <CartProvider>
-                    <div className="min-h-screen flex flex-col justify-between">
-                      <Header />
-                      <main className="flex-grow">
-                        <Routes>
-                          <Route path="/" element={<Home />} />
-                          <Route path="/carrito" element={<Carrito />} />
-                        </Routes>
-                      </main>s
-                      <Footer />
-                    </div>
-                  </CartProvider>
-                </HistorialProvider>
-              </ConfiguracionProvider>
-            </PermissionProvider>
-          </ProductProvider>
-        </FilterProvider>
-      </AuthProvider>
-    </Router>
+    <AuthProvider>
+      <FilterProvider>
+        <ProductProvider>
+          <PermissionProvider>
+            <ConfiguracionProvider>
+              <HistorialProvider>
+                <CartProvider>
+                  <div className="font-inter">
+                    <Header />
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                    </Routes>
+                    <Footer />
+                  </div>
+                </CartProvider>
+              </HistorialProvider>
+            </ConfiguracionProvider>
+          </PermissionProvider>
+        </ProductProvider>
+      </FilterProvider>
+    </AuthProvider>
   );
 }
-
-export default App;
