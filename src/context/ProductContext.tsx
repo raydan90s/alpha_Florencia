@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction, ReactNode } from "react";
 import type { Product } from "../types/product";
 import axios from "axios";
 
@@ -11,36 +11,38 @@ interface ProductContextType {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-export function ProductProvider({ children }: { children: React.ReactNode }) {
+const ProductProvider = ({ children }: { children: ReactNode }) => {
     const [products, setProducts] = useState<Product[]>([]);
 
-    const fetchProducts = async () => {
-        try {
-            const response = await axios.get<Product[]>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos-con-imagenes`);
-            setProducts(response.data);
-        } catch (error) {
-            console.error("Error al cargar productos:", error);
-        }
-    };
-
     useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await axios.get<Product[]>(
+                    `${import.meta.env.VITE_API_BASE_URL}/api/productos-con-imagenes`
+                );
+                setProducts(response.data);
+            } catch (error) {
+                console.error("Error al cargar productos:", error);
+
+            }
+        };
+
         fetchProducts();
     }, []);
 
-
     return (
-        <ProductContext.Provider
-            value={{ products, setProducts }}
-        >
+        <ProductContext.Provider value={{ products, setProducts }}>
             {children}
         </ProductContext.Provider>
     );
-}
+};
 
-export function useProducts() {
+const useProducts = () => {
     const context = useContext(ProductContext);
-    if (context === undefined) {
+    if (!context) {
         throw new Error("useProducts debe ser usado dentro de un ProductProvider");
     }
     return context;
-}
+};
+
+export { ProductProvider, useProducts };

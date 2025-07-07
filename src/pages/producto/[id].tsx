@@ -78,7 +78,7 @@ export default function DetalleProductoPage({ producto }: Props) {
 // ✅ Solo se permiten rutas conocidas si usas `next export`
 export const getStaticPaths: GetStaticPaths = async () => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos-con-imagenes`);
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos-con-imagenes`);
     if (!res.ok) throw new Error("Failed to fetch products");
 
     const productos: Product[] = await res.json();
@@ -105,7 +105,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   if (!id || typeof id !== "string") return { notFound: true };
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos/por/${id}`);
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/por/${id}`);
     if (!res.ok) return { notFound: true };
 
     const producto: Product = await res.json();

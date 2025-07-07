@@ -8,7 +8,7 @@ export default function Contactanos() {
         <img
           src="/images/contacto-hero.jpg"
           alt="Contáctanos"
-          className="object-cover brightness-50"
+          className="absolute inset-0 w-full h-full object-cover brightness-50"
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white text-center">
@@ -38,7 +38,7 @@ export default function Contactanos() {
                   required
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
                   Correo electrónico
@@ -91,7 +91,7 @@ export default function Contactanos() {
             <h2 className="text-3xl font-bold text-gray-800 mb-6">
               Información de contacto
             </h2>
-            
+
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
                 <div className="text-blue-600 mt-1">

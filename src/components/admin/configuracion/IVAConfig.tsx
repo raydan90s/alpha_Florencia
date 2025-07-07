@@ -10,7 +10,7 @@ export default function IVAConfig() {
 
     const handleAgregarIVA = async () => {
         try {
-            await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/configuracion/iva`, {
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/configuracion/iva`, {
                 valor: parseInt(nuevoIVA),
                 activo: true,
             });

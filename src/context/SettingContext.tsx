@@ -29,7 +29,7 @@ export const ConfiguracionProvider: React.FC<{ children: React.ReactNode }> = ({
     const fetchConfiguracion = async () => {
         try {
             setLoading(true);
-            const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/configuracion`;
+            const url = `${import.meta.env.VITE_API_BASE_URL}/api/configuracion`;
             const res = await axios.get<Configuracion>(url);
             setConfiguracion(res.data);
         } catch (err: any) {

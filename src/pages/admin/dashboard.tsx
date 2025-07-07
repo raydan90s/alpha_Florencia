@@ -88,8 +88,8 @@ export default function AdminDashboard() {
 
     try {
       const url = isNewProduct
-        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos`
-        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos/${editingId}`;
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/productos`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/productos/${editingId}`;
       const method = isNewProduct ? "POST" : "PUT";
 
       const response = await fetch(url, {
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
 
   const handleDelete = async (id: string | number) => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos/${id}/inactivar`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/${id}/inactivar`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
       });
@@ -186,7 +186,7 @@ export default function AdminDashboard() {
 
   const handleActive = async (id: string | number) => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos/${id}/activar`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/${id}/activar`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
       });

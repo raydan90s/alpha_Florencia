@@ -19,7 +19,7 @@ export default function BrandManager() {
 
   const fetchMarcas = async () => {
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/marcas`);
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/marcas`);
       setMarcas(res.data as Brand[]);
     } catch (err) {
       console.error("Error al obtener marcas:", err);
@@ -32,7 +32,7 @@ export default function BrandManager() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/marcas`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/marcas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

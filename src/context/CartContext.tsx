@@ -24,7 +24,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cargadoDesdeLocalStorage, setCargadoDesdeLocalStorage] = useState(false);
   const agregarAlCarritoDB = useCallback(
     async ({ id_usuario, id_producto, cantidad }: { id_usuario: number; id_producto: number; cantidad: number }) => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/cart/add`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_usuario, id_producto, cantidad }),
@@ -37,7 +37,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const obtenerCarritoDB = useCallback(async (id_usuario: number): Promise<CartItem[]> => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/cart?id_usuario=${id_usuario}`);
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart?id_usuario=${id_usuario}`);
     const data = await res.json();
     if (!data.success) throw new Error(data.error);
     return data.cartItems;
@@ -117,7 +117,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     id_producto: number;
     nueva_cantidad: number;
   }) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/cart/update/${id_producto}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart/update/${id_producto}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id_usuario, id_producto, nueva_cantidad }),
@@ -133,7 +133,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     id_usuario: number;
     id_producto: number;
   }) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/cart/remove/${id_producto}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart/remove/${id_producto}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id_usuario, id_producto })

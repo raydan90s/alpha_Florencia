@@ -45,7 +45,7 @@ export default function AdminRegister() {
 
         const actualizarRolBackend = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/usuario/rol`, {
+                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario/rol`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ id_usuario: usuarioEncontrado.id, nuevoRol: rolSeleccionado }),
@@ -57,7 +57,7 @@ export default function AdminRegister() {
                     // Si es cliente, limpiamos permisos localmente y en backend
                     setPermisosSeleccionadosEdicion([]);
                     // Opcional: llamar API para actualizar permisos vacíos también
-                    await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/usuario/permisos`, {
+                    await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario/permisos`, {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -90,7 +90,7 @@ export default function AdminRegister() {
         }
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registrar/admin`, {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/registrar/admin`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -122,7 +122,7 @@ export default function AdminRegister() {
 
     const handleBuscarUsuario = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/usuario?email=${emailBusqueda}`);
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario?email=${emailBusqueda}`);
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Usuario no encontrado");
             setUsuarioEncontrado(data.usuario);
@@ -138,7 +138,7 @@ export default function AdminRegister() {
 
     const handleActualizarRol = async () => {
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/usuario/rol`, {
+            await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario/rol`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id_usuario: usuarioEncontrado.id, nuevoRol: rolSeleccionado }),
@@ -151,7 +151,7 @@ export default function AdminRegister() {
 
     const handleActualizarPermisos = async () => {
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/usuario/permisos`, {
+            await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario/permisos`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

@@ -25,7 +25,7 @@ export default function InventoryManager() {
 
   const fetchInventariosConProductos = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventario-productos`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/inventario-productos`);
       const data = await res.json();
       setInventarios(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -41,7 +41,7 @@ export default function InventoryManager() {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/inventario`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/inventario`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -21,7 +21,7 @@ export const filtrarProductos = (
 
 export const obtenerModelosPorMarca = async (id_marca: number) => {
   try {
-    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/modelos/${id_marca}`);
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/modelos/${id_marca}`);
     return response.data; // se espera un array de modelos [{ id, nombre, id_marca }]
   } catch (error) {
     console.error("Error al obtener modelos:", error);
@@ -65,7 +65,7 @@ export function obtenerModelosDisponibles(productos: Product[], marca: string): 
 }
 export const obtenerMarcasDisponibleApi = async (): Promise<{ id: number; nombre: string }[]> => {
   try {
-    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/marcas`);
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/marcas`);
     return response.data; // Aquí ya devuelves el array original
   } catch (error) {
     console.error("Error al obtener marcas desde la API:", error);
@@ -76,7 +76,7 @@ export const obtenerMarcasDisponibleApi = async (): Promise<{ id: number; nombre
 
 export const obtenerInventariosPorProductoId = async (productId: number) => {
   try {
-    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/producto/${productId}`);
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/producto/${productId}`);
     return response.data; // [{ nombre: "Guayaquil", cantidad: 12 }, ...]
   } catch (error) {
     console.error("Error al obtener inventario desde la API:", error);

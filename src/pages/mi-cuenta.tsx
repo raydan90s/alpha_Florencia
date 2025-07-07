@@ -43,7 +43,7 @@ const ShippingAddressesPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`);
       if (!res.ok) throw new Error('Error al cargar direcciones');
       const data = await res.json();
       setAddresses(data);
@@ -105,8 +105,8 @@ const ShippingAddressesPage = () => {
     try {
       const method = editingAddress ? 'PUT' : 'POST';
       const url = editingAddress
-        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/direccion-envio/${editingAddress.id}`
-        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`;
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/direccion-envio/${editingAddress.id}`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`;
 
       const res = await fetch(url, {
         method,
@@ -140,7 +140,7 @@ const ShippingAddressesPage = () => {
     try {
       const addressToDelete = addresses.find(addr => addr.id === id);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/direccion-envio/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/direccion-envio/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Error al eliminar dirección');
 
       // Actualizar lista
@@ -151,7 +151,7 @@ const ShippingAddressesPage = () => {
         if (updatedAddresses.length > 0) {
           const newPrincipal = updatedAddresses[0];
 
-          const updateRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/direccion-envio/${newPrincipal.id}`, {
+          const updateRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/direccion-envio/${newPrincipal.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

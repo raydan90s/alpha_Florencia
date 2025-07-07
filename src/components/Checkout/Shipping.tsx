@@ -63,7 +63,7 @@ const Shipping: React.FC<ShippingProps> = ({
       if (isAuthenticated && userId && usarDireccionPrincipal) {
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/usuarios/${userId}/direccion-envio/principal`
+            `${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio/principal`
           );
           const data = await res.json();
 

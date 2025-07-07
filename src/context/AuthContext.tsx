@@ -17,11 +17,11 @@ export const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
   login: async () => null,
-  logout: async () => {},
+  logout: async () => { },
   register: async () => ({ error: false, message: "", userId: "" }),
   authStateChanged: 0,
   authError: null,
-  setAuthError: () => {},
+  setAuthError: () => { },
   initialLoading: true,
   actionLoading: false,
 });
@@ -51,11 +51,14 @@ export const AuthProvider = ({ children }) => {
     if (!mounted) return; // no hacer fetch si no estamos en cliente
 
     const verifyUser = async () => {
+      console.log("🧪 Verificando sesión…");
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/verify`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/verify`, {
           credentials: 'include',
         });
         const data = await res.json();
+
+        console.log("✅ Respuesta de /api/auth/verify:", res.status, data);
 
         if (res.ok && data.user && data.user.nombre) {
           setUser(data.user);
@@ -72,6 +75,7 @@ export const AuthProvider = ({ children }) => {
       setInitialLoading(false);
     };
 
+
     verifyUser();
   }, [authStateChanged, mounted]);
 
@@ -79,7 +83,7 @@ export const AuthProvider = ({ children }) => {
     setActionLoading(true);
     setAuthError(null);
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/logout`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/logout`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -97,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/login`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -134,7 +138,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = useCallback(async (formData) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/registrar`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/registrar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

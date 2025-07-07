@@ -23,7 +23,7 @@ export default function ModelManager() {
 
   // Obtener marcas al cargar el componente
   useEffect(() => {
-    axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/marcas`)
+    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/marcas`)
       .then(res => setBrands(res.data as Brand[])) // Afirmación de tipo
       .catch(err => console.error("Error al obtener marcas:", err));
   }, []);
@@ -31,7 +31,7 @@ export default function ModelManager() {
   // Obtener modelos cada vez que se selecciona una marca
   useEffect(() => {
     if (selectedBrandId) {
-      axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/modelos/${selectedBrandId}`)
+      axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/modelos/${selectedBrandId}`)
         .then(res => setModels(res.data as Model[])) // Afirmación de tipo
         .catch(err => console.error("Error al obtener modelos:", err));
     } else {
@@ -48,7 +48,7 @@ export default function ModelManager() {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/modelos`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/modelos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -62,7 +62,7 @@ export default function ModelManager() {
       setNewModel("");
 
       // Recargar los modelos
-      const updatedModels = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/modelos/${selectedBrandId}`);
+      const updatedModels = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/modelos/${selectedBrandId}`);
       setModels(updatedModels.data as Model[]); // Afirmación de tipo
 
       setTimeout(() => setSuccessMessage(""), 3000);

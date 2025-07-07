@@ -10,8 +10,6 @@ export default function ProductosPage() {
                     <h1 className="text-3xl font-bold text-gray-900">Nuestros Productos</h1>
                     <SortDropdown />
                 </div>
-
-
                 <ResultsPage />
             </div>
         </main>

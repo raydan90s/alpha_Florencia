@@ -57,7 +57,7 @@ export const HistorialProvider: React.FC<HistorialProviderProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/historial-pedidos`;
+      const url = `${import.meta.env.VITE_API_BASE_URL}/api/historial-pedidos`;
       const res = await axios.get<ResumenPedido[]>(url);
       setPedidos(res.data);
     } catch (err: any) {

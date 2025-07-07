@@ -16,7 +16,7 @@ export default function Home() {
           <img
             src="/images/hero/bg.jpg"
             alt="Background"
-            className="object-cover brightness-75"
+            className="absolute inset-0 w-full h-full object-cover brightness-75"
           />
         </div>
 
@@ -51,7 +51,7 @@ export default function Home() {
       <section className="grid grid-cols-1 md:grid-cols-2">
         {/* Seguridad */}
         <div className="bg-[#FCF8E6] text-black p-8 flex items-center border-t-8 border-[#E74C3C]">
-          
+
           <div>
             <h3 className="text-xl font-bold mb-1"> <SecurityIcon fontSize="large" className="mr-2" /> Seguridad</h3>
             <p className="font-2xl mt-2 text-wrap break-words leading-relaxed" style={{ textAlign: "justify" }}>
@@ -67,7 +67,7 @@ export default function Home() {
         <div className="bg-[#FCF8E6] text-black p-8 flex items-center border-t-8 border-[#F39C12]">
           <div>
             <h3 className="text-xl font-bold mb-1"> <CheckCircleIcon fontSize="large" className="mr-2" /> Calidad</h3>
-            <p className="font-2xl mt-2 text-wrap break-words leading-relaxed" style={{ textAlign: "justify"}}>
+            <p className="font-2xl mt-2 text-wrap break-words leading-relaxed" style={{ textAlign: "justify" }}>
               Con Toner Express, puedes realizar la compra online de tus
               consumibles sabiendo que recibirás productos de la calidad más
               alta del mercado, además de un asesoramiento personalizado tanto

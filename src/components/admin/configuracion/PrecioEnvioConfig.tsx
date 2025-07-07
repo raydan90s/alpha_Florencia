@@ -10,7 +10,7 @@ export default function PrecioEnvioConfig() {
 
   const handleActualizarPrecioEnvio = async () => {
     try {
-      await axios.put(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/configuracion/precio-envio`, {
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/configuracion/precio-envio`, {
         precio_envio: parseFloat(nuevoPrecioEnvio),
       });
       setNuevoPrecioEnvio("");

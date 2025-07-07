@@ -43,7 +43,7 @@ const Checkout = () => {
 
     if (isAuthenticated && direccionEnvio.guardarDatos && userId) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ const Checkout = () => {
 
               <button
                 type="submit"
-                className="w-full bg-blue text-white py-3 px-6 rounded-md hover:bg-blue-dark transition"
+                className="mt-6 w-full text-white py-2 px-4 rounded-md text-center inline-block transition-colors bg-[#FF6B00] hover:bg-[#FF8533]"
               >
                 Procesar pedido
               </button>
