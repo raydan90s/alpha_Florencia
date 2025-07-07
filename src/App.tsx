@@ -24,6 +24,7 @@ import Registro from './pages/registrarse';
 import TerminosCondiciones from './pages/terminos-condiciones';
 import AdminDashboard from './pages/admin/dashboard';
 import AdminLogin from './pages/admin/login';
+import DetalleProductoPage from './pages/DetalleProductoPage';
 
 // Para la fuente Inter: importarla por CSS o usar @fontsource/inter
 
@@ -53,6 +54,8 @@ export default function App() {
                       <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
                       <Route path="/admin/dashboard" element={<AdminDashboard />} />
                       <Route path="/admin/login" element={<AdminLogin />} />
+                      <Route path="/productos/:id" element={<DetalleProductoPage />} />
+
 
                     </Routes>
                     <Footer />
