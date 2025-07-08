@@ -1,5 +1,6 @@
+// Componente DetalleProductoPage
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"; // si usas react-router
+import { useParams } from "react-router-dom"; // Usamos react-router-dom para obtener el slug
 import ProductImageGallery from "../components/admin/productos/productosID/ProductImageGallery";
 import ProductDetailsHeader from "../components/admin/productos/productosID/ProductDetailsHeader";
 import ProductAvailability from "../components/admin/productos/productosID/ProductAvailability";
@@ -11,22 +12,26 @@ import ProductDescription from "../components/admin/productos/productosID/Produc
 import type { Product } from "../types/product";
 
 export default function DetalleProductoPage() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();  // Usamos el slug de la URL
+  console.log(slug);
   const [producto, setProducto] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
+    if (!slug) return;  // Si no hay slug, no hacemos nada
+
     setLoading(true);
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/por/${id}`)
+
+    // Llamamos a la API usando el slug
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/por-slug/${slug}`)
       .then((res) => res.ok ? res.json() : Promise.reject("Error al cargar"))
-      .then((data: Product) => setProducto(data))
+      .then((data: Product) => setProducto(data))  // Guardamos el producto en el estado
       .catch((err) => {
         console.error(err);
-        setProducto(null);
+        setProducto(null);  // Si ocurre un error, mostramos null
       })
-      .finally(() => setLoading(false));
-  }, [id]);
+      .finally(() => setLoading(false));  // Dejamos de mostrar el loading cuando se haya completado la solicitud
+  }, [slug]);  // Dependemos del slug, que cambia en cada navegación
 
   if (loading) {
     return <div>Cargando producto...</div>;
@@ -40,15 +45,6 @@ export default function DetalleProductoPage() {
     producto.images?.map((img) => img.url) ?? [
       "https://via.placeholder.com/400x300/FCF8E6/1A1A1A?text=Sin+Imagen",
     ];
-
-  const handleChatWithAdvisor = () => {
-    window.open(
-      `https://wa.me/YOUR_PHONE_NUMBER?text=Hola,%20quisiera%20saber%20más%20sobre%20el%20producto:%20${encodeURIComponent(
-        producto.name
-      )}`,
-      "_blank"
-    );
-  };
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
@@ -65,7 +61,7 @@ export default function DetalleProductoPage() {
             productName={producto.name}
             productId={producto.id}
             price={producto.price}
-            images={producto.images}
+            images={producto.images?.map(img => ({ url: img.url })) ?? [{ url: "https://via.placeholder.com/400x300/FCF8E6/1A1A1A?text=Sin+Imagen" }]}
           />
           <ShippingInfo />
           <PaymentMethods />

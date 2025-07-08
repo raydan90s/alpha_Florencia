@@ -100,7 +100,7 @@ export default function ProductActions({
       {/* Botón WhatsApp */}
       <button
         onClick={handleChatWithAdvisor}
-        className="w-full py-3 px-4 rounded-lg bg-green text-white hover:brightness-110 transition duration-200 flex items-center justify-center font-bold text-lg shadow-md"
+        className="w-full py-3 px-4 rounded-lg bg-green-600 text-white hover:brightness-110 transition duration-200 flex items-center justify-center font-bold text-lg shadow-md"
       >
         <FaWhatsapp className="mr-2 text-xl" /> Chatee con un asesor
       </button>

@@ -54,8 +54,7 @@ export default function App() {
                       <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
                       <Route path="/admin/dashboard" element={<AdminDashboard />} />
                       <Route path="/admin/login" element={<AdminLogin />} />
-                      <Route path="/productos/:id" element={<DetalleProductoPage />} />
-
+                      <Route path="/productos/:slug" element={<DetalleProductoPage />} />
 
                     </Routes>
                     <Footer />

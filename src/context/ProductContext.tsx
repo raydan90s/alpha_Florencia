@@ -20,6 +20,7 @@ const ProductProvider = ({ children }: { children: ReactNode }) => {
                 const response = await axios.get<Product[]>(
                     `${import.meta.env.VITE_API_BASE_URL}/api/productos-con-imagenes`
                 );
+                console.log(response.data);
                 setProducts(response.data);
             } catch (error) {
                 console.error("Error al cargar productos:", error);

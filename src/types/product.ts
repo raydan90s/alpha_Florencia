@@ -5,6 +5,7 @@ export type Product = {
     name: string;
     category?: string;
     description: string;
+    slug:string;
     price: number;
     model: string;
     brand?: string;

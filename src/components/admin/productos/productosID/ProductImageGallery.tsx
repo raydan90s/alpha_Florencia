@@ -1,5 +1,3 @@
-"use client";
-
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useState, useEffect, useRef, useCallback } from "react";
 
@@ -43,6 +41,16 @@ export default function ProductImageGallery({
     handleChangeIndex(index);
   };
 
+  const handleThumbnailPrev = () => {
+    if (isSingleImage) return;
+    handlePrev();
+  };
+
+  const handleThumbnailNext = () => {
+    if (isSingleImage) return;
+    handleNext();
+  };
+
   useEffect(() => {
     if (isSingleImage) return;
 
@@ -53,23 +61,50 @@ export default function ProductImageGallery({
     return () => clearInterval(interval);
   }, [handleNext, isSingleImage]);
 
+  // Función para obtener las imágenes visibles en el carrusel
+  const getVisibleThumbnails = () => {
+    if (imageUrls.length <= 3) return imageUrls;
+    
+    const visibleCount = 3;
+    const totalImages = imageUrls.length;
+    const halfVisible = Math.floor(visibleCount / 2);
+    
+    let startIndex = currentIndex - halfVisible;
+    let endIndex = currentIndex + halfVisible;
+    
+    // Ajustar índices para manejo circular
+    if (startIndex < 0) {
+      startIndex = totalImages + startIndex;
+      endIndex = startIndex + visibleCount - 1;
+    } else if (endIndex >= totalImages) {
+      endIndex = endIndex - totalImages;
+      startIndex = endIndex - visibleCount + 1;
+      if (startIndex < 0) startIndex = totalImages + startIndex;
+    }
+    
+    const visibleImages = [];
+    for (let i = 0; i < visibleCount; i++) {
+      const index = (startIndex + i) % totalImages;
+      visibleImages.push({ url: imageUrls[index], originalIndex: index });
+    }
+    
+    return visibleImages;
+  };
+
   return (
-    <div className="w-full h-full flex flex-col justify-between gap-6 p-4 bg-gradient-to-br from-gray-50 to-white rounded-3xl shadow-lg">
+    <div className="w-full h-full flex flex-col gap-6 p-4 bg-gradient-to-br from-gray-50 to-white rounded-3xl shadow-lg">
       {/* Imagen principal */}
-      <div className="relative w-full h-[500px] flex justify-center items-center bg-white rounded-2xl overflow-hidden">
+      <div className="relative w-full h-[560px] flex justify-center items-center bg-white rounded-2xl overflow-hidden">
         {imageUrls.length > 0 ? (
           <>
             <div
-              className={`relative w-full h-full transition-opacity duration-500 ease-in-out ${
-                fade ? "opacity-100" : "opacity-0"
-              }`}
+              className={`relative w-full h-full transition-opacity duration-500 ease-in-out ${fade ? "opacity-100" : "opacity-0"}`}
             >
-              {/* Usamos la etiqueta <img> estándar para Vite */}
               <img
                 src={imageUrls[currentIndex]}
                 alt={altText}
                 className="object-contain w-full h-full"
-                loading={currentIndex === 0 ? "eager" : "lazy"} // Usamos eager para la primera imagen y lazy para las demás
+                loading={currentIndex === 0 ? "eager" : "lazy"}
               />
             </div>
 
@@ -100,29 +135,57 @@ export default function ProductImageGallery({
         )}
       </div>
 
-      {/* Carrusel de miniaturas */}
+      {/* Carrusel de miniaturas horizontal */}
       {!isSingleImage && (
-        <div className="flex gap-4 flex-wrap justify-center items-center">
-          {imageUrls.map((url, index) => (
-            <div
-              key={index}
-              onClick={() => handleThumbnailClick(index)}
-              className="cursor-pointer transition-transform"
-            >
-              <img
-                src={url}
-                alt={`Miniatura ${index + 1}`}
-                width={160}
-                height={160}
-                className={`rounded-xl object-cover border-4 transition-all duration-300 shadow-md 
-                ${
-                  currentIndex === index
-                    ? "border-blue-500 grayscale-0"
-                    : "border-transparent grayscale hover:grayscale-0 hover:border-gray-300"
-                }`}
-              />
-            </div>
-          ))}
+        <div className="flex items-center justify-center gap-4">
+          {/* Flecha izquierda */}
+          <button
+            onClick={handleThumbnailPrev}
+            className="bg-white/80 backdrop-blur-md text-gray-600 hover:bg-blue-500 hover:text-white p-2 rounded-full shadow-md transition-all duration-200"
+            aria-label="Anterior miniatura"
+          >
+            <FaChevronLeft size={16} />
+          </button>
+
+          {/* Contenedor de miniaturas */}
+          <div className="flex items-center gap-3">
+            {getVisibleThumbnails().map((item, index) => {
+              const isActive = typeof item === 'object' ? item.originalIndex === currentIndex : false;
+              const imageUrl = typeof item === 'object' ? item.url : item;
+              const originalIndex = typeof item === 'object' ? item.originalIndex : index;
+              
+              return (
+                <div
+                  key={originalIndex}
+                  onClick={() => handleThumbnailClick(originalIndex)}
+                  className={`cursor-pointer transition-all duration-300 transform ${
+                    isActive ? 'scale-110' : 'scale-100 hover:scale-105'
+                  }`}
+                >
+                  <img
+                    src={imageUrl}
+                    alt={`Miniatura ${originalIndex + 1}`}
+                    className={`rounded-lg object-cover border-3 transition-all duration-300 shadow-md ${
+                      isActive
+                        ? "border-blue-500 ring-2 ring-blue-300 grayscale-0"
+                        : "border-transparent grayscale hover:grayscale-0 hover:border-gray-300"
+                    }`}
+                    width={80}
+                    height={80}
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Flecha derecha */}
+          <button
+            onClick={handleThumbnailNext}
+            className="bg-white/80 backdrop-blur-md text-gray-600 hover:bg-blue-500 hover:text-white p-2 rounded-full shadow-md transition-all duration-200"
+            aria-label="Siguiente miniatura"
+          >
+            <FaChevronRight size={16} />
+          </button>
         </div>
       )}
     </div>
