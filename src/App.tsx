@@ -1,4 +1,5 @@
 // src/App.tsx
+
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -9,7 +10,9 @@ import { PermissionProvider } from './context/PermissionContext';
 import { ConfiguracionProvider } from './context/SettingContext';
 import { HistorialProvider } from './context/HistorialContext';
 import { CartProvider } from './context/CartContext';
+
 import { Route, Routes } from 'react-router-dom';
+
 import Home from './pages/Home';
 import ProductosPage from './pages/productos';
 import Carrito from './pages/carrito';
@@ -25,8 +28,6 @@ import TerminosCondiciones from './pages/terminos-condiciones';
 import AdminDashboard from './pages/admin/dashboard';
 import AdminLogin from './pages/admin/login';
 import DetalleProductoPage from './pages/DetalleProductoPage';
-
-// Para la fuente Inter: importarla por CSS o usar @fontsource/inter
 
 export default function App() {
   return (
@@ -55,7 +56,6 @@ export default function App() {
                       <Route path="/admin/dashboard" element={<AdminDashboard />} />
                       <Route path="/admin/login" element={<AdminLogin />} />
                       <Route path="/productos/:slug" element={<DetalleProductoPage />} />
-
                     </Routes>
                     <Footer />
                   </div>
