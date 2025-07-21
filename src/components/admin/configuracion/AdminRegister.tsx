@@ -20,11 +20,9 @@ export default function AdminRegister() {
     const [password, setPassword] = useState("");
     const [confirmarPassword, setConfirmarPassword] = useState("");
     const [permisosSeleccionadosRegistro, setPermisosSeleccionadosRegistro] = useState<string[]>([]);
-    const [permisosSeleccionadosEdicion, setPermisosSeleccionadosEdicion] = useState<string[]>([]);
-    const [rolSeleccionadoEdicion, setRolSeleccionadoEdicion] = useState(""); const [successMessage, setSuccessMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [permisosUsuarioOriginal, setPermisosUsuarioOriginal] = useState<string[]>([]); // <-- guardamos permisos originales
-
 
     // Búsqueda
     const [emailBusqueda, setEmailBusqueda] = useState("");
@@ -33,9 +31,9 @@ export default function AdminRegister() {
 
     useEffect(() => {
         if (rolSeleccionado === "Cliente") {
-            setPermisosSeleccionadosEdicion([]);
+            setPermisosSeleccionadosRegistro([]); // Limpiar permisos si el rol es Cliente
         } else if (rolSeleccionado === "Admin") {
-            setPermisosSeleccionadosEdicion(permisosUsuarioOriginal);
+            setPermisosSeleccionadosRegistro(permisosUsuarioOriginal); // Restaurar permisos si el rol es Admin
         }
     }, [rolSeleccionado, permisosUsuarioOriginal]);
 
@@ -55,8 +53,7 @@ export default function AdminRegister() {
 
                 if (rolSeleccionado === "Cliente") {
                     // Si es cliente, limpiamos permisos localmente y en backend
-                    setPermisosSeleccionadosEdicion([]);
-                    // Opcional: llamar API para actualizar permisos vacíos también
+                    setPermisosSeleccionadosRegistro([]);
                     await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario/permisos`, {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
@@ -66,17 +63,15 @@ export default function AdminRegister() {
                         }),
                     });
                 } else if (rolSeleccionado === "Admin") {
-                    // Si es admin, recuperamos permisos originales (opcional)
-                    setPermisosSeleccionadosEdicion(permisosUsuarioOriginal);
+                    setPermisosSeleccionadosRegistro(permisosUsuarioOriginal); // Restauramos permisos originales si es admin
                 }
-            } catch (error) {
+            } catch (error: any) {
                 alert("Error actualizando rol: " + error.message);
             }
         };
 
         actualizarRolBackend();
     }, [rolSeleccionado, usuarioEncontrado, permisosUsuarioOriginal]);
-
 
     const handleRegisterAdmin = async () => {
         if (!nombre || !email || !password || !confirmarPassword) {
@@ -101,7 +96,6 @@ export default function AdminRegister() {
                     password,
                     permisos: permisosSeleccionadosRegistro,
                 }),
-
             });
 
             const data = await response.json();
@@ -113,7 +107,7 @@ export default function AdminRegister() {
             setEmail("");
             setPassword("");
             setConfirmarPassword("");
-            setPermisosSeleccionadosEdicion([]);
+            setPermisosSeleccionadosRegistro([]);
             setTimeout(() => setSuccessMessage(""), 4000);
         } catch (err: any) {
             setErrorMessage(err.message || "Error inesperado.");
@@ -127,7 +121,7 @@ export default function AdminRegister() {
             if (!res.ok) throw new Error(data.error || "Usuario no encontrado");
             setUsuarioEncontrado(data.usuario);
             setRolSeleccionado(data.usuario.rol);
-            setPermisosSeleccionadosEdicion(data.usuario.permisos);
+            setPermisosSeleccionadosRegistro(data.usuario.permisos);
             setPermisosUsuarioOriginal(data.usuario.permisos); // guardamos permisos originales
 
         } catch (err: any) {
@@ -156,7 +150,7 @@ export default function AdminRegister() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     id_usuario: usuarioEncontrado.id,
-                    permisos: permisosSeleccionadosEdicion
+                    permisos: permisosSeleccionadosRegistro
                 }),
             });
             alert("Permisos actualizados correctamente");
@@ -197,7 +191,6 @@ export default function AdminRegister() {
                 ))}
             </div>
 
-
             <button onClick={handleRegisterAdmin} className="px-4 py-2 rounded w-full bg-[#003366] hover:bg-blue-600 text-white mb-6">
                 Registrar Administrador
             </button>
@@ -237,21 +230,19 @@ export default function AdminRegister() {
                             <label key={permiso.id} className="flex items-center space-x-2">
                                 <input
                                     type="checkbox"
-                                    checked={permisosSeleccionadosEdicion.includes(permiso.id)}
+                                    checked={permisosSeleccionadosRegistro.includes(permiso.id)}
                                     disabled={rolSeleccionado === "Cliente"} // <-- aquí
                                     onChange={(e) => {
                                         if (e.target.checked) {
-                                            setPermisosSeleccionadosEdicion([...permisosSeleccionadosEdicion, permiso.id]);
+                                            setPermisosSeleccionadosRegistro([...permisosSeleccionadosRegistro, permiso.id]);
                                         } else {
-                                            setPermisosSeleccionadosEdicion(permisosSeleccionadosEdicion.filter((p) => p !== permiso.id));
+                                            setPermisosSeleccionadosRegistro(permisosSeleccionadosRegistro.filter((p) => p !== permiso.id));
                                         }
                                     }}
                                 />
                                 <span>{permiso.label}</span>
                             </label>
                         ))}
-
-
                     </div>
                     <button
                         onClick={handleActualizarPermisos}

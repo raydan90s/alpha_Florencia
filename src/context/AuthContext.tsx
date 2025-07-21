@@ -5,12 +5,19 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string, modoAdmin?: boolean) => Promise<string | null>;
   logout: () => Promise<void>;
-  register: (formData: any) => Promise<{ error: boolean; message: string; userId?: string }>;
+  register: (formData: RegisterFormData) => Promise<{ error: boolean; message: string; userId?: string }>;
   authStateChanged: number;
   authError: string | null;
   setAuthError: React.Dispatch<React.SetStateAction<string | null>>;
   initialLoading: boolean;
   actionLoading: boolean;
+}
+
+interface RegisterFormData {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -26,12 +33,12 @@ export const AuthContext = createContext<AuthContextType>({
   actionLoading: false,
 });
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [authError, setAuthError] = useState(null);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [authStateChanged, setAuthStateChanged] = useState(0);
 
   const [mounted, setMounted] = useState(false);
@@ -42,13 +49,12 @@ export const AuthProvider = ({ children }) => {
     setAuthStateChanged((prev) => prev + 1);
   }, []);
 
-  // Solo activa mounted en cliente (evita fetch en SSR o build time)
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted) return; // no hacer fetch si no estamos en cliente
+    if (!mounted) return;
 
     const verifyUser = async () => {
       console.log("🧪 Verificando sesión…");
@@ -57,9 +63,6 @@ export const AuthProvider = ({ children }) => {
           credentials: 'include',
         });
         const data = await res.json();
-
-        console.log("✅ Respuesta de /api/auth/verify:", res.status, data);
-
         if (res.ok && data.user && data.user.nombre) {
           setUser(data.user);
           setIsAuthenticated(true);
@@ -74,7 +77,6 @@ export const AuthProvider = ({ children }) => {
       }
       setInitialLoading(false);
     };
-
 
     verifyUser();
   }, [authStateChanged, mounted]);
@@ -96,7 +98,7 @@ export const AuthProvider = ({ children }) => {
     setTimeout(() => setActionLoading(false), LOAD_DELAY);
   }, [forceUpdateAuth]);
 
-  const login = useCallback(async (email, password, modoAdmin = false) => {
+  const login = useCallback(async (email: string, password: string, modoAdmin = false) => {
     setActionLoading(true);
     setAuthError(null);
 
@@ -136,7 +138,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [forceUpdateAuth]);
 
-  const register = useCallback(async (formData) => {
+  const register = useCallback(async (formData: RegisterFormData) => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/registrar`, {
         method: 'POST',

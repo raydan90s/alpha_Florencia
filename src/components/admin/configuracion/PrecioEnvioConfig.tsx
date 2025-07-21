@@ -5,7 +5,7 @@ import { useConfiguracion } from "../../../context/SettingContext";
 import axios from "axios";
 
 export default function PrecioEnvioConfig() {
-  const { configuracion, reload } = useConfiguracion();
+  const { reload } = useConfiguracion();
   const [nuevoPrecioEnvio, setNuevoPrecioEnvio] = useState("");
 
   const handleActualizarPrecioEnvio = async () => {

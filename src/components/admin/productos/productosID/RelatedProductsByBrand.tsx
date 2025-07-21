@@ -1,23 +1,25 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom"; // Cambiar a useNavigate de react-router-dom
-import { Link } from "react-router-dom"; // Cambiar Link de next/link por el de react-router-dom
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useProducts } from "../../../../context/ProductContext";
 import type { Product } from "../../../../types/product";
 import { useCart } from "../../../../context/CartContext";
 
 interface RelatedProductsByBrandProps {
   currentProduct: Product;
-  maxProducts?: number;  // Opcional, con un valor por defecto luego
+  maxProducts?: number;
 }
 
 export default function RelatedProductsByBrand({
   currentProduct,
 }: RelatedProductsByBrandProps) {
   const { products } = useProducts();
-  const navigate = useNavigate(); // Reemplazamos useRouter por useNavigate de react-router-dom
+  const navigate = useNavigate();
   const [failedImages, setFailedImages] = useState<string[]>([]);
   const { agregarAlCarrito } = useCart();
-  const [addedProductId, setAddedProductId] = useState<number | null>(null);
+  
+  // Corregir el tipo del estado para el ID del producto agregado
+  const [, setAddedProductId] = useState<number | null>(null);
 
   // Filtrar productos de la misma marca excluyendo el producto actual
   const relatedProducts = useMemo(() => {
@@ -39,18 +41,20 @@ export default function RelatedProductsByBrand({
       name: product.name,
       cantidad: 1,
       precio: product.price,
-      images: product.images || [], // ← AGREGADO
+      images: product.images || [],
     });
 
+    // Corregir el uso de setAddedProductId
     setAddedProductId(product.id);
-    setTimeout(() => setAddedProductId(null), 2000);
+
+    setTimeout(() => {
+      setAddedProductId(null); // Aquí no hay error de null ahora
+    }, 2000);
   };
 
   const getValidImageUrl = (product: Product): string | null => {
-    // Si esta imagen ya falló, no intentar de nuevo
     if (failedImages.includes(String(product.id))) return null;
 
-    // Lista de posibles URLs de imagen
     const imageUrls = [
       ...(product.images?.sort((a, b) => (a.orden || 0) - (b.orden || 0))?.map(img => img.url) || []),
       product.primera_imagen_url,
@@ -63,7 +67,7 @@ export default function RelatedProductsByBrand({
   const handleImageError = (productId: number) => {
     setFailedImages(prev => {
       const idStr = String(productId);
-      if (prev.includes(idStr)) return prev; // ya está registrado
+      if (prev.includes(idStr)) return prev;
       return [...prev, idStr];
     });
   };
@@ -127,15 +131,16 @@ export default function RelatedProductsByBrand({
                       </div>
                     )}
 
-                    {/* Badge de stock */}
                     <div className="absolute top-3 right-3 z-10">
-                      <span className={`text-white text-xs px-2 py-1 rounded-full font-medium ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'
-                        }`}>
-                        {product.stock > 0 ? 'En Stock' : 'Agotado'}
+                      <span
+                        className={`text-white text-xs px-2 py-1 rounded-full font-medium ${
+                          product.stock > 0 ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      >
+                        {product.stock > 0 ? "En Stock" : "Agotado"}
                       </span>
                     </div>
 
-                    {/* Overlay hover */}
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
                   </div>
                 </Link>
@@ -170,10 +175,11 @@ export default function RelatedProductsByBrand({
                     <button
                       onClick={() => handleAddToCart(product)}
                       disabled={product.stock === 0}
-                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-300 ${product.stock === 0
-                        ? "bg-gray-400 text-white cursor-not-allowed"
-                        : "bg-[#FF6B00] hover:bg-[#E55B00] text-white shadow-md hover:shadow-lg transform hover:scale-105"
-                        }`}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-300 ${
+                        product.stock === 0
+                          ? "bg-gray-400 text-white cursor-not-allowed"
+                          : "bg-[#FF6B00] hover:bg-[#E55B00] text-white shadow-md hover:shadow-lg transform hover:scale-105"
+                      }`}
                     >
                       {product.stock === 0 ? "Sin Stock" : "Agregar"}
                     </button>
@@ -184,7 +190,6 @@ export default function RelatedProductsByBrand({
           })}
         </div>
 
-        {/* Botón para ver todos los productos de la marca */}
         <div className="text-center mt-12 px-6 md:px-0">
           <button
             onClick={() =>

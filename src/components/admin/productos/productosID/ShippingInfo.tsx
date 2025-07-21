@@ -1,5 +1,5 @@
 "use client";
-import { FaTruck, FaShieldAlt, FaClock } from 'react-icons/fa';
+import { FaTruck, FaClock } from 'react-icons/fa';
 
 export default function ShippingInfo() {
   return (

@@ -1,5 +1,5 @@
-"use client";
-import React, { useState, useContext } from "react";
+'use client';
+import React, { useState, useContext, useEffect } from "react";
 import Shipping from "../components/Checkout/Shipping";
 import ShippingMethod from "../components/Checkout/ShippingMethod";
 import PaymentMethod from "../components/Checkout/PaymentMethod";
@@ -7,6 +7,7 @@ import OrderList from "../components/Checkout/OrderList";
 import Billing from "../components/Checkout/Billing";
 import CheckoutSteps from "../components/Checkout/CheckoutSteps";
 import { AuthContext } from '../context/AuthContext';
+import DatafastPayment from '../../payment button/DatafastPayment';
 
 
 const Checkout = () => {
@@ -25,18 +26,35 @@ const Checkout = () => {
     guardarDatos: false,
   });
 
-  const [direccionFacturacion, setDireccionFacturacion] = useState({
-    nombre: "",
-    apellido: "",
-    direccion: "",
-    telefono: "",
-    cedula: "",
-    ciudad: "",
-    provincia: "",
-  });
-
   const [usarMismosDatos, setUsarMismosDatos] = useState(true);
   const [notas, setNotas] = useState("");
+  const [checkoutId, setCheckoutId] = useState<string | null>(null);
+
+
+  //CONTACTO CON EL BACKEND DE PAGOS
+  useEffect(() => {
+    const obtenerCheckoutId = async () => {
+      try {
+        console.log("📡 Enviando solicitud a /api/checkout...");
+        const res = await fetch(`http://localhost:5000/api/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: "92.00" }),
+        });
+
+        console.log("🧾 Respuesta recibida:", res.status);
+
+        const data = await res.json();
+        setCheckoutId(data.checkoutId);
+        console.log("✅ CODIGO ", data);
+
+      } catch (err) {
+        console.error("❌ Error al obtener checkoutId:", err);
+      }
+    };
+
+    obtenerCheckoutId();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,11 +82,11 @@ const Checkout = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Izquierda: Formulario */}
             <div className="lg:max-w-[670px] w-full space-y-8">
-              <Shipping 
-                onChange={setDireccionEnvio} 
-                isAuthenticated={isAuthenticated} 
-                userId={userId} 
-                value={direccionEnvio} 
+              <Shipping
+                onChange={setDireccionEnvio}
+                isAuthenticated={isAuthenticated}
+                userId={userId}
+                value={direccionEnvio}
               />
 
               {/* Checkbox para usar mismos datos */}
@@ -88,7 +106,7 @@ const Checkout = () => {
 
               {/* Mostrar formulario de facturación solo si el checkbox está desmarcado */}
               {!usarMismosDatos && (
-                <Billing onChange={setDireccionFacturacion} />
+                <Billing onChange={() => { }} />
               )}
 
               {/* Notas del pedido */}
@@ -114,7 +132,7 @@ const Checkout = () => {
               <PaymentMethod />
               <div className="text-xs text-gray-600">
                 Tus datos personales serán utilizados para procesar tu compra, optimizar tu experiencia en este sitio y administrar el acceso a tu cuenta. Consulta nuestra{" "}
-                <a href="/politica-de-privacidad" target="_blank" className="text-blue-600 underline">
+                <a href="/politica-privacidad" target="_blank" className="text-blue-600 underline">
                   política de privacidad
                 </a>.
               </div>
@@ -129,7 +147,7 @@ const Checkout = () => {
                 <label htmlFor="aceptaTerminos" className="ml-2 text-gray-700 text-xs">
                   He leído y acepto los{" "}
                   <a
-                    href="/terminos-y-condiciones"
+                    href="/terminos-condiciones"
                     target="_blank"
                     className="text-blue-600 underline"
                   >
@@ -139,12 +157,8 @@ const Checkout = () => {
                 </label>
               </div>
 
-              <button
-                type="submit"
-                className="mt-6 w-full text-white py-2 px-4 rounded-md text-center inline-block transition-colors bg-[#FF6B00] hover:bg-[#FF8533]"
-              >
-                Procesar pedido
-              </button>
+              {checkoutId && <DatafastPayment checkoutId={checkoutId} />}
+
             </div>
           </div>
         </form>

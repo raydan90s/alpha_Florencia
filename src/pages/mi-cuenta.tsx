@@ -184,7 +184,133 @@ const ShippingAddressesPage = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-5">
-      {/* resto del JSX igual */}
+      <h1 className="text-2xl font-semibold mb-5">Mis Direcciones de Envío</h1>
+
+      {/* Formulario de dirección */}
+      {showForm && (
+        <form onSubmit={handleSubmit} className="mb-5">
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Nombre</label>
+            <input
+              type="text"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              className="mt-1 p-2 w-full border rounded"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Apellido</label>
+            <input
+              type="text"
+              name="apellido"
+              value={formData.apellido}
+              onChange={handleChange}
+              className="mt-1 p-2 w-full border rounded"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Dirección</label>
+            <input
+              type="text"
+              name="direccion"
+              value={formData.direccion}
+              onChange={handleChange}
+              required
+              className="mt-1 p-2 w-full border rounded"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Teléfono</label>
+            <input
+              type="text"
+              name="telefono"
+              value={formData.telefono}
+              onChange={handleChange}
+              required
+              className="mt-1 p-2 w-full border rounded"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Ciudad</label>
+            <input
+              type="text"
+              name="ciudad"
+              value={formData.ciudad}
+              onChange={handleChange}
+              required
+              className="mt-1 p-2 w-full border rounded"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Provincia</label>
+            <input
+              type="text"
+              name="provincia"
+              value={formData.provincia}
+              onChange={handleChange}
+              required
+              className="mt-1 p-2 w-full border rounded"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="flex items-center text-sm font-medium text-gray-700">
+              <input
+                type="checkbox"
+                name="es_principal"
+                checked={formData.es_principal}
+                onChange={handleChange}
+                className="mr-2"
+              />
+              Dirección principal
+            </label>
+          </div>
+          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">
+            {editingAddress ? 'Actualizar Dirección' : 'Agregar Dirección'}
+          </button>
+        </form>
+      )}
+
+      {/* Lista de direcciones */}
+      <div>
+        {loading && <p>Cargando...</p>}
+        {error && <p className="text-red-500">{error}</p>}
+        {addresses.length === 0 && <p>No tienes direcciones de envío registradas.</p>}
+        <ul className="space-y-4">
+          {addresses.map((address) => (
+            <li key={address.id} className="flex justify-between items-center">
+              <div>
+                <p className="font-semibold">{address.nombre} {address.apellido}</p>
+                <p>{address.direccion}</p>
+                <p>{address.ciudad}, {address.provincia}</p>
+                <p>{address.telefono}</p>
+                {address.es_principal && <span className="text-green-500">Principal</span>}
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => startEditing(address)}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleDelete(address.id)}
+                  className="px-3 py-1 bg-red-600 text-white rounded"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <button
+        onClick={() => setShowForm(true)}
+        className="px-4 py-2 bg-green-600 text-white rounded mt-5"
+      >
+        Agregar Nueva Dirección
+      </button>
     </div>
   );
 };

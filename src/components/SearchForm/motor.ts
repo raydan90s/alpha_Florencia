@@ -12,7 +12,7 @@ export const filtrarProductos = (
   return productos.filter(
     (product) =>
       product.name.toLowerCase().includes(query) ||
-      product.category.toLowerCase().includes(query) ||
+      product.category?.toLowerCase().includes(query) ||  // Usamos el operador opcional
       product.description?.toLowerCase().includes(query) ||
       product.model.toLowerCase().includes(query) ||
       product.brand?.toLowerCase().includes(query)
@@ -52,7 +52,7 @@ export const buscarTodos = (
 };
 
 export function obtenerMarcasDisponibles(productos: Product[]): string[] {
-  return Array.from(new Set(productos.map(p => p.brand).filter(Boolean)));
+  return Array.from(new Set(productos.map(p => p.brand).filter((brand): brand is string => brand !== undefined)));
 }
 
 export function obtenerModelosDisponibles(productos: Product[], marca: string): string[] {
@@ -63,16 +63,16 @@ export function obtenerModelosDisponibles(productos: Product[], marca: string): 
       .filter(Boolean)
   ));
 }
+
 export const obtenerMarcasDisponibleApi = async (): Promise<{ id: number; nombre: string }[]> => {
   try {
     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/marcas`);
-    return response.data; // Aquí ya devuelves el array original
+    return response.data as { id: number; nombre: string }[]; // Especificamos el tipo correcto
   } catch (error) {
     console.error("Error al obtener marcas desde la API:", error);
     return [];
   }
 };
-
 
 export const obtenerInventariosPorProductoId = async (productId: number) => {
   try {

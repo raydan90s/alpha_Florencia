@@ -3,6 +3,17 @@ import { AuthContext } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom"; // react-router-dom para navegación
 
 export default function Registro() {
+  // Definimos la interfaz RegisterFormData dentro del componente
+  interface RegisterFormData {
+    name: string;
+    apellido: string; // Agregado 'apellido'
+    email: string;
+    password: string;
+    confirmPassword: string;
+    telefono: string;
+    direccion: string;
+  }
+
   const { register, authError, setAuthError, user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -16,19 +27,19 @@ export default function Registro() {
   }, [setAuthError]);
 
   // Estado del formulario
-  const [formData, setFormData] = useState({
-    nombre: "",
+  const [formData, setFormData] = useState<RegisterFormData>({
+    name: "", // Cambiado de 'nombre' a 'name'
     apellido: "",
     email: "",
     password: "",
-    confirmarPassword: "",
+    confirmPassword: "", // Cambiado de 'confirmarPassword' a 'confirmPassword'
     telefono: "",
     direccion: "",
   });
 
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [formError, setFormError] = useState("");
+  const [formError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -47,12 +58,12 @@ export default function Registro() {
     setSuccess(false);
     setSuccessMessage("");
 
-    if (formData.password !== formData.confirmarPassword) {
+    if (formData.password !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden");
       setFormData((prev) => ({
         ...prev,
         password: "",
-        confirmarPassword: "",
+        confirmPassword: "", // Cambiado de 'confirmarPassword' a 'confirmPassword'
       }));
       return;
     }
@@ -76,7 +87,7 @@ export default function Registro() {
         setFormData((prev) => ({
           ...prev,
           password: "",
-          confirmarPassword: "",
+          confirmPassword: "", // Cambiado de 'confirmarPassword' a 'confirmPassword'
         }));
       }
     } catch (err) {
@@ -85,7 +96,7 @@ export default function Registro() {
       setFormData((prev) => ({
         ...prev,
         password: "",
-        confirmarPassword: "",
+        confirmPassword: "", // Cambiado de 'confirmarPassword' a 'confirmPassword'
       }));
     } finally {
       setLoading(false);
@@ -131,18 +142,18 @@ export default function Registro() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label
-                    htmlFor="nombre"
+                    htmlFor="name"
                     className="block text-sm font-medium text-gray-700"
                   >
                     Nombre
                   </label>
                   <input
-                    id="nombre"
-                    name="nombre"
+                    id="name"
+                    name="name"
                     type="text"
                     required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#003366] focus:border-[#003366]"
-                    value={formData.nombre}
+                    value={formData.name}
                     onChange={handleChange}
                   />
                 </div>
@@ -203,18 +214,18 @@ export default function Registro() {
 
               <div>
                 <label
-                  htmlFor="confirmarPassword"
+                  htmlFor="confirmPassword"
                   className="block text-sm font-medium text-gray-700"
                 >
                   Confirmar contraseña
                 </label>
                 <input
-                  id="confirmarPassword"
-                  name="confirmarPassword"
+                  id="confirmPassword"
+                  name="confirmPassword"
                   type="password"
                   required
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#003366] focus:border-[#003366]"
-                  value={formData.confirmarPassword}
+                  value={formData.confirmPassword}
                   onChange={handleChange}
                 />
               </div>
@@ -253,9 +264,8 @@ export default function Registro() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                  loading ? "bg-gray-400" : "bg-[#FF6B00] hover:bg-[#FF8533]"
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003366]`}
+                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${loading ? "bg-gray-400" : "bg-[#FF6B00] hover:bg-[#FF8533]"
+                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003366]`}
               >
                 {loading ? "Registrando..." : "Registrarse"}
               </button>

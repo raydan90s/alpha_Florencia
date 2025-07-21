@@ -35,7 +35,6 @@ const Shipping: React.FC<ShippingProps> = ({
   onChange,
   isAuthenticated,
   userId,
-  value,
 }) => {
   const [usarDireccionPrincipal, setUsarDireccionPrincipal] = useState(false);
 

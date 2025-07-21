@@ -5,7 +5,7 @@ import { useConfiguracion } from "../../../context/SettingContext";
 import axios from "axios";
 
 export default function IVAConfig() {
-    const { configuracion, reload } = useConfiguracion();
+    const { reload } = useConfiguracion();
     const [nuevoIVA, setNuevoIVA] = useState("");
 
     const handleAgregarIVA = async () => {

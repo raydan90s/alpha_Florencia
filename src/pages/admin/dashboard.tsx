@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "../../context/ProductContext";
 import type { Product } from "../../types/product";
 import ErrorAlert from "../../components/Common/ErrorAlert";
 import ProductForm from "../../components/admin/productos/ProductForm";
 import ProductsList from "../../components/admin/productos/ProductsList";
-import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { usePermissions } from "../../context/PermissionContext";
 import SortDropdown from "../../components/admin/productos/SortDropdown";
@@ -15,8 +14,6 @@ import ModelManager from "../../components/admin/modelos/modelos";
 import InventoryManager from "../../components/admin/inventario/inventory";
 import SettingManager from "../../components/admin/configuracion/setting";
 import HistorialManager from "../../components/admin/historial_ventas/page";
-import { useRef } from "react";
-
 
 export default function AdminDashboard() {
   const [isClient, setIsClient] = useState(false);
@@ -38,7 +35,7 @@ export default function AdminDashboard() {
     image: "",
   });
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [, setSuccessMessage] = useState<string | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSection, setSelectedSection] = useState("productos");
@@ -88,8 +85,8 @@ export default function AdminDashboard() {
 
     try {
       const url = isNewProduct
-        ? `${import.meta.env.VITE_API_BASE_URL}/api/productos`
-        : `${import.meta.env.VITE_API_BASE_URL}/api/productos/${editingId}`;
+        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos`
+        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos/${editingId}`;
       const method = isNewProduct ? "POST" : "PUT";
 
       const response = await fetch(url, {
@@ -171,7 +168,7 @@ export default function AdminDashboard() {
 
   const handleDelete = async (id: string | number) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/${id}/inactivar`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos/${id}/inactivar`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
       });
@@ -186,7 +183,7 @@ export default function AdminDashboard() {
 
   const handleActive = async (id: string | number) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/${id}/activar`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos/${id}/activar`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
       });
