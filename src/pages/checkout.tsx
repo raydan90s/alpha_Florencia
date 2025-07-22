@@ -1,5 +1,5 @@
-'use client';
-import React, { useState, useContext, useEffect } from "react";
+// src/components/Checkout.tsx
+import React, { useState, useContext } from "react";
 import Shipping from "../components/Checkout/Shipping";
 import ShippingMethod from "../components/Checkout/ShippingMethod";
 import PaymentMethod from "../components/Checkout/PaymentMethod";
@@ -9,10 +9,8 @@ import CheckoutSteps from "../components/Checkout/CheckoutSteps";
 import { AuthContext } from '../context/AuthContext';
 import DatafastPayment from '../../payment button/DatafastPayment';
 
-
 const Checkout = () => {
   const { user, isAuthenticated } = useContext(AuthContext);
-
   const userId = isAuthenticated && user?.id ? user.id : null;
 
   const [direccionEnvio, setDireccionEnvio] = useState({
@@ -28,33 +26,39 @@ const Checkout = () => {
 
   const [usarMismosDatos, setUsarMismosDatos] = useState(true);
   const [notas, setNotas] = useState("");
+
+  // Estados para manejo del pago y modal
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
+  const [showPaymentWidget, setShowPaymentWidget] = useState(false);
+  const [loadingPayment, setLoadingPayment] = useState(false);
+  const [errorPayment, setErrorPayment] = useState<string | null>(null);
 
+  const obtenerCheckoutId = async () => {
+    try {
+      setLoadingPayment(true);
+      setErrorPayment(null);
 
-  //CONTACTO CON EL BACKEND DE PAGOS
-  useEffect(() => {
-    const obtenerCheckoutId = async () => {
-      try {
-        console.log("📡 Enviando solicitud a /api/checkout...");
-        const res = await fetch(`http://localhost:5000/api/checkout`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: "92.00" }),
-        });
+      const res = await fetch(`http://localhost:5000/api/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: "92.00" }),
+      });
 
-        console.log("🧾 Respuesta recibida:", res.status);
+      if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
 
-        const data = await res.json();
-        setCheckoutId(data.checkoutId);
-        console.log("✅ CODIGO ", data);
+      const data = await res.json();
 
-      } catch (err) {
-        console.error("❌ Error al obtener checkoutId:", err);
-      }
-    };
+      if (!data.checkoutId) throw new Error('No se recibió checkoutId');
 
-    obtenerCheckoutId();
-  }, []);
+      setCheckoutId(data.checkoutId);
+      setShowPaymentWidget(true);
+    } catch (err: any) {
+      setErrorPayment(err.message || 'Error desconocido');
+      setCheckoutId(null);
+    } finally {
+      setLoadingPayment(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,9 +67,7 @@ const Checkout = () => {
       try {
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(direccionEnvio),
         });
       } catch (error) {
@@ -89,7 +91,6 @@ const Checkout = () => {
                 value={direccionEnvio}
               />
 
-              {/* Checkbox para usar mismos datos */}
               <div className="bg-white shadow rounded p-6">
                 <label className="flex items-center gap-3">
                   <input
@@ -104,12 +105,8 @@ const Checkout = () => {
                 </label>
               </div>
 
-              {/* Mostrar formulario de facturación solo si el checkbox está desmarcado */}
-              {!usarMismosDatos && (
-                <Billing onChange={() => { }} />
-              )}
+              {!usarMismosDatos && <Billing onChange={() => { }} />}
 
-              {/* Notas del pedido */}
               <div className="bg-white shadow rounded p-6">
                 <label htmlFor="notes" className="block mb-2 font-medium">
                   Notas del pedido (opcional)
@@ -130,6 +127,7 @@ const Checkout = () => {
               <OrderList />
               <ShippingMethod />
               <PaymentMethod />
+
               <div className="text-xs text-gray-600">
                 Tus datos personales serán utilizados para procesar tu compra, optimizar tu experiencia en este sitio y administrar el acceso a tu cuenta. Consulta nuestra{" "}
                 <a href="/politica-privacidad" target="_blank" className="text-blue-600 underline">
@@ -157,12 +155,46 @@ const Checkout = () => {
                 </label>
               </div>
 
-              {checkoutId && <DatafastPayment checkoutId={checkoutId} />}
+              {/* Botón para cargar el widget */}
+              {!showPaymentWidget && (
+                <button
+                  type="button"
+                  onClick={obtenerCheckoutId}
+                  disabled={loadingPayment}
+                  className="btn btn-primary w-full"
+                >
+                  {loadingPayment ? "Cargando formulario..." : "Pagar ahora"}
+                </button>
+              )}
 
+              {errorPayment && (
+                <p className="text-red-500 mt-2">{errorPayment}</p>
+              )}
             </div>
           </div>
         </form>
       </div>
+
+      {/* Modal emergente con widget */}
+      {showPaymentWidget && checkoutId && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+          onClick={() => setShowPaymentWidget(false)} // cerrar modal al hacer click fuera
+        >
+          <div
+            className="bg-white p-6 rounded shadow-lg max-w-md w-full"
+            onClick={e => e.stopPropagation()} // evitar cerrar modal al click dentro
+          >
+            <DatafastPayment checkoutId={checkoutId} />
+            <button
+              onClick={() => setShowPaymentWidget(false)}
+              className="mt-4 btn btn-secondary w-full"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

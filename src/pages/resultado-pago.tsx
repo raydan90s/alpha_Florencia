@@ -13,7 +13,16 @@ const ResultadoPago = () => {
       return;
     }
 
-    console.log("Consultando resourcePath:", resourcePath);
+    // Extraemos checkoutId de resourcePath
+    const match = resourcePath.match(/checkouts\/(.+)\/payment/);
+    const checkoutId = match ? match[1] : null;
+
+    if (!checkoutId) {
+      setEstadoPago('❌ No se pudo extraer checkoutId de resourcePath');
+      return;
+    }
+
+    console.log("Consultando checkoutId:", checkoutId);
 
     fetch(`http://localhost:5000/api/checkout/resultado?resourcePath=${encodeURIComponent(resourcePath)}`)
       .then((res) => res.json())

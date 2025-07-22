@@ -1,8 +1,7 @@
-// src/pages/checkout.tsx
-
+// src/components/DatafastPaymentWrapper.tsx
 import React, { useEffect, useState } from 'react';
 
-const Checkout: React.FC = () => {
+const DatafastPaymentWrapper: React.FC = () => {
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +40,20 @@ const Checkout: React.FC = () => {
     crearCheckout();
   }, []);
 
+  // Cargar el script solo cuando ya tienes checkoutId
+  useEffect(() => {
+    if (!checkoutId) return;
+
+    const script = document.createElement('script');
+    script.src = `https://eu-test.oppwa.com/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, [checkoutId]);
+
   return (
     <div className="p-8">
       <h2 className="text-2xl font-bold mb-4">Pago con Datafast</h2>
@@ -49,20 +62,14 @@ const Checkout: React.FC = () => {
       {!checkoutId && !error && <p>Cargando formulario de pago...</p>}
 
       {checkoutId && (
-        <>
-          <script
-            src={`https://eu-test.oppwa.com/v1/paymentWidgets.js?checkoutId=${checkoutId}`}
-          ></script>
-
-          <form
-            action="https://eu-test.oppwa.com/v1/payments"
-            className="paymentWidgets"
-            data-brands="VISA MASTER AMEX DINERS"
-          ></form>
-        </>
+        <form
+          action="http://localhost:5173/resultado-pago"
+          className="paymentWidgets"
+          data-brands="VISA MASTER AMEX DINERS"
+        ></form>
       )}
     </div>
   );
 };
 
-export default Checkout;
+export default DatafastPaymentWrapper;
