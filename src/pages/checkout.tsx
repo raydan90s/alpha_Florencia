@@ -38,27 +38,35 @@ const Checkout = () => {
       setLoadingPayment(true);
       setErrorPayment(null);
 
-      const res = await fetch(`http://localhost:5000/api/checkout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: "92.00" }),
+      const response = await fetch("http://localhost:8809/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: 56,      // o el valor que desees
+          currency: "USD", // opcional
+        }),
       });
 
-      if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
 
-      const data = await res.json();
-
-      if (!data.checkoutId) throw new Error('No se recibió checkoutId');
-
-      setCheckoutId(data.checkoutId);
-      setShowPaymentWidget(true);
+      console.log("✅ Checkout creado:", data);
+      if (data.id) {
+        setCheckoutId(data.id);
+        setShowPaymentWidget(true);  // Mostrar el widget
+      } else {
+        throw new Error("No se recibió checkoutId");
+      }
     } catch (err: any) {
-      setErrorPayment(err.message || 'Error desconocido');
-      setCheckoutId(null);
+      console.error("❌ Error al crear checkout:", err);
+      setErrorPayment(err.message);
     } finally {
       setLoadingPayment(false);
     }
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,7 +193,6 @@ const Checkout = () => {
             className="bg-white p-6 rounded shadow-lg max-w-md w-full"
             onClick={e => e.stopPropagation()} // evitar cerrar modal al click dentro
           >
-            <DatafastPayment checkoutId={checkoutId} />
             <button
               onClick={() => setShowPaymentWidget(false)}
               className="mt-4 btn btn-secondary w-full"
