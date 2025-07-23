@@ -12,6 +12,7 @@ interface CartContextType {
   calcularSubtotal: () => number;
   calcularIVA: () => number;
   contarItems: () => number;
+  calcularTotal: () => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -245,6 +246,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return cartItems.reduce((total, item) => total + item.cantidad, 0);
   };
 
+  const calcularTotal = ()=>{
+    return calcularSubtotal() + calcularIVA();
+
+  };
+
 
   return (
     <CartContext.Provider
@@ -255,6 +261,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         eliminarItem,
         calcularSubtotal,
         calcularIVA,
+        calcularTotal,
         contarItems,
       }}
     >

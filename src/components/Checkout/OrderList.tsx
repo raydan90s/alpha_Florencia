@@ -2,13 +2,13 @@ import { useCart } from "../../context/CartContext";
 import { useConfiguracion } from "../../context/SettingContext";
 
 const OrderList = () => {
-  const { cartItems, calcularSubtotal, calcularIVA } = useCart();
+  const { cartItems, calcularSubtotal, calcularIVA, calcularTotal } = useCart();
   const { configuracion } = useConfiguracion();
 
   const costoEnvio = configuracion?.precio_envio ?? 0;
   const subtotal = calcularSubtotal();
   const iva = calcularIVA();
-  const totalConIva = subtotal + iva + costoEnvio;
+  const totalConIva = calcularTotal();
 
   return (
     <div className="bg-white shadow-1 rounded-[10px]">

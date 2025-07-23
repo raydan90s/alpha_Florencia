@@ -6,8 +6,11 @@ import OrderList from "../components/Checkout/OrderList";
 import Billing from "../components/Checkout/Billing";
 import CheckoutSteps from "../components/Checkout/CheckoutSteps";
 import { AuthContext } from '../context/AuthContext';
+import { crearCheckoutPrueba, crearCheckoutReal } from "../utils/checkout";
+import { useCart} from "../context/CartContext";
 
 const Checkout = () => {
+  const { calcularTotal, cartItems } = useCart();
   const { user, isAuthenticated } = useContext(AuthContext);
   const userId = isAuthenticated && user?.id ? user.id : null;
 
@@ -30,32 +33,24 @@ const Checkout = () => {
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [errorPayment, setErrorPayment] = useState<string | null>(null);
 
+
+  //REEMPLAZAR VALORES REALES 
   const obtenerCheckoutId = async () => {
-    try {
-      setLoadingPayment(true);
-      setErrorPayment(null);
 
-      const response = await fetch("http://localhost:5000/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+    //ESTA LINEA ES PARA PRUEBAS NOMAS
+    //await crearCheckoutPrueba(setCheckoutId, setShowPaymentWidget, setLoadingPayment, setErrorPayment);
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-
-      console.log("✅ Checkout creado:", data);
-      if (data.id) {
-        setCheckoutId(data.id);
-        setShowPaymentWidget(true); // el modal se abre después de setCheckoutId
-      } else {
-        throw new Error("No se recibió checkoutId");
-      }
-    } catch (err: any) {
-      console.error("❌ Error al crear checkout:", err);
-      setErrorPayment(err.message);
-    } finally {
-      setLoadingPayment(false);
-    }
+    await crearCheckoutReal({
+      direccionEnvio,
+      userId,
+      user,
+      total: calcularTotal().toFixed(2), 
+        producto: cartItems,
+      setCheckoutId,
+      setShowPaymentWidget,
+      setLoadingPayment,
+      setErrorPayment
+    });
   };
 
   // Montar el script de Datafast solo cuando el modal esté visible y el checkoutId exista
