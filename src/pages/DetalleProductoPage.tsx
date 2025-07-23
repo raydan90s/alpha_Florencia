@@ -13,7 +13,6 @@ import type { Product } from "../types/product";
 
 export default function DetalleProductoPage() {
   const { slug } = useParams<{ slug: string }>();  // Usamos el slug de la URL
-  console.log(slug);
   const [producto, setProducto] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 

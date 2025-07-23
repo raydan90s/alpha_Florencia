@@ -57,7 +57,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!mounted) return;
 
     const verifyUser = async () => {
-      console.log("🧪 Verificando sesión…");
       try {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/verify`, {
           credentials: 'include',

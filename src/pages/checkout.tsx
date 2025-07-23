@@ -1,5 +1,4 @@
-// src/components/Checkout.tsx
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Shipping from "../components/Checkout/Shipping";
 import ShippingMethod from "../components/Checkout/ShippingMethod";
 import PaymentMethod from "../components/Checkout/PaymentMethod";
@@ -7,7 +6,6 @@ import OrderList from "../components/Checkout/OrderList";
 import Billing from "../components/Checkout/Billing";
 import CheckoutSteps from "../components/Checkout/CheckoutSteps";
 import { AuthContext } from '../context/AuthContext';
-import DatafastPayment from '../../payment button/DatafastPayment';
 
 const Checkout = () => {
   const { user, isAuthenticated } = useContext(AuthContext);
@@ -27,7 +25,6 @@ const Checkout = () => {
   const [usarMismosDatos, setUsarMismosDatos] = useState(true);
   const [notas, setNotas] = useState("");
 
-  // Estados para manejo del pago y modal
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
   const [showPaymentWidget, setShowPaymentWidget] = useState(false);
   const [loadingPayment, setLoadingPayment] = useState(false);
@@ -38,15 +35,9 @@ const Checkout = () => {
       setLoadingPayment(true);
       setErrorPayment(null);
 
-      const response = await fetch("http://localhost:8809/api/checkout", {
+      const response = await fetch("http://localhost:5000/api/checkout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: 56,      // o el valor que desees
-          currency: "USD", // opcional
-        }),
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -55,7 +46,7 @@ const Checkout = () => {
       console.log("✅ Checkout creado:", data);
       if (data.id) {
         setCheckoutId(data.id);
-        setShowPaymentWidget(true);  // Mostrar el widget
+        setShowPaymentWidget(true); // el modal se abre después de setCheckoutId
       } else {
         throw new Error("No se recibió checkoutId");
       }
@@ -67,6 +58,19 @@ const Checkout = () => {
     }
   };
 
+  // Montar el script de Datafast solo cuando el modal esté visible y el checkoutId exista
+  useEffect(() => {
+    if (showPaymentWidget && checkoutId) {
+      const existingScript = document.querySelector("script[src*='paymentWidgets.js']");
+      if (existingScript) existingScript.remove(); // eliminar scripts viejos si recargas
+
+      const script = document.createElement("script");
+      script.src = `https://test.oppwa.com/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
+      script.async = true;
+      script.onload = () => console.log("✅ Script cargado");
+      document.body.appendChild(script);
+    }
+  }, [checkoutId, showPaymentWidget]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +94,6 @@ const Checkout = () => {
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Izquierda: Formulario */}
             <div className="lg:max-w-[670px] w-full space-y-8">
               <Shipping
                 onChange={setDireccionEnvio}
@@ -130,7 +133,6 @@ const Checkout = () => {
               </div>
             </div>
 
-            {/* Derecha: Resumen del pedido */}
             <div className="max-w-[455px] w-full space-y-6">
               <OrderList />
               <ShippingMethod />
@@ -143,7 +145,7 @@ const Checkout = () => {
                 </a>.
               </div>
 
-              <div className="flex items-center mt-4 ">
+              <div className="flex items-center mt-4">
                 <input
                   type="checkbox"
                   required
@@ -152,47 +154,47 @@ const Checkout = () => {
                 />
                 <label htmlFor="aceptaTerminos" className="ml-2 text-gray-700 text-xs">
                   He leído y acepto los{" "}
-                  <a
-                    href="/terminos-condiciones"
-                    target="_blank"
-                    className="text-blue-600 underline"
-                  >
+                  <a href="/terminos-condiciones" target="_blank" className="text-blue-600 underline">
                     términos y condiciones
                   </a>{" "}
-                  del sitio. <span className="text-red mr-1 ">*</span>
+                  del sitio. <span className="text-red mr-1">*</span>
                 </label>
               </div>
 
-              {/* Botón para cargar el widget */}
               {!showPaymentWidget && (
                 <button
                   type="button"
                   onClick={obtenerCheckoutId}
                   disabled={loadingPayment}
-                  className="btn btn-primary w-full"
+                  className="w-full bg-[#FF6B00] text-white py-2 text-sm sm:text-base rounded-md hover:bg-[#FF8533] transition-colors"
                 >
                   {loadingPayment ? "Cargando formulario..." : "Pagar ahora"}
                 </button>
               )}
 
-              {errorPayment && (
-                <p className="text-red-500 mt-2">{errorPayment}</p>
-              )}
+              {errorPayment && <p className="text-red-500 mt-2">{errorPayment}</p>}
             </div>
           </div>
         </form>
       </div>
 
-      {/* Modal emergente con widget */}
+      {/* MODAL con widget */}
       {showPaymentWidget && checkoutId && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-          onClick={() => setShowPaymentWidget(false)} // cerrar modal al hacer click fuera
+          onClick={() => setShowPaymentWidget(false)}
         >
           <div
             className="bg-white p-6 rounded shadow-lg max-w-md w-full"
-            onClick={e => e.stopPropagation()} // evitar cerrar modal al click dentro
+            onClick={(e) => e.stopPropagation()}
           >
+            {/* IMPORTANTE: el form debe existir cuando se monte el script */}
+            <form
+              action="http://localhost:5173/resultado-pago"
+              className="paymentWidgets"
+              data-brands="VISA MASTER AMEX DINERS DISCOVER"
+            ></form>
+
             <button
               onClick={() => setShowPaymentWidget(false)}
               className="mt-4 btn btn-secondary w-full"
