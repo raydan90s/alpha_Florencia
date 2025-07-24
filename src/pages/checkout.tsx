@@ -7,10 +7,10 @@ import Billing from "../components/Checkout/Billing";
 import CheckoutSteps from "../components/Checkout/CheckoutSteps";
 import { AuthContext } from '../context/AuthContext';
 import { crearCheckoutPrueba, crearCheckoutReal } from "../utils/checkout";
-import { useCart} from "../context/CartContext";
+import { useCart } from "../context/CartContext";
 
 const Checkout = () => {
-  const { calcularTotal, cartItems } = useCart();
+  const { calcularTotal, calcularSubtotal, calcularIVA, cartItems } = useCart();
   const { user, isAuthenticated } = useContext(AuthContext);
   const userId = isAuthenticated && user?.id ? user.id : null;
 
@@ -22,6 +22,7 @@ const Checkout = () => {
     cedula: "",
     ciudad: "",
     provincia: "",
+    pastcode: "",
     guardarDatos: false,
   });
 
@@ -40,17 +41,21 @@ const Checkout = () => {
     //ESTA LINEA ES PARA PRUEBAS NOMAS
     //await crearCheckoutPrueba(setCheckoutId, setShowPaymentWidget, setLoadingPayment, setErrorPayment);
 
-    await crearCheckoutReal({
-      direccionEnvio,
-      userId,
-      user,
-      total: calcularTotal().toFixed(2), 
-        producto: cartItems,
-      setCheckoutId,
-      setShowPaymentWidget,
-      setLoadingPayment,
-      setErrorPayment
-    });
+    /**/ 
+       await crearCheckoutReal({
+         direccionEnvio,
+         userId,
+         user,
+         total: calcularTotal().toFixed(2),
+         subtotal: calcularSubtotal().toFixed(2),
+         iva: calcularIVA().toFixed(2),
+           producto: cartItems,
+         setCheckoutId,
+         setShowPaymentWidget,
+         setLoadingPayment,
+         setErrorPayment
+       });
+    
   };
 
   // Montar el script de Datafast solo cuando el modal esté visible y el checkoutId exista
@@ -204,3 +209,4 @@ const Checkout = () => {
 };
 
 export default Checkout;
+

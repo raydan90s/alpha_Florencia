@@ -15,6 +15,7 @@ interface DireccionEnvio {
   cedula: string;
   ciudad: string;
   provincia: string;
+  pastcode: string;
   guardarDatos: boolean;
 }
 
@@ -27,6 +28,7 @@ function normalizeDireccionEnvio(data: Partial<DireccionEnvio>): DireccionEnvio 
     cedula: data.cedula ?? "",
     ciudad: data.ciudad ?? "",
     provincia: data.provincia ?? "",
+    pastcode: data.cpostal ?? "",
     guardarDatos: data.guardarDatos ?? false,
   };
 }
@@ -46,6 +48,7 @@ const Shipping: React.FC<ShippingProps> = ({
     cedula: "",
     ciudad: "",
     provincia: "",
+    pastcode: "",
     guardarDatos: false,
   });
 
@@ -257,6 +260,22 @@ const Shipping: React.FC<ShippingProps> = ({
           className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
           disabled={usarDireccionPrincipal}
         />
+      </div>
+
+      <div className="mb-5">
+        <label className="block mb-2.5">
+          Código Postal <span className="text-red">*</span>
+        </label>
+        <input
+          type="number"
+          name="pastcode"
+          placeholder="090101"
+          className="w-full px-5 py-2.5 border rounded bg-gray-1 outline-none no-spinner"
+          value={formData.pastcode}
+          onChange={handleChange}
+          disabled={usarDireccionPrincipal}
+        />
+
       </div>
 
       {/* Mostrar checkbox "Guardar datos" sólo si está autenticado, NO está auto cargado, y NO está usando dirección principal */}
