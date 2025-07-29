@@ -10,7 +10,7 @@ import { crearCheckoutPrueba, crearCheckoutReal } from "../utils/checkout";
 import { useCart } from "../context/CartContext";
 
 const Checkout = () => {
-  const { calcularTotal, calcularSubtotal, calcularIVA, cartItems } = useCart();
+  //const { calcularTotal, calcularSubtotal, calcularIVA, cartItems } = useCart();
   const { user, isAuthenticated } = useContext(AuthContext);
   const userId = isAuthenticated && user?.id ? user.id : null;
 
@@ -39,9 +39,9 @@ const Checkout = () => {
   const obtenerCheckoutId = async () => {
 
     //ESTA LINEA ES PARA PRUEBAS NOMAS
-    //await crearCheckoutPrueba(setCheckoutId, setShowPaymentWidget, setLoadingPayment, setErrorPayment);
+    await crearCheckoutPrueba(setCheckoutId, setShowPaymentWidget, setLoadingPayment, setErrorPayment);
 
-    /**/ 
+    /*
        await crearCheckoutReal({
          direccionEnvio,
          userId,
@@ -55,22 +55,30 @@ const Checkout = () => {
          setLoadingPayment,
          setErrorPayment
        });
-    
+       */
+
   };
 
   // Montar el script de Datafast solo cuando el modal esté visible y el checkoutId exista
   useEffect(() => {
-    if (showPaymentWidget && checkoutId) {
+    if (checkoutId && showPaymentWidget) {
+      // Eliminar cualquier script anterior
       const existingScript = document.querySelector("script[src*='paymentWidgets.js']");
-      if (existingScript) existingScript.remove(); // eliminar scripts viejos si recargas
+      if (existingScript) existingScript.remove(); // Eliminar scripts viejos si recargas
 
+      // Crear un nuevo script con el checkoutId
       const script = document.createElement("script");
       script.src = `https://test.oppwa.com/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
       script.async = true;
-      script.onload = () => console.log("✅ Script cargado");
+      script.onload = () => {
+        console.log("Formulario de pago cargado con CheckoutId:", checkoutId);
+      };
+
+      // Agregar el script al body
       document.body.appendChild(script);
     }
-  }, [checkoutId, showPaymentWidget]);
+  }, [checkoutId, showPaymentWidget]); // Dependencias: el checkoutId y showPaymentWidget
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,11 +198,11 @@ const Checkout = () => {
           >
             {/* IMPORTANTE: el form debe existir cuando se monte el script */}
             <form
-              action="http://localhost:5173/resultado-pago"
+              action="http://localhost:5173/resultado-pago" // Redirige después de completar el pago
+              method="GET"
               className="paymentWidgets"
-              data-brands="VISA MASTER AMEX DINERS DISCOVER"
-            ></form>
-
+              data-brands="VISA MASTER AMEX DINERS"
+            />
             <button
               onClick={() => setShowPaymentWidget(false)}
               className="mt-4 btn btn-secondary w-full"

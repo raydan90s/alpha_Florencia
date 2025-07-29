@@ -144,12 +144,12 @@ export const crearCheckoutPrueba = async (
     setErrorPayment(null);
 
     const body = {
-      amount: "1.20", // Total: base + IVA
+      amount: "25", // Total: base + IVA
       currency: "USD",
       paymentType: "DB",
       customer: {
         givenName: "Juan",
-        middleName: "Carlos",
+        middleName: "MARIO",
         surname: "Pérez",
         ip: "186.46.123.22", // Usa IP pública real del cliente si puedes
         merchantCustomerId: "cliente123",
@@ -180,8 +180,8 @@ export const crearCheckoutPrueba = async (
       merchantTransactionId: `trx_test_${Date.now()}`,
       customParameters: {
         SHOPPER_VAL_BASE0: "0.00",    // ✅
-        SHOPPER_VAL_BASEIMP: "1.07",  // ✅
-        SHOPPER_VAL_IVA: "0.13"       // ✅
+        SHOPPER_VAL_BASEIMP: "21.74",  // ✅
+        SHOPPER_VAL_IVA: "3.26"       // ✅
       }
     };
 
