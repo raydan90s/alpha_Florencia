@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 const ResultadoPago = () => {
@@ -7,7 +7,6 @@ const ResultadoPago = () => {
     const [esExitoso, setEsExitoso] = useState<boolean | null>(null);
     const [consultaCompletada, setConsultaCompletada] = useState<boolean>(false); // Nuevo estado para controlar la consulta
 
-    const delay = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
     const consultarPago = async (resourcePath: string) => {
         try {
@@ -66,16 +65,22 @@ const ResultadoPago = () => {
 
     useEffect(() => {
         const resourcePath = searchParams.get('resourcePath');
-        if (!resourcePath) {
-            setEstadoPago('❌ No se recibió el parámetro de resultado.');
-            setEsExitoso(false);
-            return;
+
+        // Evitar hacer la consulta si ya se hizo
+        if (!resourcePath || consultaCompletada) {
+            return; // No ejecutar la consulta si ya se hizo
         }
 
         console.log("🔍 Recurso recibido:", resourcePath); // Verifica el valor
 
-        consultarPago(resourcePath);
-    }, [searchParams]);
+        // Establecer un timeout de 2 segundos antes de hacer la consulta
+        const timeoutId = setTimeout(() => {
+            consultarPago(resourcePath);
+        }, 2000); // Retraso de 2 segundos antes de ejecutar la consulta
+
+        // Limpiar el timeout cuando el componente se desmonte o se cambien los parámetros
+        return () => clearTimeout(timeoutId);
+    }, [searchParams, consultaCompletada]); // Se ejecuta solo cuando cambia el 'resourcePath'
 
     return (
         <div className="max-w-lg mx-auto mt-20 text-center px-4">
