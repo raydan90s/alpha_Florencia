@@ -1,12 +1,39 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 const ResultadoPago = () => {
     const [searchParams] = useSearchParams();
     const [estadoPago, setEstadoPago] = useState<string>('Verificando...');
     const [esExitoso, setEsExitoso] = useState<boolean | null>(null);
     const [consultaCompletada, setConsultaCompletada] = useState<boolean>(false);
-    const [tiempoRestante, setTiempoRestante] = useState<number>(7); 
+    const [tiempoRestante, setTiempoRestante] = useState<number>(7);
+    const navigate = useNavigate(); // Usamos el hook de React Router para redirigir
+    const { user } = useContext(AuthContext);
+    // Función para vaciar el carrito
+    const vaciarCarrito = async (id_usuario: string) => {
+        if (!id_usuario) {
+            console.error("❌ id_usuario no está definido");
+            return;
+        }
+        try {
+            const res = await fetch('http://localhost:5000/api/carrito/vaciar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id_usuario }), // Asegúrate de que se esté enviando correctamente
+            });
+
+            if (!res.ok) {
+                console.error('❌ Error al vaciar el carrito:', res.statusText);
+            } else {
+                console.log('✅ Carrito vaciado con éxito');
+            }
+        } catch (error) {
+            console.error('❌ Error al vaciar el carrito:', error);
+        }
+    };
 
     const consultarPago = async (resourcePath: string) => {
         try {
@@ -14,8 +41,10 @@ const ResultadoPago = () => {
                 console.log("✅ La consulta ya fue realizada, no se hace nuevamente.");
                 return;
             }
+
             console.log(`🔍 Consultando resultado de pago con resourcePath: ${resourcePath}`);
             setConsultaCompletada(true);
+
             const res = await fetch(`http://localhost:5000/api/checkout/resultado?id=${resourcePath}`, {
                 method: 'GET',
                 headers: {
@@ -46,12 +75,19 @@ const ResultadoPago = () => {
             setEstadoPago(description); // Mostrar la descripción de la respuesta
             setEsExitoso(code.startsWith('000')); // Si el código empieza con 000, se considera exitoso
 
+            if (code.startsWith('000')) {
+                const id_usuario = user?.id;
+                if (id_usuario) {
+                    await vaciarCarrito(id_usuario); // Solo vaciar el carrito si el pago fue exitoso
+                }
+            }
+
             // Iniciar el conteo regresivo
             const intervalId = setInterval(() => {
                 setTiempoRestante((prev) => {
                     if (prev === 1) {
                         clearInterval(intervalId); // Detener el contador cuando llegue a 0
-                        window.location.href = '/'; // Redirigir a la página principal
+                        navigate('/'); // Redirigir a la página principal
                     }
                     return prev - 1;
                 });
@@ -69,6 +105,7 @@ const ResultadoPago = () => {
             }
         }
     };
+
 
     useEffect(() => {
         const resourcePath = searchParams.get('resourcePath');
@@ -103,10 +140,16 @@ const ResultadoPago = () => {
 
             {esExitoso !== null && (
                 <button
-                    onClick={() => window.location.href = '/'} 
+                    onClick={() => {
+                        if (esExitoso) {
+                            navigate('/'); // Redirige si el pago fue exitoso
+                        } else {
+                            navigate('/carrito'); // Redirige al carrito si el pago no fue exitoso
+                        }
+                    }}
                     className={`px-6 py-2 rounded text-white transition ${esExitoso ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
                 >
-                    Volver al inicio
+                    {esExitoso ? 'Volver al inicio' : 'Volver al carrito'}
                 </button>
             )}
         </div>
