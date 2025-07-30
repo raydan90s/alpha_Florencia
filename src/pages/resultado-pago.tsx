@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';  // Usamos el contexto de carrito
 
 const ResultadoPago = () => {
     const [searchParams] = useSearchParams();
@@ -9,29 +10,35 @@ const ResultadoPago = () => {
     const [consultaCompletada, setConsultaCompletada] = useState<boolean>(false);
     const [tiempoRestante, setTiempoRestante] = useState<number>(7);
     const navigate = useNavigate(); // Usamos el hook de React Router para redirigir
-    const { user } = useContext(AuthContext);
-    // Función para vaciar el carrito
-    const vaciarCarrito = async (id_usuario: string) => {
-        if (!id_usuario) {
-            console.error("❌ id_usuario no está definido");
-            return;
-        }
-        try {
-            const res = await fetch('http://localhost:5000/api/carrito/vaciar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id_usuario }), // Asegúrate de que se esté enviando correctamente
-            });
+    const { user, isAuthenticated } = useContext(AuthContext);
+    const { vaciarCarritoDB } = useCart(); // Usamos la función del contexto para vaciar el carrito
 
-            if (!res.ok) {
-                console.error('❌ Error al vaciar el carrito:', res.statusText);
-            } else {
-                console.log('✅ Carrito vaciado con éxito');
+    // Función para vaciar el carrito
+    const vaciarCarrito = async () => {
+        if (isAuthenticated && user?.id) {
+            // Si está autenticado, vaciar el carrito del backend
+            try {
+                const res = await fetch('http://localhost:5000/api/carrito/vaciar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id_usuario: user.id }), // Enviar el id_usuario
+                });
+
+                if (res.ok) {
+                    console.log('✅ Carrito vaciado con éxito desde el backend');
+                } else {
+                    console.error('❌ Error al vaciar el carrito desde el backend');
+                }
+            } catch (error) {
+                console.error('❌ Error al vaciar el carrito:', error);
             }
-        } catch (error) {
-            console.error('❌ Error al vaciar el carrito:', error);
+        } else {
+            // Si no está autenticado, eliminar del localStorage
+            console.log("🚨 Usuario no autenticado. Eliminando del localStorage.");
+            localStorage.removeItem("carrito");
+            console.log("✅ Carrito eliminado del localStorage");
         }
     };
 
@@ -75,11 +82,9 @@ const ResultadoPago = () => {
             setEstadoPago(description); // Mostrar la descripción de la respuesta
             setEsExitoso(code.startsWith('000')); // Si el código empieza con 000, se considera exitoso
 
+            // Si el pago fue exitoso, vaciar el carrito
             if (code.startsWith('000')) {
-                const id_usuario = user?.id;
-                if (id_usuario) {
-                    await vaciarCarrito(id_usuario); // Solo vaciar el carrito si el pago fue exitoso
-                }
+                await vaciarCarrito();
             }
 
             // Iniciar el conteo regresivo
@@ -88,6 +93,7 @@ const ResultadoPago = () => {
                     if (prev === 1) {
                         clearInterval(intervalId); // Detener el contador cuando llegue a 0
                         navigate('/'); // Redirigir a la página principal
+                        window.location.reload(); // Recargar la página automáticamente
                     }
                     return prev - 1;
                 });
@@ -105,7 +111,6 @@ const ResultadoPago = () => {
             }
         }
     };
-
 
     useEffect(() => {
         const resourcePath = searchParams.get('resourcePath');
@@ -143,6 +148,7 @@ const ResultadoPago = () => {
                     onClick={() => {
                         if (esExitoso) {
                             navigate('/'); // Redirige si el pago fue exitoso
+                            window.location.reload(); // Recargar la página automáticamente
                         } else {
                             navigate('/carrito'); // Redirige al carrito si el pago no fue exitoso
                         }
