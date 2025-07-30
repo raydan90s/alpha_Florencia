@@ -1,7 +1,6 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';  // Usamos el contexto de carrito
+import { useCart } from '../context/CartContext';  
 
 const ResultadoPago = () => {
     const [searchParams] = useSearchParams();
@@ -9,39 +8,9 @@ const ResultadoPago = () => {
     const [esExitoso, setEsExitoso] = useState<boolean | null>(null);
     const [consultaCompletada, setConsultaCompletada] = useState<boolean>(false);
     const [tiempoRestante, setTiempoRestante] = useState<number>(7);
-    const navigate = useNavigate(); // Usamos el hook de React Router para redirigir
-    const { user, isAuthenticated } = useContext(AuthContext);
-    const { vaciarCarritoDB } = useCart(); // Usamos la función del contexto para vaciar el carrito
-
-    // Función para vaciar el carrito
-    const vaciarCarrito = async () => {
-        if (isAuthenticated && user?.id) {
-            // Si está autenticado, vaciar el carrito del backend
-            try {
-                const res = await fetch('http://localhost:5000/api/carrito/vaciar', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ id_usuario: user.id }), // Enviar el id_usuario
-                });
-
-                if (res.ok) {
-                    console.log('✅ Carrito vaciado con éxito desde el backend');
-                } else {
-                    console.error('❌ Error al vaciar el carrito desde el backend');
-                }
-            } catch (error) {
-                console.error('❌ Error al vaciar el carrito:', error);
-            }
-        } else {
-            // Si no está autenticado, eliminar del localStorage
-            console.log("🚨 Usuario no autenticado. Eliminando del localStorage.");
-            localStorage.removeItem("carrito");
-            console.log("✅ Carrito eliminado del localStorage");
-        }
-    };
-
+    const navigate = useNavigate();
+    const { vaciarCarrito } = useCart(); 
+    
     const consultarPago = async (resourcePath: string) => {
         try {
             if (consultaCompletada) {
@@ -84,7 +53,7 @@ const ResultadoPago = () => {
 
             // Si el pago fue exitoso, vaciar el carrito
             if (code.startsWith('000')) {
-                await vaciarCarrito();
+                vaciarCarrito();
             }
 
             // Iniciar el conteo regresivo

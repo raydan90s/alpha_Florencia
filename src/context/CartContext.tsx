@@ -13,6 +13,7 @@ interface CartContextType {
   calcularIVA: () => number;
   contarItems: () => number;
   calcularTotal: () => number;
+  vaciarCarrito: () => Promise<void>; 
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -232,6 +233,34 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const vaciarCarrito = async () => {
+    if (isAuthenticated && user?.id) {
+      // Si está autenticado, vaciar el carrito del backend
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/carrito/vaciar`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id_usuario: user.id }), // Enviar el id_usuario
+        });
+
+        if (res.ok) {
+          console.log('✅ Carrito vaciado con éxito desde el backend');
+        } else {
+          console.error('❌ Error al vaciar el carrito desde el backend');
+        }
+      } catch (error) {
+        console.error('❌ Error al vaciar el carrito:', error);
+      }
+    } else {
+      // Si no está autenticado, eliminar del localStorage
+      console.log("🚨 Usuario no autenticado. Eliminando del localStorage.");
+      localStorage.removeItem("carrito");
+      console.log("✅ Carrito eliminado del localStorage");
+    }
+  };
+
   const calcularSubtotal = () => {
     return cartItems.reduce((total, item) => total + item.precio * item.cantidad, 0);
   };
@@ -246,7 +275,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return cartItems.reduce((total, item) => total + item.cantidad, 0);
   };
 
-  const calcularTotal = ()=>{
+  const calcularTotal = () => {
     return calcularSubtotal() + calcularIVA();
 
   };
@@ -263,6 +292,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         calcularIVA,
         calcularTotal,
         contarItems,
+        vaciarCarrito
       }}
     >
       {children}
