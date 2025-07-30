@@ -28,11 +28,11 @@ const request = (resourcePath, callback) => {
   const postRequest = https.request(options, function (res) {
     res.setEncoding('utf8');
     let result = '';
-    
+
     res.on('data', function (chunk) {
       result += chunk;
     });
-    
+
     res.on('end', function () {
       try {
         const jsonRes = JSON.parse(result);
@@ -67,6 +67,10 @@ const consultarPagoHandler = async (req, res) => {
 
     // En caso de éxito, respondemos con la data procesada
     console.log("✅ Resultado de la consulta:", responseData);
+    if (responseData.result?.code && responseData.result.code.startsWith('000')) {
+      const redirectUrl = responseData.result?.redirectUrl || '/http://localhost:5173/productos'; // Si no hay URL, usa una predeterminada
+      responseData.result.redirectUrl = redirectUrl;
+    }
     res.json(responseData);
   });
 };
@@ -173,18 +177,18 @@ const crearCheckout = async (req, res) => {
 };
 
 const obtenerIpCliente = (req, res) => {
-    let ip =
-        req.headers['x-forwarded-for']?.split(',')[0] ||
-        req.socket?.remoteAddress ||
-        req.connection?.remoteAddress ||
-        null;
+  let ip =
+    req.headers['x-forwarded-for']?.split(',')[0] ||
+    req.socket?.remoteAddress ||
+    req.connection?.remoteAddress ||
+    null;
 
-    // Si estás en entorno local (IPv6 ::1 o IPv4 127.0.0.1), usa una IP pública simulada
-    if (ip === '::1' || ip === '127.0.0.1' || ip?.startsWith('::ffff:127.0.0.1')) {
-        ip = '186.46.123.22'; // Puedes poner cualquier IP pública válida de Ecuador o de tu ISP
-    }
+  // Si estás en entorno local (IPv6 ::1 o IPv4 127.0.0.1), usa una IP pública simulada
+  if (ip === '::1' || ip === '127.0.0.1' || ip?.startsWith('::ffff:127.0.0.1')) {
+    ip = '186.46.123.22'; // Puedes poner cualquier IP pública válida de Ecuador o de tu ISP
+  }
 
-    res.json({ ip });
+  res.json({ ip });
 };
 
 

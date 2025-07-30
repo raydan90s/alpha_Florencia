@@ -1,24 +1,21 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 const ResultadoPago = () => {
     const [searchParams] = useSearchParams();
-    const [estadoPago, setEstadoPago] = useState<string>('⏳ Verificando...');
+    const [estadoPago, setEstadoPago] = useState<string>('Verificando...');
     const [esExitoso, setEsExitoso] = useState<boolean | null>(null);
-    const [consultaCompletada, setConsultaCompletada] = useState<boolean>(false); // Nuevo estado para controlar la consulta
-
+    const [consultaCompletada, setConsultaCompletada] = useState<boolean>(false);
+    const [tiempoRestante, setTiempoRestante] = useState<number>(7); 
 
     const consultarPago = async (resourcePath: string) => {
         try {
-            // Solo hacer la consulta una vez
             if (consultaCompletada) {
                 console.log("✅ La consulta ya fue realizada, no se hace nuevamente.");
-                return; // Evitar hacer la consulta de nuevo
+                return;
             }
-
             console.log(`🔍 Consultando resultado de pago con resourcePath: ${resourcePath}`);
-            setConsultaCompletada(true); // Marcar que la consulta fue hecha
-
+            setConsultaCompletada(true);
             const res = await fetch(`http://localhost:5000/api/checkout/resultado?id=${resourcePath}`, {
                 method: 'GET',
                 headers: {
@@ -26,7 +23,6 @@ const ResultadoPago = () => {
                 }
             });
 
-            // Verificar si la respuesta es correcta
             if (!res.ok) {
                 console.error('❌ Error al hacer la consulta:', res.statusText);
                 setEstadoPago(`Error: ${res.statusText}`);
@@ -49,6 +45,17 @@ const ResultadoPago = () => {
             console.log('✅ Resultado de la consulta:', data);
             setEstadoPago(description); // Mostrar la descripción de la respuesta
             setEsExitoso(code.startsWith('000')); // Si el código empieza con 000, se considera exitoso
+
+            // Iniciar el conteo regresivo
+            const intervalId = setInterval(() => {
+                setTiempoRestante((prev) => {
+                    if (prev === 1) {
+                        clearInterval(intervalId); // Detener el contador cuando llegue a 0
+                        window.location.href = '/'; // Redirigir a la página principal
+                    }
+                    return prev - 1;
+                });
+            }, 1000); // Actualizar cada segundo
 
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -80,16 +87,23 @@ const ResultadoPago = () => {
 
         // Limpiar el timeout cuando el componente se desmonte o se cambien los parámetros
         return () => clearTimeout(timeoutId);
-    }, [searchParams, consultaCompletada]); // Se ejecuta solo cuando cambia el 'resourcePath'
+    }, [searchParams, consultaCompletada]);
 
     return (
-        <div className="max-w-lg mx-auto mt-20 text-center px-4">
+        <div className="max-w-lg mx-auto mt-20 text-center px-4 mb-20">
             <h1 className="text-2xl font-bold mb-4">Resultado del Pago</h1>
             <p className="text-lg mb-6">{estadoPago}</p>
 
+            {/* Mostrar el tiempo restante */}
+            {esExitoso !== null && (
+                <div className="text-xl font-semibold mb-12">
+                    Redirigiendo en {tiempoRestante} segundos...
+                </div>
+            )}
+
             {esExitoso !== null && (
                 <button
-                    onClick={() => window.location.href = '/'}
+                    onClick={() => window.location.href = '/'} 
                     className={`px-6 py-2 rounded text-white transition ${esExitoso ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
                 >
                     Volver al inicio

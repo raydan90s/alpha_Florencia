@@ -1,4 +1,5 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
+import PaymentWidgetModal from "../components/Checkout/Modal"; // Importamos el modal
 import Shipping from "../components/Checkout/Shipping";
 import ShippingMethod from "../components/Checkout/ShippingMethod";
 import PaymentMethod from "../components/Checkout/PaymentMethod";
@@ -6,11 +7,11 @@ import OrderList from "../components/Checkout/OrderList";
 import Billing from "../components/Checkout/Billing";
 import CheckoutSteps from "../components/Checkout/CheckoutSteps";
 import { AuthContext } from '../context/AuthContext';
-import { crearCheckoutPrueba, crearCheckoutReal } from "../utils/checkout";
+import { crearCheckoutReal } from "../utils/checkout";
 import { useCart } from "../context/CartContext";
 
 const Checkout = () => {
-  //const { calcularTotal, calcularSubtotal, calcularIVA, cartItems } = useCart();
+  const { cartItems, calcularSubtotal, calcularIVA, calcularTotal } = useCart();  
   const { user, isAuthenticated } = useContext(AuthContext);
   const userId = isAuthenticated && user?.id ? user.id : null;
 
@@ -34,55 +35,26 @@ const Checkout = () => {
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [errorPayment, setErrorPayment] = useState<string | null>(null);
 
-
-  //REEMPLAZAR VALORES REALES 
   const obtenerCheckoutId = async () => {
+    //await crearCheckoutPrueba(setCheckoutId, setShowPaymentWidget, setLoadingPayment, setErrorPayment);
 
-    //ESTA LINEA ES PARA PRUEBAS NOMAS
-    await crearCheckoutPrueba(setCheckoutId, setShowPaymentWidget, setLoadingPayment, setErrorPayment);
-
-    /*
-       await crearCheckoutReal({
-         direccionEnvio,
-         userId,
-         user,
-         total: calcularTotal().toFixed(2),
-         subtotal: calcularSubtotal().toFixed(2),
-         iva: calcularIVA().toFixed(2),
-           producto: cartItems,
-         setCheckoutId,
-         setShowPaymentWidget,
-         setLoadingPayment,
-         setErrorPayment
-       });
-       */
-
+    await crearCheckoutReal({
+      direccionEnvio,
+      userId,
+      user,
+      total: calcularTotal().toFixed(2),
+      subtotal: calcularSubtotal().toFixed(2),
+      iva: calcularIVA().toFixed(2),
+      producto: cartItems, 
+      setCheckoutId,
+      setShowPaymentWidget,
+      setLoadingPayment,
+      setErrorPayment
+    });
   };
-
-  // Montar el script de Datafast solo cuando el modal esté visible y el checkoutId exista
-  useEffect(() => {
-    if (checkoutId && showPaymentWidget) {
-      // Eliminar cualquier script anterior
-      const existingScript = document.querySelector("script[src*='paymentWidgets.js']");
-      if (existingScript) existingScript.remove(); // Eliminar scripts viejos si recargas
-
-      // Crear un nuevo script con el checkoutId
-      const script = document.createElement("script");
-      script.src = `https://test.oppwa.com/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
-      script.async = true;
-      script.onload = () => {
-        console.log("Formulario de pago cargado con CheckoutId:", checkoutId);
-      };
-
-      // Agregar el script al body
-      document.body.appendChild(script);
-    }
-  }, [checkoutId, showPaymentWidget]); // Dependencias: el checkoutId y showPaymentWidget
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (isAuthenticated && direccionEnvio.guardarDatos && userId) {
       try {
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
@@ -187,34 +159,13 @@ const Checkout = () => {
       </div>
 
       {/* MODAL con widget */}
-      {showPaymentWidget && checkoutId && (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-          onClick={() => setShowPaymentWidget(false)}
-        >
-          <div
-            className="bg-white p-6 rounded shadow-lg max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* IMPORTANTE: el form debe existir cuando se monte el script */}
-            <form
-              action="http://localhost:5173/resultado-pago" // Redirige después de completar el pago
-              method="GET"
-              className="paymentWidgets"
-              data-brands="VISA MASTER AMEX DINERS"
-            />
-            <button
-              onClick={() => setShowPaymentWidget(false)}
-              className="mt-4 btn btn-secondary w-full"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
+      <PaymentWidgetModal
+        show={showPaymentWidget && checkoutId ? true : false} // Asegúrate de que siempre sea un booleano
+        checkoutId={checkoutId} // El checkoutId es necesario para cargar el formulario
+        onClose={() => setShowPaymentWidget(false)} // Función para cerrar el modal
+      />
     </section>
   );
 };
 
 export default Checkout;
-
