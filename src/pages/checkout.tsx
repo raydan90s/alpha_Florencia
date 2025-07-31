@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import PaymentWidgetModal from "../components/Checkout/Modal"; // Importamos el modal
 import Shipping from "../components/Checkout/Shipping";
 import ShippingMethod from "../components/Checkout/ShippingMethod";
@@ -11,7 +11,7 @@ import { crearCheckoutReal } from "../utils/checkout";
 import { useCart } from "../context/CartContext";
 
 const Checkout = () => {
-  const { cartItems, calcularSubtotal, calcularIVA, calcularTotal } = useCart();  
+  const { cartItems, calcularSubtotal, calcularIVA, calcularTotal } = useCart();
   const { user, isAuthenticated } = useContext(AuthContext);
   const userId = isAuthenticated && user?.id ? user.id : null;
 
@@ -36,8 +36,6 @@ const Checkout = () => {
   const [errorPayment, setErrorPayment] = useState<string | null>(null);
 
   const obtenerCheckoutId = async () => {
-    //await crearCheckoutPrueba(setCheckoutId, setShowPaymentWidget, setLoadingPayment, setErrorPayment);
-
     await crearCheckoutReal({
       direccionEnvio,
       userId,
@@ -45,7 +43,7 @@ const Checkout = () => {
       total: calcularTotal().toFixed(2),
       subtotal: calcularSubtotal().toFixed(2),
       iva: calcularIVA().toFixed(2),
-      producto: cartItems, 
+      producto: cartItems,
       setCheckoutId,
       setShowPaymentWidget,
       setLoadingPayment,

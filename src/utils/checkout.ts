@@ -50,7 +50,7 @@ export const crearCheckoutReal = async ({
     console.log("Productos:", producto);
 
     // Obtener IP desde backend
-    const ipResponse = await fetch("http://localhost:5000/api/cliente-ip");
+    const ipResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cliente-ip`);
     const ipData = await ipResponse.json();
     const ip = ipData?.ip || "0.0.0.0";
 
@@ -102,7 +102,7 @@ export const crearCheckoutReal = async ({
 
     console.log("Cuerpo de la petición a /api/checkout:", JSON.stringify(body, null, 2));
 
-    const response = await fetch("http://localhost:5000/api/checkout", {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
@@ -185,7 +185,7 @@ export const crearCheckoutPrueba = async (
       }
     };
 
-    const response = await fetch("http://localhost:5000/api/checkout", {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)

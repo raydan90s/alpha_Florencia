@@ -1,16 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';  
+import { useCart } from "../context/CartContext";
+import { AuthContext } from '../context/AuthContext'; // Importa el contexto de autenticación
+
 
 const ResultadoPago = () => {
+    const { user } = useContext(AuthContext);  // Accede al contexto de autenticación
     const [searchParams] = useSearchParams();
     const [estadoPago, setEstadoPago] = useState<string>('Verificando...');
     const [esExitoso, setEsExitoso] = useState<boolean | null>(null);
     const [consultaCompletada, setConsultaCompletada] = useState<boolean>(false);
     const [tiempoRestante, setTiempoRestante] = useState<number>(7);
     const navigate = useNavigate();
-    const { vaciarCarrito } = useCart(); 
-    
+    const { cartItems, vaciarCarrito, calcularTotal } = useCart();
+
+    const usuarioId = user?.id;  // Usa el correo del usuario autenticado o uno temporal
+
+    // Función para consultar el estado del pago
     const consultarPago = async (resourcePath: string) => {
         try {
             if (consultaCompletada) {
@@ -19,15 +25,17 @@ const ResultadoPago = () => {
             }
 
             console.log(`🔍 Consultando resultado de pago con resourcePath: ${resourcePath}`);
+            console.log("CART ITEMS ARRIBA", cartItems);
             setConsultaCompletada(true);
 
-            const res = await fetch(`http://localhost:5000/api/checkout/resultado?id=${resourcePath}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout/resultado?id=${resourcePath}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 }
             });
 
+            // Verificar si la respuesta es exitosa
             if (!res.ok) {
                 console.error('❌ Error al hacer la consulta:', res.statusText);
                 setEstadoPago(`Error: ${res.statusText}`);
@@ -36,6 +44,8 @@ const ResultadoPago = () => {
             }
 
             const data = await res.json();
+            console.log('🔍 Respuesta del backend:', data);  // Verifica la respuesta aquí
+
             const code = data.result?.code;
             const description = data.result?.description;
 
@@ -51,18 +61,29 @@ const ResultadoPago = () => {
             setEstadoPago(description); // Mostrar la descripción de la respuesta
             setEsExitoso(code.startsWith('000')); // Si el código empieza con 000, se considera exitoso
 
+            await registrarPago(resourcePath, description, code, code.startsWith('000'), usuarioId, cartItems);
+
+
             // Si el pago fue exitoso, vaciar el carrito
             if (code.startsWith('000')) {
+                // Llamada para registrar el pago en la base de datos
+
                 vaciarCarrito();
             }
 
-            // Iniciar el conteo regresivo
+            // Iniciar el conteo regresivo para redirigir
             const intervalId = setInterval(() => {
                 setTiempoRestante((prev) => {
                     if (prev === 1) {
                         clearInterval(intervalId); // Detener el contador cuando llegue a 0
-                        navigate('/'); // Redirigir a la página principal
-                        window.location.reload(); // Recargar la página automáticamente
+                        // Redirigir después de que el pago se haya procesado
+                        if (esExitoso !== null) {
+                            if (esExitoso) {
+                                navigate('/'); // Redirigir a la página principal si el pago fue exitoso
+                            } else {
+                                navigate('/carrito'); // Redirigir al carrito si el pago no fue exitoso
+                            }
+                        }
                     }
                     return prev - 1;
                 });
@@ -80,25 +101,69 @@ const ResultadoPago = () => {
             }
         }
     };
+    const registrarPago = async (resourcePath: string, estadoPago: string, codigoPago: string, esExitoso: boolean, usuarioId: number, cartItems: any) => {
+        // Calcular el total
+        const total = calcularTotal().toFixed(2);  // Total con 2 decimales
+
+        // Crear el objeto productosCarrito con los datos necesarios
+        const productosCarrito = {
+            total: total,  // Total calculado
+            productos: cartItems  // El array de productos
+        };
+
+        console.log("Productos en el carrito:", productosCarrito);  // Verifica que los datos estén correctamente estructurados
+
+        if (!productosCarrito || !productosCarrito.total || productosCarrito.productos.length === 0) {
+            throw new Error("❌ El carrito de productos no contiene los datos necesarios.");
+        }
+
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                resourcePath,
+                estadoPago,
+                codigoPago,
+                esExitoso: esExitoso ? 1 : 0,
+                usuarioId,
+                productosCarrito,  // Enviamos el carrito con el total y los productos
+            }),
+        });
+
+        if (!res.ok) {
+            throw new Error('❌ Error al registrar el pago');
+        }
+
+        const data = await res.json();
+        console.log('✅ Pago registrado en la base de datos:', data);
+    };
+
+
+
+
 
     useEffect(() => {
         const resourcePath = searchParams.get('resourcePath');
 
-        // Evitar hacer la consulta si ya se hizo
-        if (!resourcePath || consultaCompletada) {
-            return; // No ejecutar la consulta si ya se hizo
-        }
+        if (!resourcePath || consultaCompletada) return;
 
-        console.log("🔍 Recurso recibido:", resourcePath); // Verifica el valor
 
-        // Establecer un timeout de 2 segundos antes de hacer la consulta
+
         const timeoutId = setTimeout(() => {
-            consultarPago(resourcePath);
-        }, 2000); // Retraso de 2 segundos antes de ejecutar la consulta
+            console.log("CARRITO DESDE USE", cartItems); // Verifica si cartItems tiene los datos esperados
 
-        // Limpiar el timeout cuando el componente se desmonte o se cambien los parámetros
+            if (cartItems.length === 0) {
+                console.error("❌ El carrito está vacío.");
+                setEstadoPago('❌ El carrito está vacío.');
+                setEsExitoso(false);
+                return;
+            }
+            consultarPago(resourcePath);
+        }, 2000);
+
         return () => clearTimeout(timeoutId);
-    }, [searchParams, consultaCompletada]);
+    }, [searchParams, consultaCompletada, cartItems]); // Añadir cartItems como dependencia
+
 
     return (
         <div className="max-w-lg mx-auto mt-20 text-center px-4 mb-20">

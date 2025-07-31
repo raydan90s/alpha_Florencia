@@ -13,7 +13,7 @@ interface CartContextType {
   calcularIVA: () => number;
   contarItems: () => number;
   calcularTotal: () => number;
-  vaciarCarrito: () => Promise<void>; 
+  vaciarCarrito: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -104,6 +104,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isAuthenticated && cargadoDesdeLocalStorage) {
       localStorage.setItem("carrito", JSON.stringify(cartItems));
+      console.log("Cart items desde context", cartItems);
     }
   }, [cartItems, isAuthenticated, cargadoDesdeLocalStorage]);
 
@@ -168,6 +169,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     setCartItems(newCartItems);
+    console.log("Nuevo carrito:", newCartItems); // Verificar el carrito actualizado
+
     if (!isAuthenticated) {
       localStorage.setItem("carrito", JSON.stringify(newCartItems));
     }
