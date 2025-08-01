@@ -2,10 +2,9 @@ import { useContext, useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from "../context/CartContext";
 import { AuthContext } from '../context/AuthContext';
-import { useDireccionEnvio } from '../context/DireccionEnvioContext';  // Importa el hook de DireccionEnvioContext
 
 const ResultadoPago = () => {
-    const { user } = useContext(AuthContext);  // Accede al contexto de autenticación
+    const { user } = useContext(AuthContext);
     const [searchParams] = useSearchParams();
     const [estadoPago, setEstadoPago] = useState<string>('Verificando...');
     const [esExitoso, setEsExitoso] = useState<boolean | null>(null);
@@ -13,9 +12,24 @@ const ResultadoPago = () => {
     const [tiempoRestante, setTiempoRestante] = useState<number>(7);
     const navigate = useNavigate();
     const { cartItems, vaciarCarrito, calcularTotal } = useCart();
-    const { direccionEnvio } = useDireccionEnvio();  // Accedemos a la dirección de envío desde el contexto
-    console.log(direccionEnvio);
-    const usuarioId = user?.id;  // Usa el correo del usuario autenticado o uno temporal
+    // Ya no dependemos del hook del contexto aquí para la dirección de envío
+    const usuarioId = user?.id;
+
+    // Nuevo estado local, inicializado directamente desde sessionStorage.
+    // Esta función solo se ejecuta una vez cuando el componente se monta,
+    // evitando re-renderizaciones en bucle.
+    const [direccionEnvioLocal] = useState<any | null>(() => {
+        try {
+            const storedDireccion = sessionStorage.getItem('direccionEnvio');
+            if (storedDireccion) {
+                console.log('✅ Dirección de envío recuperada y parseada de sessionStorage.');
+                return JSON.parse(storedDireccion);
+            }
+        } catch (e) {
+            console.error("❌ Error al parsear la dirección de sessionStorage:", e);
+        }
+        return null;
+    });
 
     // Función para consultar el estado del pago
     const consultarPago = async (resourcePath: string) => {
@@ -33,7 +47,6 @@ const ResultadoPago = () => {
                 }
             });
 
-            // Verificar si la respuesta es exitosa
             if (!res.ok) {
                 console.error('❌ Error al hacer la consulta:', res.statusText);
                 setEstadoPago(`Error: ${res.statusText}`);
@@ -55,30 +68,32 @@ const ResultadoPago = () => {
             setEstadoPago(description);
             setEsExitoso(code.startsWith('000'));
 
-            await registrarPago(resourcePath, description, code, code.startsWith('000'), usuarioId, cartItems);
 
-            // Si el pago fue exitoso, vaciar el carrito
             if (code.startsWith('000')) {
+                await registrarPago(resourcePath, description, code, code.startsWith('000'), usuarioId, cartItems, direccionEnvioLocal);
                 vaciarCarrito();
             }
 
-            // Iniciar el conteo regresivo para redirigir
+            // Una vez que el pago se ha procesado y registrado,
+            // es seguro limpiar sessionStorage para evitar datos antiguos.
+            sessionStorage.removeItem('direccionEnvio');
+            console.log("✅ Dirección de envío eliminada de sessionStorage.");
+
             const intervalId = setInterval(() => {
                 setTiempoRestante((prev) => {
                     if (prev === 1) {
-                        clearInterval(intervalId); // Detener el contador cuando llegue a 0
-                        // Redirigir después de que el pago se haya procesado
+                        clearInterval(intervalId);
                         if (esExitoso !== null) {
                             if (esExitoso) {
-                                navigate('/'); // Redirigir a la página principal si el pago fue exitoso
+                                navigate('/');
                             } else {
-                                navigate('/carrito'); // Redirigir al carrito si el pago no fue exitoso
+                                navigate('/carrito');
                             }
                         }
                     }
                     return prev - 1;
                 });
-            }, 1000); // Actualizar cada segundo
+            }, 1000);
 
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -93,18 +108,23 @@ const ResultadoPago = () => {
         }
     };
 
-    const registrarPago = async (resourcePath: string, estadoPago: string, codigoPago: string, esExitoso: boolean, usuarioId: number, cartItems: any) => {
-        const total = calcularTotal().toFixed(2);  // Total con 2 decimales
+    const registrarPago = async (resourcePath: string, estadoPago: string, codigoPago: string, esExitoso: boolean, usuarioId: number, cartItems: any, direccionEnvio: any) => {
+        const total = calcularTotal().toFixed(2);
 
         const productosCarrito = {
-            total: total,  // Total calculado
-            productos: cartItems  // El array de productos
+            total: total,
+            productos: cartItems
         };
 
-        console.log("Productos en el carrito:", productosCarrito);  // Verifica que los datos estén correctamente estructurados
+        console.log("Productos en el carrito:", productosCarrito);
 
         if (!productosCarrito || !productosCarrito.total || productosCarrito.productos.length === 0) {
             throw new Error("❌ El carrito de productos no contiene los datos necesarios.");
+        }
+
+        // Verifica que la dirección de envío no sea nula antes de enviarla
+        if (!direccionEnvio) {
+            throw new Error("❌ No se pudo recuperar la dirección de envío.");
         }
 
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payment`, {
@@ -117,7 +137,7 @@ const ResultadoPago = () => {
                 esExitoso: esExitoso ? 1 : 0,
                 usuarioId,
                 productosCarrito,
-                direccionEnvio,
+                direccionEnvio, // Usamos la dirección de envío recuperada de sessionStorage
             }),
         });
 
@@ -130,22 +150,18 @@ const ResultadoPago = () => {
     };
 
     useEffect(() => {
-        console.log("Direccion de envio actualizada:", direccionEnvio);
-    }, [direccionEnvio]);  // Esto te permitirá ver si el estado de direccionEnvio cambia correctamente.
-
-    useEffect(() => {
         const resourcePath = searchParams.get('resourcePath');
 
-        if (!resourcePath || consultaCompletada) return;
-
-        if (!direccionEnvio) {
-            console.log('❌ La dirección de envío no está disponible aún');
+        // El efecto ahora solo se ejecuta si resourcePath está disponible
+        // y la dirección de envío ya ha sido cargada en el estado inicial.
+        if (!resourcePath || !direccionEnvioLocal || consultaCompletada) {
+            console.log('Esperando por el resourcePath o la dirección de envío local...');
             return;
         }
 
+        console.log("✅ Dirección de envío local disponible:", direccionEnvioLocal);
+
         const timeoutId = setTimeout(() => {
-            console.log("CARRITO DESDE USE", cartItems);
-            console.log("Direccion de envio", direccionEnvio);
             if (cartItems.length === 0) {
                 console.error("❌ El carrito está vacío.");
                 setEstadoPago('❌ El carrito está vacío.');
@@ -156,7 +172,8 @@ const ResultadoPago = () => {
         }, 2000);
 
         return () => clearTimeout(timeoutId);
-    }, [searchParams, consultaCompletada, cartItems, direccionEnvio]);
+
+    }, [searchParams, consultaCompletada, cartItems, navigate, direccionEnvioLocal]);
 
 
     return (
@@ -164,7 +181,6 @@ const ResultadoPago = () => {
             <h1 className="text-2xl font-bold mb-4">Resultado del Pago</h1>
             <p className="text-lg mb-6">{estadoPago}</p>
 
-            {/* Mostrar el tiempo restante */}
             {esExitoso !== null && (
                 <div className="text-xl font-semibold mb-12">
                     Redirigiendo en {tiempoRestante} segundos...
@@ -175,10 +191,9 @@ const ResultadoPago = () => {
                 <button
                     onClick={() => {
                         if (esExitoso) {
-                            navigate('/'); // Redirige si el pago fue exitoso
-                            window.location.reload(); // Recargar la página automáticamente
+                            navigate('/');
                         } else {
-                            navigate('/carrito'); // Redirige al carrito si el pago no fue exitoso
+                            navigate('/carrito');
                         }
                     }}
                     className={`px-6 py-2 rounded text-white transition ${esExitoso ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}

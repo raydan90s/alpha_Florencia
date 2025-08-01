@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useDireccionEnvio } from '../context/DireccionEnvioContext';
 import PaymentWidgetModal from "../components/Checkout/Modal";
 import Shipping from "../components/Checkout/Shipping";
@@ -17,7 +17,7 @@ const Checkout = () => {
   const userId = isAuthenticated && user?.id ? user.id : null;
 
   // Accedemos al contexto de direccionEnvio
-  const { setDireccionEnvio } = useDireccionEnvio(); // Usamos el setDireccionEnvio para actualizar el contexto
+  const { setDireccionEnvio } = useDireccionEnvio();
 
   const [direccionEnvio, setDireccionEnvioState] = useState({
     nombre: "",
@@ -38,9 +38,28 @@ const Checkout = () => {
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [errorPayment, setErrorPayment] = useState<string | null>(null);
 
-  const obtenerCheckoutId = async () => {
-    console.log("Direccion de envio antes de actualizar el contexto:", direccionEnvio);
+  /**
+   * Esta función es ahora la responsable de iniciar todo el proceso de pago.
+   * Se guarda la dirección en sessionStorage para que persista a través de la recarga de página.
+   */
+  const handleStartPayment = async () => {
+    setLoadingPayment(true);
+    setErrorPayment(null);
 
+    // PASO CLAVE: Guardamos la dirección de envío en sessionStorage antes de la redirección.
+    try {
+        sessionStorage.setItem('direccionEnvio', JSON.stringify(direccionEnvio));
+        console.log("✅ Dirección de envío guardada en sessionStorage.");
+    } catch (e) {
+        console.error("❌ Error al guardar en sessionStorage:", e);
+    }
+    
+    // También actualizamos el contexto por si se necesita antes de la redirección.
+    setDireccionEnvio(direccionEnvio);
+    console.log("✅ Contexto de dirección de envío actualizado con éxito.");
+
+
+    // Llamar a la función que crea la sesión de checkout
     await crearCheckoutReal({
       direccionEnvio,
       userId,
@@ -54,22 +73,8 @@ const Checkout = () => {
       setLoadingPayment,
       setErrorPayment
     });
-  };
 
-  // Aquí actualizamos el contexto de direccionEnvio antes de realizar el submit
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Verifica que los datos sean correctos antes de actualizar el contexto
-    console.log("Direccion de envio antes de actualizar el contexto:", direccionEnvio);
-
-    // Actualizamos el contexto con la dirección del usuario
-    setDireccionEnvio(direccionEnvio);  // Aquí actualizamos el contexto con los datos del formulario
-
-    // Verificar si el estado del contexto se actualizó correctamente
-    console.log("Direccion de envio después de actualizar el contexto:", direccionEnvio);
-
-    // El resto del código del formulario
+    // Si el usuario quiere guardar sus datos, lo hacemos aquí.
     if (isAuthenticated && direccionEnvio.guardarDatos && userId) {
       try {
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
@@ -77,8 +82,9 @@ const Checkout = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(direccionEnvio),
         });
+        console.log("✅ Dirección de envío guardada en la base de datos.");
       } catch (error) {
-        console.error('Error guardando dirección:', error);
+        console.error('❌ Error guardando dirección:', error);
       }
     }
   };
@@ -88,11 +94,12 @@ const Checkout = () => {
     <section className="overflow-hidden py-20 bg-gray-2">
       <CheckoutSteps currentStep={1} />
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
-        <form onSubmit={handleSubmit}>
+        {/* Usamos e.preventDefault() para evitar el envío por defecto del formulario. */}
+        <form onSubmit={(e) => e.preventDefault()}>
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="lg:max-w-[670px] w-full space-y-8">
               <Shipping
-                onChange={setDireccionEnvioState}  // Para actualizar el estado local de direccionEnvio
+                onChange={setDireccionEnvioState}
                 isAuthenticated={isAuthenticated}
                 userId={userId}
                 value={direccionEnvio}
@@ -160,7 +167,7 @@ const Checkout = () => {
               {!showPaymentWidget && (
                 <button
                   type="button"
-                  onClick={obtenerCheckoutId}
+                  onClick={handleStartPayment}
                   disabled={loadingPayment}
                   className="w-full bg-[#FF6B00] text-white py-2 text-sm sm:text-base rounded-md hover:bg-[#FF8533] transition-colors"
                 >
@@ -176,9 +183,9 @@ const Checkout = () => {
 
       {/* MODAL con widget */}
       <PaymentWidgetModal
-        show={showPaymentWidget && checkoutId ? true : false} // Asegúrate de que siempre sea un booleano
-        checkoutId={checkoutId} // El checkoutId es necesario para cargar el formulario
-        onClose={() => setShowPaymentWidget(false)} // Función para cerrar el modal
+        show={showPaymentWidget && checkoutId ? true : false}
+        checkoutId={checkoutId}
+        onClose={() => setShowPaymentWidget(false)}
       />
     </section>
   );
