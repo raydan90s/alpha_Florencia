@@ -106,7 +106,6 @@ export const crearCheckoutReal = async ({
     }
 
     const data = await response.json();
-    console.log("🧾 Respuesta JSON del backend:", data);
 
     if (data.id) {
       setCheckoutId(data.id);

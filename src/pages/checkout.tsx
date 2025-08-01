@@ -39,6 +39,8 @@ const Checkout = () => {
   const [errorPayment, setErrorPayment] = useState<string | null>(null);
 
   const obtenerCheckoutId = async () => {
+    console.log("Direccion de envio antes de actualizar el contexto:", direccionEnvio);
+
     await crearCheckoutReal({
       direccionEnvio,
       userId,
@@ -58,15 +60,16 @@ const Checkout = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Imprimir el estado local de direccionEnvio antes de actualizar el contexto
-    console.log("Direccion de envio antes de actualizar contexto:", direccionEnvio);
+    // Verifica que los datos sean correctos antes de actualizar el contexto
+    console.log("Direccion de envio antes de actualizar el contexto:", direccionEnvio);
 
-    // Actualizamos el contexto de direccionEnvio
-    setDireccionEnvio(direccionEnvio);  // Aquí actualizamos el contexto con los datos de la dirección
+    // Actualizamos el contexto con la dirección del usuario
+    setDireccionEnvio(direccionEnvio);  // Aquí actualizamos el contexto con los datos del formulario
 
-    // Verificamos si el contexto se actualizó correctamente
-    console.log("Direccion de envio actualizada en el contexto:", direccionEnvio);
+    // Verificar si el estado del contexto se actualizó correctamente
+    console.log("Direccion de envio después de actualizar el contexto:", direccionEnvio);
 
+    // El resto del código del formulario
     if (isAuthenticated && direccionEnvio.guardarDatos && userId) {
       try {
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {

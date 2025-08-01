@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react'; // Importar ReactNode como un tipo
 
-
 interface DireccionEnvioContextType {
   direccionEnvio: any;
   setDireccionEnvio: React.Dispatch<React.SetStateAction<any>>;
@@ -27,6 +26,9 @@ interface DireccionEnvioProviderProps {
 // Proveedor del contexto
 export const DireccionEnvioProvider: React.FC<DireccionEnvioProviderProps> = ({ children }) => {
   const [direccionEnvio, setDireccionEnvio] = useState<any>(null);
+
+  // Imprimir en el log para verificar si se actualiza la dirección
+  console.log("Dirección de Envío en el contexto:", direccionEnvio);
 
   return (
     <DireccionEnvioContext.Provider value={{ direccionEnvio, setDireccionEnvio }}>

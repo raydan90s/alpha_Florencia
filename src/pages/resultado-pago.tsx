@@ -14,7 +14,7 @@ const ResultadoPago = () => {
     const navigate = useNavigate();
     const { cartItems, vaciarCarrito, calcularTotal } = useCart();
     const { direccionEnvio } = useDireccionEnvio();  // Accedemos a la dirección de envío desde el contexto
-
+    console.log(direccionEnvio);
     const usuarioId = user?.id;  // Usa el correo del usuario autenticado o uno temporal
 
     // Función para consultar el estado del pago
@@ -52,8 +52,8 @@ const ResultadoPago = () => {
                 return;
             }
 
-            setEstadoPago(description); 
-            setEsExitoso(code.startsWith('000')); 
+            setEstadoPago(description);
+            setEsExitoso(code.startsWith('000'));
 
             await registrarPago(resourcePath, description, code, code.startsWith('000'), usuarioId, cartItems);
 
@@ -130,11 +130,21 @@ const ResultadoPago = () => {
     };
 
     useEffect(() => {
+        console.log("Direccion de envio actualizada:", direccionEnvio);
+    }, [direccionEnvio]);  // Esto te permitirá ver si el estado de direccionEnvio cambia correctamente.
+
+    useEffect(() => {
         const resourcePath = searchParams.get('resourcePath');
+
         if (!resourcePath || consultaCompletada) return;
 
+        if (!direccionEnvio) {
+            console.log('❌ La dirección de envío no está disponible aún');
+            return;
+        }
+
         const timeoutId = setTimeout(() => {
-            console.log("CARRITO DESDE USE", cartItems); // Verifica si cartItems tiene los datos esperados
+            console.log("CARRITO DESDE USE", cartItems);
             console.log("Direccion de envio", direccionEnvio);
             if (cartItems.length === 0) {
                 console.error("❌ El carrito está vacío.");
@@ -146,7 +156,8 @@ const ResultadoPago = () => {
         }, 2000);
 
         return () => clearTimeout(timeoutId);
-    }, [searchParams, consultaCompletada, cartItems, direccionEnvio]); // Añadir cartItems como dependencia
+    }, [searchParams, consultaCompletada, cartItems, direccionEnvio]);
+
 
     return (
         <div className="max-w-lg mx-auto mt-20 text-center px-4 mb-20">
