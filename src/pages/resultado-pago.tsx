@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from "../context/CartContext";
-import { AuthContext } from '../context/AuthContext'; // Importa el contexto de autenticación
-
+import { AuthContext } from '../context/AuthContext';
+import { useDireccionEnvio } from '../context/DireccionEnvioContext';  // Importa el hook de DireccionEnvioContext
 
 const ResultadoPago = () => {
     const { user } = useContext(AuthContext);  // Accede al contexto de autenticación
@@ -13,6 +13,7 @@ const ResultadoPago = () => {
     const [tiempoRestante, setTiempoRestante] = useState<number>(7);
     const navigate = useNavigate();
     const { cartItems, vaciarCarrito, calcularTotal } = useCart();
+    const { direccionEnvio } = useDireccionEnvio();  // Accedemos a la dirección de envío desde el contexto
 
     const usuarioId = user?.id;  // Usa el correo del usuario autenticado o uno temporal
 
@@ -63,11 +64,8 @@ const ResultadoPago = () => {
 
             await registrarPago(resourcePath, description, code, code.startsWith('000'), usuarioId, cartItems);
 
-
             // Si el pago fue exitoso, vaciar el carrito
             if (code.startsWith('000')) {
-                // Llamada para registrar el pago en la base de datos
-
                 vaciarCarrito();
             }
 
@@ -101,8 +99,8 @@ const ResultadoPago = () => {
             }
         }
     };
+
     const registrarPago = async (resourcePath: string, estadoPago: string, codigoPago: string, esExitoso: boolean, usuarioId: number, cartItems: any) => {
-        // Calcular el total
         const total = calcularTotal().toFixed(2);  // Total con 2 decimales
 
         // Crear el objeto productosCarrito con los datos necesarios
@@ -126,7 +124,8 @@ const ResultadoPago = () => {
                 codigoPago,
                 esExitoso: esExitoso ? 1 : 0,
                 usuarioId,
-                productosCarrito,  // Enviamos el carrito con el total y los productos
+                productosCarrito,
+                direccionEnvio,  // Pasamos la dirección de envío desde el contexto
             }),
         });
 
@@ -138,16 +137,11 @@ const ResultadoPago = () => {
         console.log('✅ Pago registrado en la base de datos:', data);
     };
 
-
-
-
-
     useEffect(() => {
         const resourcePath = searchParams.get('resourcePath');
+        console.log("Direccion de envio", direccionEnvio);
 
         if (!resourcePath || consultaCompletada) return;
-
-
 
         const timeoutId = setTimeout(() => {
             console.log("CARRITO DESDE USE", cartItems); // Verifica si cartItems tiene los datos esperados
@@ -163,7 +157,6 @@ const ResultadoPago = () => {
 
         return () => clearTimeout(timeoutId);
     }, [searchParams, consultaCompletada, cartItems]); // Añadir cartItems como dependencia
-
 
     return (
         <div className="max-w-lg mx-auto mt-20 text-center px-4 mb-20">

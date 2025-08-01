@@ -7,6 +7,7 @@ import { PermissionProvider } from './context/PermissionContext';
 import { ConfiguracionProvider } from './context/SettingContext';
 import { HistorialProvider } from './context/HistorialContext';
 import { CartProvider } from './context/CartContext';
+import { DireccionEnvioProvider } from './context/DireccionEnvioContext';
 import { Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import ProductosPage from './pages/productos';
@@ -34,28 +35,30 @@ export default function App() {
             <ConfiguracionProvider>
               <HistorialProvider>
                 <CartProvider>
-                  <div className="font-inter">
-                    <Header />
-                    <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/productos" element={<ProductosPage />} />
-                      <Route path="/carrito" element={<Carrito />} />
-                      <Route path="/checkout" element={<Checkout />} />
-                      <Route path="/contactanos" element={<Contactanos />} />
-                      <Route path="/envio-entrega" element={<EnvioEntrega />} />
-                      <Route path="/iniciar-sesion" element={<IniciarSesion />} />
-                      <Route path="/mi-cuenta" element={<ShippingAddressesPage />} />
-                      <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
-                      <Route path="/quienes-somos" element={<QuienesSomos />} />
-                      <Route path="/registrarse" element={<Registro />} />
-                      <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
-                      <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                      <Route path="/admin/login" element={<AdminLogin />} />
-                      <Route path="/productos/:slug" element={<DetalleProductoPage />} />
-                      <Route path="/resultado-pago" element={<ResultadoPago />} />
-                    </Routes>
-                    <Footer />
-                  </div>
+                  <DireccionEnvioProvider> {/* Aquí añadimos el proveedor de DireccionEnvio */}
+                    <div className="font-inter">
+                      <Header />
+                      <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/productos" element={<ProductosPage />} />
+                        <Route path="/carrito" element={<Carrito />} />
+                        <Route path="/checkout" element={<Checkout />} />
+                        <Route path="/contactanos" element={<Contactanos />} />
+                        <Route path="/envio-entrega" element={<EnvioEntrega />} />
+                        <Route path="/iniciar-sesion" element={<IniciarSesion />} />
+                        <Route path="/mi-cuenta" element={<ShippingAddressesPage />} />
+                        <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+                        <Route path="/quienes-somos" element={<QuienesSomos />} />
+                        <Route path="/registrarse" element={<Registro />} />
+                        <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
+                        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                        <Route path="/admin/login" element={<AdminLogin />} />
+                        <Route path="/productos/:slug" element={<DetalleProductoPage />} />
+                        <Route path="/resultado-pago" element={<ResultadoPago />} />
+                      </Routes>
+                      <Footer />
+                    </div>
+                  </DireccionEnvioProvider>
                 </CartProvider>
               </HistorialProvider>
             </ConfiguracionProvider>

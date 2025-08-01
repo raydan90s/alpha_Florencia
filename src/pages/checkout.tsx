@@ -1,5 +1,6 @@
-import React, { useState, useContext, useEffect } from "react";
-import PaymentWidgetModal from "../components/Checkout/Modal"; // Importamos el modal
+import React, { useState, useContext } from "react";
+import { useDireccionEnvio } from '../context/DireccionEnvioContext';  
+import PaymentWidgetModal from "../components/Checkout/Modal"; 
 import Shipping from "../components/Checkout/Shipping";
 import ShippingMethod from "../components/Checkout/ShippingMethod";
 import PaymentMethod from "../components/Checkout/PaymentMethod";
@@ -15,7 +16,10 @@ const Checkout = () => {
   const { user, isAuthenticated } = useContext(AuthContext);
   const userId = isAuthenticated && user?.id ? user.id : null;
 
-  const [direccionEnvio, setDireccionEnvio] = useState({
+  // Accedemos al contexto de direccionEnvio
+  const { setDireccionEnvio } = useDireccionEnvio(); // Usamos el setDireccionEnvio para actualizar el contexto
+
+  const [direccionEnvio, setDireccionEnvioState] = useState({
     nombre: "",
     apellido: "",
     direccion: "",
@@ -29,7 +33,6 @@ const Checkout = () => {
 
   const [usarMismosDatos, setUsarMismosDatos] = useState(true);
   const [notas, setNotas] = useState("");
-
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
   const [showPaymentWidget, setShowPaymentWidget] = useState(false);
   const [loadingPayment, setLoadingPayment] = useState(false);
@@ -51,8 +54,13 @@ const Checkout = () => {
     });
   };
 
+  // Aquí actualizamos el contexto de direccionEnvio antes de realizar el submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Actualizamos el contexto de direccionEnvio
+    setDireccionEnvio(direccionEnvio); // Aquí actualizamos el contexto con los datos de la dirección
+
     if (isAuthenticated && direccionEnvio.guardarDatos && userId) {
       try {
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
@@ -74,7 +82,7 @@ const Checkout = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="lg:max-w-[670px] w-full space-y-8">
               <Shipping
-                onChange={setDireccionEnvio}
+                onChange={setDireccionEnvioState}  // Para actualizar el estado local de direccionEnvio
                 isAuthenticated={isAuthenticated}
                 userId={userId}
                 value={direccionEnvio}
