@@ -24,9 +24,6 @@ const ResultadoPago = () => {
                 console.log("✅ La consulta ya fue realizada, no se hace nuevamente.");
                 return;
             }
-
-            console.log(`🔍 Consultando resultado de pago con resourcePath: ${resourcePath}`);
-            console.log("CART ITEMS ARRIBA", cartItems);
             setConsultaCompletada(true);
 
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout/resultado?id=${resourcePath}`, {
@@ -45,12 +42,9 @@ const ResultadoPago = () => {
             }
 
             const data = await res.json();
-            console.log('🔍 Respuesta del backend:', data);  // Verifica la respuesta aquí
-
             const code = data.result?.code;
             const description = data.result?.description;
 
-            // Verificar si se recibió el código de la transacción
             if (!code || !description) {
                 console.error('❌ No se recibió información completa.');
                 setEstadoPago('❌ No se recibió la información necesaria del pago.');
@@ -58,9 +52,8 @@ const ResultadoPago = () => {
                 return;
             }
 
-            console.log('✅ Resultado de la consulta:', data);
-            setEstadoPago(description); // Mostrar la descripción de la respuesta
-            setEsExitoso(code.startsWith('000')); // Si el código empieza con 000, se considera exitoso
+            setEstadoPago(description); 
+            setEsExitoso(code.startsWith('000')); 
 
             await registrarPago(resourcePath, description, code, code.startsWith('000'), usuarioId, cartItems);
 
@@ -103,7 +96,6 @@ const ResultadoPago = () => {
     const registrarPago = async (resourcePath: string, estadoPago: string, codigoPago: string, esExitoso: boolean, usuarioId: number, cartItems: any) => {
         const total = calcularTotal().toFixed(2);  // Total con 2 decimales
 
-        // Crear el objeto productosCarrito con los datos necesarios
         const productosCarrito = {
             total: total,  // Total calculado
             productos: cartItems  // El array de productos
@@ -125,7 +117,7 @@ const ResultadoPago = () => {
                 esExitoso: esExitoso ? 1 : 0,
                 usuarioId,
                 productosCarrito,
-                direccionEnvio,  // Pasamos la dirección de envío desde el contexto
+                direccionEnvio,
             }),
         });
 
@@ -139,13 +131,11 @@ const ResultadoPago = () => {
 
     useEffect(() => {
         const resourcePath = searchParams.get('resourcePath');
-        console.log("Direccion de envio", direccionEnvio);
-
         if (!resourcePath || consultaCompletada) return;
 
         const timeoutId = setTimeout(() => {
             console.log("CARRITO DESDE USE", cartItems); // Verifica si cartItems tiene los datos esperados
-
+            console.log("Direccion de envio", direccionEnvio);
             if (cartItems.length === 0) {
                 console.error("❌ El carrito está vacío.");
                 setEstadoPago('❌ El carrito está vacío.');
@@ -156,7 +146,7 @@ const ResultadoPago = () => {
         }, 2000);
 
         return () => clearTimeout(timeoutId);
-    }, [searchParams, consultaCompletada, cartItems]); // Añadir cartItems como dependencia
+    }, [searchParams, consultaCompletada, cartItems, direccionEnvio]); // Añadir cartItems como dependencia
 
     return (
         <div className="max-w-lg mx-auto mt-20 text-center px-4 mb-20">

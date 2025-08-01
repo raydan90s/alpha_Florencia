@@ -47,7 +47,6 @@ export const crearCheckoutReal = async ({
     const ipData = await ipResponse.json();
     const ip = ipData?.ip || "0.0.0.0";
 
-    console.log("IP obtenida del backend:", ip);
 
     const body = {
       amount: total,
@@ -93,7 +92,6 @@ export const crearCheckoutReal = async ({
       }
     };
 
-    console.log("Cuerpo de la petición a /api/checkout:", JSON.stringify(body, null, 2));
 
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout`, {
       method: "POST",

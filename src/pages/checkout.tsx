@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
-import { useDireccionEnvio } from '../context/DireccionEnvioContext';  
-import PaymentWidgetModal from "../components/Checkout/Modal"; 
+import { useDireccionEnvio } from '../context/DireccionEnvioContext';
+import PaymentWidgetModal from "../components/Checkout/Modal";
 import Shipping from "../components/Checkout/Shipping";
 import ShippingMethod from "../components/Checkout/ShippingMethod";
 import PaymentMethod from "../components/Checkout/PaymentMethod";
@@ -58,8 +58,14 @@ const Checkout = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Imprimir el estado local de direccionEnvio antes de actualizar el contexto
+    console.log("Direccion de envio antes de actualizar contexto:", direccionEnvio);
+
     // Actualizamos el contexto de direccionEnvio
-    setDireccionEnvio(direccionEnvio); // Aquí actualizamos el contexto con los datos de la dirección
+    setDireccionEnvio(direccionEnvio);  // Aquí actualizamos el contexto con los datos de la dirección
+
+    // Verificamos si el contexto se actualizó correctamente
+    console.log("Direccion de envio actualizada en el contexto:", direccionEnvio);
 
     if (isAuthenticated && direccionEnvio.guardarDatos && userId) {
       try {
@@ -73,6 +79,7 @@ const Checkout = () => {
       }
     }
   };
+
 
   return (
     <section className="overflow-hidden py-20 bg-gray-2">
