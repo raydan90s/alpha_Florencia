@@ -1,22 +1,11 @@
 import React, { useState, useEffect } from "react";
+import type { DireccionEnvio } from "../../types/direccionEnvio";
 
 interface ShippingProps {
   onChange: (direccion: DireccionEnvio) => void;
   isAuthenticated: boolean;
   userId: number | null;
-  value?: DireccionEnvio; // Lo hacemos opcional, no lo forzamos
-}
-
-interface DireccionEnvio {
-  nombre: string;
-  apellido: string;
-  direccion: string;
-  telefono: string;
-  cedula: string;
-  ciudad: string;
-  provincia: string;
-  pastcode: string;
-  guardarDatos: boolean;
+  value: DireccionEnvio; // This prop is the single source of truth for form data
 }
 
 function normalizeDireccionEnvio(data: Partial<DireccionEnvio>): DireccionEnvio {
@@ -28,8 +17,9 @@ function normalizeDireccionEnvio(data: Partial<DireccionEnvio>): DireccionEnvio 
     cedula: data.cedula ?? "",
     ciudad: data.ciudad ?? "",
     provincia: data.provincia ?? "",
-    pastcode: data.cpostal ?? "",
+    pastcode: data.pastcode ?? "",
     guardarDatos: data.guardarDatos ?? false,
+    notas: data.notas ?? '',
   };
 }
 
@@ -37,28 +27,10 @@ const Shipping: React.FC<ShippingProps> = ({
   onChange,
   isAuthenticated,
   userId,
+  value, // Now explicitly used as the source of truth
 }) => {
   const [usarDireccionPrincipal, setUsarDireccionPrincipal] = useState(false);
-
-  const [formData, setFormData] = useState<DireccionEnvio>({
-    nombre: "",
-    apellido: "",
-    direccion: "",
-    telefono: "",
-    cedula: "",
-    ciudad: "",
-    provincia: "",
-    pastcode: "",
-    guardarDatos: false,
-  });
-
-  // Controla si el formulario fue autocompletado con datos guardados
   const [formAutoCargado, setFormAutoCargado] = useState(false);
-
-  // Cuando cambia formData, notificamos a la función padre
-  useEffect(() => {
-    onChange(formData);
-  }, [formData, onChange]);
 
   useEffect(() => {
     const fetchDireccionGuardada = async () => {
@@ -69,57 +41,51 @@ const Shipping: React.FC<ShippingProps> = ({
           );
           const data = await res.json();
 
-
           if (data) {
-            if (Array.isArray(data) && data.length > 0) {
-              setFormData(
-                normalizeDireccionEnvio({
-                  ...data[0],
-                  guardarDatos: false,
-                })
-              );
-              setFormAutoCargado(true);
-            } else if (!Array.isArray(data)) {
-              setFormData(
-                normalizeDireccionEnvio({
-                  ...data,
-                  guardarDatos: false,
-                })
-              );
-              setFormAutoCargado(true);
-            } else {
-              setFormAutoCargado(false);
-              setFormData(normalizeDireccionEnvio({ guardarDatos: false }));
-            }
+            const fetchedDireccion = normalizeDireccionEnvio({
+              ...(Array.isArray(data) ? data[0] : data),
+              guardarDatos: false,
+              // Preserve current notes from the 'value' prop if not provided by fetched data
+              notas: (Array.isArray(data) ? data[0]?.notas : data?.notas) ?? value.notas,
+            });
+            onChange(fetchedDireccion); // Update parent's state directly
+            setFormAutoCargado(true);
           } else {
+            // If no data, clear form but preserve notes from the current 'value' prop
+            onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
             setFormAutoCargado(false);
-            setFormData(normalizeDireccionEnvio({ guardarDatos: false }));
           }
         } catch (error) {
           console.error("Error cargando dirección guardada:", error);
+          // On error, clear form but preserve notes from the current 'value' prop
+          onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
           setFormAutoCargado(false);
         }
       } else {
+        // If not authenticated or not using principal address, reset to current 'value' prop
+        // This ensures the form reflects the parent's state accurately.
+        onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
         setFormAutoCargado(false);
-        setFormData(normalizeDireccionEnvio({ guardarDatos: false }));
       }
     };
 
     fetchDireccionGuardada();
-  }, [isAuthenticated, userId, usarDireccionPrincipal]);
-
+  }, [isAuthenticated, userId, usarDireccionPrincipal, onChange, value.notas]); // Added onChange and value.notas to dependencies
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value: inputValue, type, checked } = e.target;
 
     if (name !== "guardarDatos" && formAutoCargado) {
       setFormAutoCargado(false);
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    // Directly call onChange with the updated value
+    onChange({
+      ...value, // Start with the current value from props
+      [name]: type === "checkbox" ? checked : inputValue,
+      // 'notas' is managed by the parent, so we don't explicitly set it here.
+      // It will be updated by the 'value' prop if the parent sends a new 'value'.
+    });
   };
 
   const handleUsarDireccionPrincipalChange = (
@@ -129,10 +95,11 @@ const Shipping: React.FC<ShippingProps> = ({
     setUsarDireccionPrincipal(checked);
 
     if (!checked) {
-      // Si desactiva la opción, limpiar formulario y permitir guardar datos
-      setFormData(normalizeDireccionEnvio({ guardarDatos: false }));
+      // If unchecking, clear form by sending an empty-ish object to parent, preserving notes
+      onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
       setFormAutoCargado(false);
     }
+    // If checked, the useEffect for fetchDireccionGuardada will handle the update.
   };
 
   return (
@@ -164,7 +131,7 @@ const Shipping: React.FC<ShippingProps> = ({
           <input
             type="text"
             name="nombre"
-            value={formData.nombre}
+            value={value.nombre} // Directly use value from props
             onChange={handleChange}
             placeholder="Juan"
             className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
@@ -178,7 +145,7 @@ const Shipping: React.FC<ShippingProps> = ({
           <input
             type="text"
             name="apellido"
-            value={formData.apellido}
+            value={value.apellido} // Directly use value from props
             onChange={handleChange}
             placeholder="Pérez"
             className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
@@ -194,7 +161,7 @@ const Shipping: React.FC<ShippingProps> = ({
         <input
           type="text"
           name="direccion"
-          value={formData.direccion}
+          value={value.direccion} // Directly use value from props
           onChange={handleChange}
           placeholder="Av. Siempre Viva 123"
           className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
@@ -209,7 +176,7 @@ const Shipping: React.FC<ShippingProps> = ({
         <input
           type="tel"
           name="telefono"
-          value={formData.telefono}
+          value={value.telefono} // Directly use value from props
           onChange={handleChange}
           placeholder="+593 99 999 9999"
           className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
@@ -224,7 +191,7 @@ const Shipping: React.FC<ShippingProps> = ({
         <input
           type="text"
           name="cedula"
-          value={formData.cedula}
+          value={value.cedula} // Directly use value from props
           onChange={handleChange}
           placeholder="0975123684"
           className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
@@ -239,7 +206,7 @@ const Shipping: React.FC<ShippingProps> = ({
         <input
           type="text"
           name="ciudad"
-          value={formData.ciudad}
+          value={value.ciudad} // Directly use value from props
           onChange={handleChange}
           placeholder="Guayaquil"
           className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
@@ -254,7 +221,7 @@ const Shipping: React.FC<ShippingProps> = ({
         <input
           type="text"
           name="provincia"
-          value={formData.provincia}
+          value={value.provincia} // Directly use value from props
           onChange={handleChange}
           placeholder="Guayas"
           className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
@@ -271,7 +238,7 @@ const Shipping: React.FC<ShippingProps> = ({
           name="pastcode"
           placeholder="090101"
           className="w-full px-5 py-2.5 border rounded bg-gray-1 outline-none no-spinner"
-          value={formData.pastcode}
+          value={value.pastcode} // Directly use value from props
           onChange={handleChange}
           disabled={usarDireccionPrincipal}
         />
@@ -284,7 +251,7 @@ const Shipping: React.FC<ShippingProps> = ({
           <input
             type="checkbox"
             name="guardarDatos"
-            checked={formData.guardarDatos}
+            checked={value.guardarDatos} // Directly use value from props
             onChange={handleChange}
             className="w-5 h-5 text-blue-600 border-gray-300 rounded"
           />

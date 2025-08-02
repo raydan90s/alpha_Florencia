@@ -12,12 +12,7 @@ const ResultadoPago = () => {
     const [tiempoRestante, setTiempoRestante] = useState<number>(7);
     const navigate = useNavigate();
     const { cartItems, vaciarCarrito, calcularTotal } = useCart();
-    // Ya no dependemos del hook del contexto aquí para la dirección de envío
     const usuarioId = user?.id;
-
-    // Nuevo estado local, inicializado directamente desde sessionStorage.
-    // Esta función solo se ejecuta una vez cuando el componente se monta,
-    // evitando re-renderizaciones en bucle.
     const [direccionEnvioLocal] = useState<any | null>(() => {
         try {
             const storedDireccion = sessionStorage.getItem('direccionEnvio');

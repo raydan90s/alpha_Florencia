@@ -7,7 +7,6 @@ import { PermissionProvider } from './context/PermissionContext';
 import { ConfiguracionProvider } from './context/SettingContext';
 import { HistorialProvider } from './context/HistorialContext';
 import { CartProvider } from './context/CartContext';
-import { DireccionEnvioProvider } from './context/DireccionEnvioContext';
 import { Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import ProductosPage from './pages/productos';
@@ -35,7 +34,6 @@ export default function App() {
             <ConfiguracionProvider>
               <HistorialProvider>
                 <CartProvider>
-                  <DireccionEnvioProvider> {/* Aquí añadimos el proveedor de DireccionEnvio */}
                     <div className="font-inter">
                       <Header />
                       <Routes>
@@ -58,7 +56,6 @@ export default function App() {
                       </Routes>
                       <Footer />
                     </div>
-                  </DireccionEnvioProvider>
                 </CartProvider>
               </HistorialProvider>
             </ConfiguracionProvider>

@@ -1,5 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
-import { useDireccionEnvio } from '../context/DireccionEnvioContext';
+import { useState, useContext, useCallback } from "react";
 import PaymentWidgetModal from "../components/Checkout/Modal";
 import Shipping from "../components/Checkout/Shipping";
 import ShippingMethod from "../components/Checkout/ShippingMethod";
@@ -10,16 +9,14 @@ import CheckoutSteps from "../components/Checkout/CheckoutSteps";
 import { AuthContext } from '../context/AuthContext';
 import { crearCheckoutReal } from "../utils/checkout";
 import { useCart } from "../context/CartContext";
+import type { DireccionEnvio } from "../types/direccionEnvio";
 
 const Checkout = () => {
   const { cartItems, calcularSubtotal, calcularIVA, calcularTotal } = useCart();
   const { user, isAuthenticated } = useContext(AuthContext);
   const userId = isAuthenticated && user?.id ? user.id : null;
 
-  // Accedemos al contexto de direccionEnvio
-  const { setDireccionEnvio } = useDireccionEnvio();
-
-  const [direccionEnvio, setDireccionEnvioState] = useState({
+  const [direccionEnvio, setDireccionEnvioState] = useState<DireccionEnvio>({
     nombre: "",
     apellido: "",
     direccion: "",
@@ -29,37 +26,53 @@ const Checkout = () => {
     provincia: "",
     pastcode: "",
     guardarDatos: false,
+    notas: "", // Notas agregadas al objeto
   });
 
   const [usarMismosDatos, setUsarMismosDatos] = useState(true);
-  const [notas, setNotas] = useState("");
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
   const [showPaymentWidget, setShowPaymentWidget] = useState(false);
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [errorPayment, setErrorPayment] = useState<string | null>(null);
 
-  /**
-   * Esta función es ahora la responsable de iniciar todo el proceso de pago.
-   * Se guarda la dirección en sessionStorage para que persista a través de la recarga de página.
-   */
+  // Function to handle changes in direccionEnvio, including 'notas'
+  const handleChangeDireccion = useCallback((updatedDireccion: DireccionEnvio) => {
+    setDireccionEnvioState((prevState) => {
+      // Evita la actualización si no hay cambios
+      if (JSON.stringify(prevState) !== JSON.stringify(updatedDireccion)) {
+        return {
+          ...prevState,
+          ...updatedDireccion,
+          notas: updatedDireccion.notas !== undefined ? updatedDireccion.notas : prevState.notas,
+        };
+      }
+      return prevState;  // No actualiza el estado si no hubo cambios
+    });
+  }, []);
+
+  // Handle changes specifically for the 'notas' field
+  const handleNotasChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newNotas = e.target.value;
+    setDireccionEnvioState((prevState) => {
+      // Solo actualiza si las notas cambian
+      if (prevState.notas !== newNotas) {
+        return { ...prevState, notas: newNotas };
+      }
+      return prevState;
+    });
+  }, []);
+
   const handleStartPayment = async () => {
     setLoadingPayment(true);
     setErrorPayment(null);
 
-    // PASO CLAVE: Guardamos la dirección de envío en sessionStorage antes de la redirección.
     try {
-        sessionStorage.setItem('direccionEnvio', JSON.stringify(direccionEnvio));
-        console.log("✅ Dirección de envío guardada en sessionStorage.");
+      sessionStorage.setItem('direccionEnvio', JSON.stringify(direccionEnvio));
+      console.log("✅ Dirección de envío guardada en sessionStorage.");
     } catch (e) {
-        console.error("❌ Error al guardar en sessionStorage:", e);
+      console.error("❌ Error al guardar en sessionStorage:", e);
     }
-    
-    // También actualizamos el contexto por si se necesita antes de la redirección.
-    setDireccionEnvio(direccionEnvio);
-    console.log("✅ Contexto de dirección de envío actualizado con éxito.");
 
-
-    // Llamar a la función que crea la sesión de checkout
     await crearCheckoutReal({
       direccionEnvio,
       userId,
@@ -74,7 +87,6 @@ const Checkout = () => {
       setErrorPayment
     });
 
-    // Si el usuario quiere guardar sus datos, lo hacemos aquí.
     if (isAuthenticated && direccionEnvio.guardarDatos && userId) {
       try {
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
@@ -89,17 +101,15 @@ const Checkout = () => {
     }
   };
 
-
   return (
     <section className="overflow-hidden py-20 bg-gray-2">
       <CheckoutSteps currentStep={1} />
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
-        {/* Usamos e.preventDefault() para evitar el envío por defecto del formulario. */}
         <form onSubmit={(e) => e.preventDefault()}>
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="lg:max-w-[670px] w-full space-y-8">
               <Shipping
-                onChange={setDireccionEnvioState}
+                onChange={handleChangeDireccion}
                 isAuthenticated={isAuthenticated}
                 userId={userId}
                 value={direccionEnvio}
@@ -127,11 +137,12 @@ const Checkout = () => {
                 </label>
                 <textarea
                   id="notes"
+                  name="notas"
                   rows={4}
                   placeholder="Ej. instrucciones de entrega..."
                   className="w-full p-4 border rounded bg-gray-50 outline-none focus:ring-2 focus:ring-blue-300"
-                  value={notas}
-                  onChange={(e) => setNotas(e.target.value)}
+                  value={direccionEnvio.notas}
+                  onChange={handleNotasChange} // Use the new handler for notes
                 />
               </div>
             </div>
