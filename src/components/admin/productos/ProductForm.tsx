@@ -198,6 +198,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             resetForm={resetForm}
             scrollToTop={scrollToTop}
             isFormInvalid={!isFormValid()} // Validación invertida
+            handleSubmit={handleSubmit}
           />
         )}
       </form>

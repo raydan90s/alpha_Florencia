@@ -1,12 +1,12 @@
-// components/ProductForm/ProductFormActions.tsx
 import React from 'react';
 
 interface ProductFormActionsProps {
   isLoading: boolean;
   isNewProduct: boolean;
-  isFormInvalid: boolean; // 👈 Nueva prop requerida
+  isFormInvalid: boolean;
   resetForm: () => void;
-  scrollToTop?: () => void; // Nueva prop
+  scrollToTop?: () => void; 
+  handleSubmit: (e: React.FormEvent) => Promise<void>;
 }
 
 const ProductFormActions: React.FC<ProductFormActionsProps> = ({
@@ -15,11 +15,12 @@ const ProductFormActions: React.FC<ProductFormActionsProps> = ({
   resetForm,
   isFormInvalid,
   scrollToTop,
+  handleSubmit,
 }) => {
   const handleCancel = () => {
     resetForm();
-    if (scrollToTop) {  // Comprobación para asegurarnos que scrollToTop no sea undefined
-      scrollToTop(); // Solo invocamos si scrollToTop está definido
+    if (scrollToTop) {
+      scrollToTop();
     }
   };
 
@@ -34,7 +35,8 @@ const ProductFormActions: React.FC<ProductFormActionsProps> = ({
         Cancelar
       </button>
       <button
-        type="submit"
+        type="button"  // Correcto para manejar manualmente el evento
+        onClick={(e) => handleSubmit(e)}  // Llamando handleSubmit cuando el botón es presionado
         className="bg-[#003366] text-white px-4 py-2 rounded-md hover:bg-[#004488] disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={isLoading || isFormInvalid}
       >

@@ -1,4 +1,3 @@
-// Componente DetalleProductoPage
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"; // Usamos react-router-dom para obtener el slug
 import ProductImageGallery from "../components/admin/productos/productosID/ProductImageGallery";
@@ -10,10 +9,12 @@ import PaymentMethods from "../components/admin/productos/productosID/PaymentMet
 import RelatedProductsByBrand from "../components/admin/productos/productosID/RelatedProductsByBrand";
 import ProductDescription from "../components/admin/productos/productosID/ProductDescription";
 import type { Product } from "../types/product";
+import { useProducts } from "../context/ProductContext"; // Usamos el contexto para obtener los productos
 
 export default function DetalleProductoPage() {
   const { slug } = useParams<{ slug: string }>();  // Usamos el slug de la URL
   const [producto, setProducto] = useState<Product | null>(null);
+  const { products, setProducts } = useProducts(); // Obtenemos los productos desde el contexto
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,16 +22,27 @@ export default function DetalleProductoPage() {
 
     setLoading(true);
 
-    // Llamamos a la API usando el slug
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/por-slug/${slug}`)
-      .then((res) => res.ok ? res.json() : Promise.reject("Error al cargar"))
-      .then((data: Product) => setProducto(data))  // Guardamos el producto en el estado
-      .catch((err) => {
-        console.error(err);
-        setProducto(null);  // Si ocurre un error, mostramos null
-      })
-      .finally(() => setLoading(false));  // Dejamos de mostrar el loading cuando se haya completado la solicitud
-  }, [slug]);  // Dependemos del slug, que cambia en cada navegación
+    // Intentamos obtener el producto desde el contexto de productos cargados
+    const foundProduct = products.find(product => product.slug === slug);
+    if (foundProduct) {
+      setProducto(foundProduct);
+      setLoading(false);
+    } else {
+      // Si no lo encontramos, hacemos la llamada a la API
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/por-slug/${slug}`)
+        .then((res) => res.ok ? res.json() : Promise.reject("Error al cargar"))
+        .then((data: Product) => {
+          setProducto(data);  // Guardamos el producto en el estado
+          // Puedes agregar el producto a la lista global de productos si lo deseas
+          setProducts((prevProducts) => [...prevProducts, data]);
+        })
+        .catch((err) => {
+          console.error(err);
+          setProducto(null);  // Si ocurre un error, mostramos null
+        })
+        .finally(() => setLoading(false));  // Dejamos de mostrar el loading cuando se haya completado la solicitud
+    }
+  }, [slug, products, setProducts]);  // Dependemos del slug y de los productos
 
   if (loading) {
     return <div>Cargando producto...</div>;
@@ -60,7 +72,7 @@ export default function DetalleProductoPage() {
             productName={producto.name}
             productId={producto.id}
             price={producto.price}
-            images={producto.images?.map(img => ({ url: img.url })) ?? [{ url: "https://via.placeholder.com/400x300/FCF8E6/1A1A1A?text=Sin+Imagen" }]}
+            images={producto.images?.map(img => ({ url: img.url })) ?? [{ url: "https://via.placeholder.com/400x300/FCF8E6/1A1A1A?text=Sin+Imagen" }] }
           />
           <ShippingInfo />
           <PaymentMethods />

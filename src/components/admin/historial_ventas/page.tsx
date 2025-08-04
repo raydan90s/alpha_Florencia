@@ -111,11 +111,8 @@ const HistorialManager: React.FC = () => {
     setCargandoDetalles(true);
 
     try {
-      // Aquí podrías hacer una llamada a tu API para obtener los detalles del pedido
-      // Por ahora simularemos datos de ejemplo
 
-      // Simulación de llamada a API - reemplaza esto con tu lógica real
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simular delay de API
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       // Datos de ejemplo - reemplaza con tu estructura real
       const detallesEjemplo: DetallePedido[] = [

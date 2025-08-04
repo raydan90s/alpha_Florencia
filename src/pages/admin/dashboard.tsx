@@ -13,7 +13,7 @@ import BrandManager from "../../components/admin/marcas/brand";
 import ModelManager from "../../components/admin/modelos/modelos";
 import InventoryManager from "../../components/admin/inventario/inventory";
 import SettingManager from "../../components/admin/configuracion/setting";
-import HistorialManager from "../../components/admin/historial_ventas/page";
+import HistorialManager from "../../components/admin/historial_ventas/HistorialManager";
 
 export default function AdminDashboard() {
   const [isClient, setIsClient] = useState(false);
@@ -87,7 +87,11 @@ export default function AdminDashboard() {
       const url = isNewProduct
         ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos`
         : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos/${editingId}`;
+
+      console.log("Submitting to URL: ", url);  // Log para depurar
       const method = isNewProduct ? "POST" : "PUT";
+
+      console.log("Using method: ", method);  // Log para depurar
 
       const response = await fetch(url, {
         method,

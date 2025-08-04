@@ -265,22 +265,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const calcularSubtotal = () => {
-    return cartItems.reduce((total, item) => total + item.precio * item.cantidad, 0);
+    return parseFloat(cartItems.reduce((total, item) => total + item.precio * item.cantidad, 0).toFixed(2));
   };
 
   const calcularIVA = () => {
     const subtotal = calcularSubtotal();
     const ivaRate = configuracion?.iva ?? 0;
-    return subtotal * (ivaRate / 100);
-  };
-
-  const contarItems = () => {
-    return cartItems.reduce((total, item) => total + item.cantidad, 0);
+    return parseFloat((subtotal * (ivaRate / 100)).toFixed(2));  // Redondeamos el IVA
   };
 
   const calcularTotal = () => {
-    return calcularSubtotal() + calcularIVA();
-
+    const subtotal = calcularSubtotal();
+    const iva = calcularIVA();
+    return parseFloat((subtotal + iva).toFixed(2));  // Redondeamos el total
+  };
+  const contarItems = () => {
+    return cartItems.reduce((total, item) => total + item.cantidad, 0);
   };
 
 

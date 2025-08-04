@@ -72,7 +72,6 @@ const ResultadoPago = () => {
             // Una vez que el pago se ha procesado y registrado,
             // es seguro limpiar sessionStorage para evitar datos antiguos.
             sessionStorage.removeItem('direccionEnvio');
-            console.log("✅ Dirección de envío eliminada de sessionStorage.");
 
             const intervalId = setInterval(() => {
                 setTiempoRestante((prev) => {
@@ -154,7 +153,6 @@ const ResultadoPago = () => {
             return;
         }
 
-        console.log("✅ Dirección de envío local disponible:", direccionEnvioLocal);
 
         const timeoutId = setTimeout(() => {
             if (cartItems.length === 0) {
