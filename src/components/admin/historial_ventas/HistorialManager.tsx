@@ -17,6 +17,8 @@ const HistorialManager: React.FC = () => {
     const [filtroFechaInicio, setFiltroFechaInicio] = useState<string>("");
     const [filtroFechaFin, setFiltroFechaFin] = useState<string>("");
     const [filtroEstado, setFiltroEstado] = useState<string>("");
+    const [filtroProvincia, setFiltroProvincia] = useState<string>("");  // Agregado
+    const [filtroCiudad, setFiltroCiudad] = useState<string>("");       // Agregado
 
     const [modalAbierto, setModalAbierto] = useState<boolean>(false);
     const [pedidoSeleccionado, setPedidoSeleccionado] = useState<any>(null);
@@ -24,12 +26,15 @@ const HistorialManager: React.FC = () => {
 
     useEffect(() => { }, [pedidos]);
 
+    // Obtener valores únicos de estado, provincia y ciudad
     const estadosUnicos = Array.from(new Set(pedidos.map(p => p.estado).filter(Boolean)));
+    const provinciasUnicas = Array.from(new Set(pedidos.map(p => p.provincia).filter(Boolean)));
+    const ciudadesUnicas = Array.from(new Set(pedidos.map(p => p.ciudad).filter(Boolean)));
 
+    // Función para aplicar filtros
     const aplicarFiltros = () => {
         let pedidosFiltrados = pedidos;
 
-        // Aplicación de los filtros aquí
         if (filtroUsuario.trim()) {
             pedidosFiltrados = filtrarPorUsuario(filtroUsuario);
         }
@@ -57,21 +62,31 @@ const HistorialManager: React.FC = () => {
             pedidosFiltrados = pedidosFiltrados.filter(pedido => pedido.estado === filtroEstado);
         }
 
+        if (filtroProvincia) {
+            pedidosFiltrados = pedidosFiltrados.filter(pedido => pedido.provincia === filtroProvincia);
+        }
+
+        if (filtroCiudad) {
+            pedidosFiltrados = pedidosFiltrados.filter(pedido => pedido.ciudad === filtroCiudad);
+        }
+
         return pedidosFiltrados;
     };
 
     const pedidosFiltrados = aplicarFiltros();
-
     const totalFiltrado = pedidosFiltrados.reduce((acc, p) => acc + p.total, 0);
 
+    // Función para limpiar todos los filtros
     const limpiarTodosFiltros = () => {
         setFiltroUsuario("");
         setFiltroFechaInicio("");
         setFiltroFechaFin("");
         setFiltroEstado("");
+        setFiltroProvincia("");  // Limpiar provincia
+        setFiltroCiudad("");     // Limpiar ciudad
     };
 
-    const hayFiltrosActivos = !!(filtroUsuario || filtroFechaInicio || filtroFechaFin || filtroEstado);
+    const hayFiltrosActivos = !!(filtroUsuario || filtroFechaInicio || filtroFechaFin || filtroEstado || filtroProvincia || filtroCiudad);
 
     const abrirModalDetalles = (pedido: any) => {
         setPedidoSeleccionado(pedido);
@@ -111,7 +126,13 @@ const HistorialManager: React.FC = () => {
                 setFiltroFechaFin={setFiltroFechaFin}
                 filtroEstado={filtroEstado}
                 setFiltroEstado={setFiltroEstado}
+                filtroProvincia={filtroProvincia}  // Pasamos el filtro de provincia
+                setFiltroProvincia={setFiltroProvincia}  // Pasamos la función para actualizar el filtro de provincia
+                filtroCiudad={filtroCiudad}  // Pasamos el filtro de ciudad
+                setFiltroCiudad={setFiltroCiudad}  // Pasamos la función para actualizar el filtro de ciudad
                 estadosUnicos={estadosUnicos}
+                provinciasUnicas={provinciasUnicas}  // Pasamos las provincias únicas
+                ciudadesUnicas={ciudadesUnicas}  // Pasamos las ciudades únicas
                 limpiarTodosFiltros={limpiarTodosFiltros}
                 hayFiltrosActivos={hayFiltrosActivos}
             />

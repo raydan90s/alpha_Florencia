@@ -16,6 +16,8 @@ export interface ResumenPedido {
   fecha_pedido: string;
   total: number;
   estado: string;
+  provincia: string;  // Asegúrate de agregar esta propiedad
+  ciudad: string;     // Asegúrate de agregar esta propiedad
 }
 
 interface HistorialContextType {

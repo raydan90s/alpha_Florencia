@@ -37,8 +37,19 @@ const OrderTable: React.FC<OrderTableProps> = ({ pedidos, abrirModalDetalles }) 
               <td className="px-6 py-4 font-semibold">
                 {new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(pedido.total)}
               </td>
+              <td className="px-6 py-4">{pedido.provincia || "No disponible"}</td> {/* Aquí debe mostrar la provincia */}
+              <td className="px-6 py-4">{pedido.ciudad || "No disponible"}</td> {/* Aquí debe mostrar la ciudad */}
               <td className="px-6 py-4">
-                <span className={`px-2 py-1 rounded text-xs font-medium ${pedido.estado === 'completado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                {/* Resaltar el estado */}
+                <span
+                  className={`px-2 py-1 rounded text-xs font-medium ${
+                    pedido.estado === 'completado'
+                      ? 'bg-green-100 text-green-800'  // Resaltado verde si estado es completado
+                      : pedido.estado === 'en proceso'
+                      ? 'bg-yellow-100 text-yellow-800'  // Resaltado amarillo si estado es "en proceso"
+                      : 'bg-gray-100 text-gray-800'  // Otros estados en gris
+                  }`}
+                >
                   {pedido.estado}
                 </span>
               </td>
@@ -46,7 +57,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ pedidos, abrirModalDetalles }) 
           ))
         ) : (
           <tr>
-            <td colSpan={5} className="text-center py-8 text-gray-500">
+            <td colSpan={7} className="text-center py-8 text-gray-500">
               No hay compras registradas.
             </td>
           </tr>
