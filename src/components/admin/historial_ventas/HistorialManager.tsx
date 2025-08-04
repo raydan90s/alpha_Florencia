@@ -17,8 +17,8 @@ const HistorialManager: React.FC = () => {
     const [filtroFechaInicio, setFiltroFechaInicio] = useState<string>("");
     const [filtroFechaFin, setFiltroFechaFin] = useState<string>("");
     const [filtroEstado, setFiltroEstado] = useState<string>("");
-    const [filtroProvincia, setFiltroProvincia] = useState<string>("");  // Agregado
-    const [filtroCiudad, setFiltroCiudad] = useState<string>("");       // Agregado
+    const [filtroProvincia, setFiltroProvincia] = useState<string>("");  
+    const [filtroCiudad, setFiltroCiudad] = useState<string>("");       
 
     const [modalAbierto, setModalAbierto] = useState<boolean>(false);
     const [pedidoSeleccionado, setPedidoSeleccionado] = useState<any>(null);
