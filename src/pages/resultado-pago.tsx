@@ -52,6 +52,9 @@ const ResultadoPago = () => {
             const data = await res.json();
             const code = data.result?.code;
             const description = data.result?.description;
+            const id_pago = data.result?.id;
+
+            console.log("ID DE PAGO MANDADO", id_pago);
 
             if (!code || !description) {
                 console.error('❌ No se recibió información completa.');
@@ -65,7 +68,7 @@ const ResultadoPago = () => {
 
 
             if (code.startsWith('000')) {
-                await registrarPago(resourcePath, description, code, code.startsWith('000'), usuarioId, cartItems, direccionEnvioLocal);
+                await registrarPago(resourcePath, description, code, code.startsWith('000'), usuarioId, cartItems, direccionEnvioLocal, id_pago);
                 vaciarCarrito();
             }
 
@@ -102,7 +105,7 @@ const ResultadoPago = () => {
         }
     };
 
-    const registrarPago = async (resourcePath: string, estadoPago: string, codigoPago: string, esExitoso: boolean, usuarioId: number, cartItems: any, direccionEnvio: any) => {
+    const registrarPago = async (resourcePath: string, estadoPago: string, codigoPago: string, esExitoso: boolean, usuarioId: number, cartItems: any, direccionEnvio: any, id_pago: string) => {
         const total = calcularTotal().toFixed(2);
 
         const productosCarrito = {
@@ -110,7 +113,6 @@ const ResultadoPago = () => {
             productos: cartItems
         };
 
-        console.log("Productos en el carrito:", productosCarrito);
 
         if (!productosCarrito || !productosCarrito.total || productosCarrito.productos.length === 0) {
             throw new Error("❌ El carrito de productos no contiene los datos necesarios.");
@@ -131,10 +133,10 @@ const ResultadoPago = () => {
                 esExitoso: esExitoso ? 1 : 0,
                 usuarioId,
                 productosCarrito,
-                direccionEnvio, // Usamos la dirección de envío recuperada de sessionStorage
+                direccionEnvio,
+                id_pago 
             }),
         });
-
         if (!res.ok) {
             throw new Error('❌ Error al registrar el pago');
         }

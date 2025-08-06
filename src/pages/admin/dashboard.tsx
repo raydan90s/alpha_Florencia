@@ -85,13 +85,10 @@ export default function AdminDashboard() {
 
     try {
       const url = isNewProduct
-        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos`
-        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productos/${editingId}`;
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/productos`
+        : `${import.meta.env.VITE_API_BASE_URL}/api/productos/${editingId}`;
 
-      console.log("Submitting to URL: ", url);  // Log para depurar
       const method = isNewProduct ? "POST" : "PUT";
-
-      console.log("Using method: ", method);  // Log para depurar
 
       const response = await fetch(url, {
         method,

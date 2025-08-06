@@ -100,11 +100,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, user, agregarAlCarritoDB, obtenerCarritoDB]);
 
 
-  // ✅ Guardar en localStorage cuando cambia el carrito (solo si no autenticado)
   useEffect(() => {
     if (!isAuthenticated && cargadoDesdeLocalStorage) {
       localStorage.setItem("carrito", JSON.stringify(cartItems));
-      console.log("Cart items desde context", cartItems);
     }
   }, [cartItems, isAuthenticated, cargadoDesdeLocalStorage]);
 

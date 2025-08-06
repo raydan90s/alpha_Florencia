@@ -13,6 +13,7 @@ interface DetallePedido {
     nombrePedido?: string;
     numeroTelefono?: string;
     numeroIdentificacion?: string;
+    id_pago?: string;
     productos?: Array<{
         id_producto: number;
         nombre_producto: string;
@@ -30,8 +31,8 @@ interface OrderDetailsModalProps {
 }
 
 const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ pedidoSeleccionado, cerrarModal }) => {
-    const [detalles, setDetalles] = useState<DetallePedido | null>(null); // Estado para almacenar los detalles del pedido
-    const [isLoading, setIsLoading] = useState(true); // Estado para manejar el estado de carga
+    const [detalles, setDetalles] = useState<DetallePedido | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const obtenerDetallesDelPedido = async () => {
@@ -42,7 +43,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ pedidoSeleccionad
                     const data = await response.json();
                     console.log("Respuesta de datos", data);
 
-                    // Asignamos todos los detalles incluyendo los productos
                     setDetalles(data);
                 } catch (error) {
                     console.error("Error al obtener los detalles del pedido:", error);
@@ -99,9 +99,13 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ pedidoSeleccionad
                                             <span className="text-sm font-medium text-gray-600">Número de Identificación:</span>
                                             <p className="text-lg font-medium text-gray-800">{detalles.numeroIdentificacion || "No disponible"}</p>
                                         </div>
-                                        <div className="col-span-2">
+                                        <div className="col-span-2 md:col-span-1">
                                             <span className="text-sm font-medium text-gray-600">Nota:</span>
                                             <p className="text-lg font-medium text-gray-800">{detalles.nota || "No hay nota"}</p>
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1">
+                                            <span className="text-sm font-medium text-gray-600">ID de pago:</span>
+                                            <p className="text-lg font-medium text-gray-800">{detalles.id_pago || "No hay Pago"}</p>
                                         </div>
                                     </div>
 
