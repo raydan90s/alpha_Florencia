@@ -167,7 +167,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     setCartItems(newCartItems);
-    console.log("Nuevo carrito:", newCartItems); // Verificar el carrito actualizado
 
     if (!isAuthenticated) {
       localStorage.setItem("carrito", JSON.stringify(newCartItems));

@@ -52,7 +52,7 @@ const ResultadoPago = () => {
             const data = await res.json();
             const code = data.result?.code;
             const description = data.result?.description;
-            const id_pago = data.result?.id;
+            const id_pago = data.id;
 
             console.log("ID DE PAGO MANDADO", id_pago);
 
@@ -107,6 +107,7 @@ const ResultadoPago = () => {
 
     const registrarPago = async (resourcePath: string, estadoPago: string, codigoPago: string, esExitoso: boolean, usuarioId: number, cartItems: any, direccionEnvio: any, id_pago: string) => {
         const total = calcularTotal().toFixed(2);
+        console.log("TOTAL ENVIADO  A LA BASE DE DATOS", total);
 
         const productosCarrito = {
             total: total,

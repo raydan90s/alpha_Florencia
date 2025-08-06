@@ -14,6 +14,7 @@ interface DetallePedido {
     numeroTelefono?: string;
     numeroIdentificacion?: string;
     id_pago?: string;
+    estado?:string;
     productos?: Array<{
         id_producto: number;
         nombre_producto: string;
@@ -105,7 +106,11 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ pedidoSeleccionad
                                         </div>
                                         <div className="col-span-2 md:col-span-1">
                                             <span className="text-sm font-medium text-gray-600">ID de pago:</span>
-                                            <p className="text-lg font-medium text-gray-800">{detalles.id_pago || "No hay Pago"}</p>
+                                            <p className="text-lg font-medium text-gray-800">{detalles.id_pago || "No hay Pago Disponible"}</p>
+                                        </div>
+                                        <div className="col-span-2 md:col-span-1">
+                                            <span className="text-sm font-medium text-gray-600">Estado de Pago:</span>
+                                            <p className="text-lg font-medium text-gray-800">{detalles.estado || "No hay Estado Disponible"}</p>
                                         </div>
                                     </div>
 
