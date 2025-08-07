@@ -31,6 +31,7 @@ const Shipping: React.FC<ShippingProps> = ({
 }) => {
   const [usarDireccionPrincipal, setUsarDireccionPrincipal] = useState(false);
   const [formAutoCargado, setFormAutoCargado] = useState(false);
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({}); // Store errors for each field
 
   useEffect(() => {
     const fetchDireccionGuardada = async () => {
@@ -102,6 +103,31 @@ const Shipping: React.FC<ShippingProps> = ({
     // If checked, the useEffect for fetchDireccionGuardada will handle the update.
   };
 
+  // Validate form before allowing to proceed
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {};
+
+    if (!value.nombre) errors.nombre = "El nombre es obligatorio.";
+    if (!value.apellido) errors.apellido = "El apellido es obligatorio.";
+    if (!value.direccion) errors.direccion = "La dirección es obligatoria.";
+    if (!value.telefono) errors.telefono = "El teléfono es obligatorio.";
+    if (!value.cedula) errors.cedula = "La cédula es obligatoria.";
+    if (!value.ciudad) errors.ciudad = "La ciudad es obligatoria.";
+    if (!value.provincia) errors.provincia = "La provincia es obligatoria.";
+    if (!value.pastcode) errors.pastcode = "El código postal es obligatorio.";
+
+    setFormErrors(errors);
+
+    return Object.keys(errors).length === 0; // If there are no errors, return true
+  };
+
+  const handleStartPayment = () => {
+    if (!validateForm()) {
+      return; // If validation fails, don't proceed
+    }
+    // Proceed with the payment
+  };
+
   return (
     <div className="bg-white shadow-1 rounded-[10px] p-4 sm:p-8.5">
       <h4 className="text-xl font-semibold text-slate-800 mb-6 border-b border-slate-200 pb-2">
@@ -131,13 +157,15 @@ const Shipping: React.FC<ShippingProps> = ({
           <input
             type="text"
             name="nombre"
-            value={value.nombre} // Directly use value from props
+            value={value.nombre}
             onChange={handleChange}
             placeholder="Juan"
-            className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
+            className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.nombre ? 'border-red-500' : ''}`}
             disabled={usarDireccionPrincipal}
           />
+          {formErrors.nombre && <p className="text-red-500 text-xs">{formErrors.nombre}</p>}
         </div>
+
         <div>
           <label className="block mb-2.5">
             Apellidos <span className="text-red">*</span>
@@ -145,12 +173,13 @@ const Shipping: React.FC<ShippingProps> = ({
           <input
             type="text"
             name="apellido"
-            value={value.apellido} // Directly use value from props
+            value={value.apellido}
             onChange={handleChange}
             placeholder="Pérez"
-            className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
+            className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.apellido ? 'border-red-500' : ''}`}
             disabled={usarDireccionPrincipal}
           />
+          {formErrors.apellido && <p className="text-red-500 text-xs">{formErrors.apellido}</p>}
         </div>
       </div>
 
@@ -161,12 +190,13 @@ const Shipping: React.FC<ShippingProps> = ({
         <input
           type="text"
           name="direccion"
-          value={value.direccion} // Directly use value from props
+          value={value.direccion}
           onChange={handleChange}
           placeholder="Av. Siempre Viva 123"
-          className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
+          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.direccion ? 'border-red-500' : ''}`}
           disabled={usarDireccionPrincipal}
         />
+        {formErrors.direccion && <p className="text-red-500 text-xs">{formErrors.direccion}</p>}
       </div>
 
       <div className="mb-5">
@@ -176,12 +206,13 @@ const Shipping: React.FC<ShippingProps> = ({
         <input
           type="tel"
           name="telefono"
-          value={value.telefono} // Directly use value from props
+          value={value.telefono}
           onChange={handleChange}
           placeholder="+593 99 999 9999"
-          className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
+          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.telefono ? 'border-red-500' : ''}`}
           disabled={usarDireccionPrincipal}
         />
+        {formErrors.telefono && <p className="text-red-500 text-xs">{formErrors.telefono}</p>}
       </div>
 
       <div className="mb-5">
@@ -191,12 +222,13 @@ const Shipping: React.FC<ShippingProps> = ({
         <input
           type="text"
           name="cedula"
-          value={value.cedula} // Directly use value from props
+          value={value.cedula}
           onChange={handleChange}
           placeholder="0975123684"
-          className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
+          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.cedula ? 'border-red-500' : ''}`}
           disabled={usarDireccionPrincipal}
         />
+        {formErrors.cedula && <p className="text-red-500 text-xs">{formErrors.cedula}</p>}
       </div>
 
       <div className="mb-5">
@@ -206,12 +238,13 @@ const Shipping: React.FC<ShippingProps> = ({
         <input
           type="text"
           name="ciudad"
-          value={value.ciudad} // Directly use value from props
+          value={value.ciudad}
           onChange={handleChange}
           placeholder="Guayaquil"
-          className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
+          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.ciudad ? 'border-red-500' : ''}`}
           disabled={usarDireccionPrincipal}
         />
+        {formErrors.ciudad && <p className="text-red-500 text-xs">{formErrors.ciudad}</p>}
       </div>
 
       <div className="mb-5">
@@ -221,12 +254,13 @@ const Shipping: React.FC<ShippingProps> = ({
         <input
           type="text"
           name="provincia"
-          value={value.provincia} // Directly use value from props
+          value={value.provincia}
           onChange={handleChange}
           placeholder="Guayas"
-          className="w-full py-2.5 px-5 border rounded bg-gray-1 outline-none"
+          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.provincia ? 'border-red-500' : ''}`}
           disabled={usarDireccionPrincipal}
         />
+        {formErrors.provincia && <p className="text-red-500 text-xs">{formErrors.provincia}</p>}
       </div>
 
       <div className="mb-5">
@@ -237,21 +271,21 @@ const Shipping: React.FC<ShippingProps> = ({
           type="number"
           name="pastcode"
           placeholder="090101"
-          className="w-full px-5 py-2.5 border rounded bg-gray-1 outline-none no-spinner"
-          value={value.pastcode} // Directly use value from props
+          className={`w-full px-5 py-2.5 border rounded bg-gray-1 outline-none no-spinner ${formErrors.pastcode ? 'border-red-500' : ''}`}
+          value={value.pastcode}
           onChange={handleChange}
           disabled={usarDireccionPrincipal}
         />
-
+        {formErrors.pastcode && <p className="text-red-500 text-xs">{formErrors.pastcode}</p>}
       </div>
 
-      {/* Mostrar checkbox "Guardar datos" sólo si está autenticado, NO está auto cargado, y NO está usando dirección principal */}
+      {/* Show "Guardar Datos" checkbox if the user is authenticated, and the form is not pre-filled */}
       {isAuthenticated && !formAutoCargado && !usarDireccionPrincipal && (
         <div className="flex items-center gap-2">
           <input
             type="checkbox"
             name="guardarDatos"
-            checked={value.guardarDatos} // Directly use value from props
+            checked={value.guardarDatos}
             onChange={handleChange}
             className="w-5 h-5 text-blue-600 border-gray-300 rounded"
           />

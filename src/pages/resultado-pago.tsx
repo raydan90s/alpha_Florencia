@@ -11,13 +11,12 @@ const ResultadoPago = () => {
     const [consultaCompletada, setConsultaCompletada] = useState<boolean>(false);
     const [tiempoRestante, setTiempoRestante] = useState<number>(7);
     const navigate = useNavigate();
-    const { cartItems, vaciarCarrito, calcularTotal } = useCart();
+    const { cartItems, vaciarCarrito } = useCart();
     const usuarioId = user?.id;
     const [direccionEnvioLocal] = useState<any | null>(() => {
         try {
             const storedDireccion = sessionStorage.getItem('direccionEnvio');
             if (storedDireccion) {
-                console.log('✅ Dirección de envío recuperada y parseada de sessionStorage.');
                 return JSON.parse(storedDireccion);
             }
         } catch (e) {
@@ -26,11 +25,9 @@ const ResultadoPago = () => {
         return null;
     });
 
-    // Función para consultar el estado del pago
     const consultarPago = async (resourcePath: string) => {
         try {
             if (consultaCompletada) {
-                console.log("✅ La consulta ya fue realizada, no se hace nuevamente.");
                 return;
             }
             setConsultaCompletada(true);
@@ -54,6 +51,7 @@ const ResultadoPago = () => {
             const description = data.result?.description;
             const id_pago = data.id;
 
+            const amount = data.amount;
             console.log("ID DE PAGO MANDADO", id_pago);
 
             if (!code || !description) {
@@ -68,12 +66,9 @@ const ResultadoPago = () => {
 
 
             if (code.startsWith('000')) {
-                await registrarPago(resourcePath, description, code, code.startsWith('000'), usuarioId, cartItems, direccionEnvioLocal, id_pago);
+                await registrarPago(amount, resourcePath, description, code, code.startsWith('000'), usuarioId, cartItems, direccionEnvioLocal, id_pago);
                 vaciarCarrito();
             }
-
-            // Una vez que el pago se ha procesado y registrado,
-            // es seguro limpiar sessionStorage para evitar datos antiguos.
             sessionStorage.removeItem('direccionEnvio');
 
             const intervalId = setInterval(() => {
@@ -105,9 +100,7 @@ const ResultadoPago = () => {
         }
     };
 
-    const registrarPago = async (resourcePath: string, estadoPago: string, codigoPago: string, esExitoso: boolean, usuarioId: number, cartItems: any, direccionEnvio: any, id_pago: string) => {
-        const total = calcularTotal().toFixed(2);
-        console.log("TOTAL ENVIADO  A LA BASE DE DATOS", total);
+    const registrarPago = async (total: string, resourcePath: string, estadoPago: string, codigoPago: string, esExitoso: boolean, usuarioId: number, cartItems: any, direccionEnvio: any, id_pago: string) => {
 
         const productosCarrito = {
             total: total,
@@ -135,7 +128,7 @@ const ResultadoPago = () => {
                 usuarioId,
                 productosCarrito,
                 direccionEnvio,
-                id_pago 
+                id_pago
             }),
         });
         if (!res.ok) {
