@@ -11,6 +11,25 @@ import { crearCheckoutReal } from "../utils/checkout";
 import { useCart } from "../context/CartContext";
 import type { DireccionEnvio } from "../types/direccionEnvio";
 
+interface CustomAlertProps {
+  message: string;
+  onClose: () => void;
+}
+
+const CustomAlert = ({ message, onClose }: CustomAlertProps) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
+      <h3 className="font-bold text-lg text-red-600 mb-2">¡Atención!</h3>
+      <p className="py-4">{message}</p>
+      <div className="modal-action">
+        <button onClick={onClose} className="w-full bg-[#FF6B00] text-white py-2 rounded-md hover:bg-[#FF8533] transition-colors">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 const Checkout = () => {
   const { cartItems, calcularSubtotal, calcularIVA, calcularTotal } = useCart();
   const { user, isAuthenticated } = useContext(AuthContext);
@@ -26,7 +45,7 @@ const Checkout = () => {
     provincia: "",
     pastcode: "",
     guardarDatos: false,
-    notas: "", // Notas agregadas al objeto
+    notas: "",
   });
 
   const [usarMismosDatos, setUsarMismosDatos] = useState(true);
@@ -34,11 +53,12 @@ const Checkout = () => {
   const [showPaymentWidget, setShowPaymentWidget] = useState(false);
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [errorPayment, setErrorPayment] = useState<string | null>(null);
+  // Nuevo estado para la alerta personalizada
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
-  // Function to handle changes in direccionEnvio, including 'notas'
   const handleChangeDireccion = useCallback((updatedDireccion: DireccionEnvio) => {
     setDireccionEnvioState((prevState) => {
-      // Evita la actualización si no hay cambios
       if (JSON.stringify(prevState) !== JSON.stringify(updatedDireccion)) {
         return {
           ...prevState,
@@ -46,23 +66,46 @@ const Checkout = () => {
           notas: updatedDireccion.notas !== undefined ? updatedDireccion.notas : prevState.notas,
         };
       }
-      return prevState;  // No actualiza el estado si no hubo cambios
+      return prevState;
     });
   }, []);
 
-  // Handle changes specifically for the 'notas' field
   const handleNotasChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newNotas = e.target.value;
     setDireccionEnvioState((prevState) => {
-      // Solo actualiza si las notas cambian
       if (prevState.notas !== newNotas) {
         return { ...prevState, notas: newNotas };
       }
       return prevState;
     });
   }, []);
+  
+  // NUEVA FUNCIÓN DE VALIDACIÓN
+  const isFormValid = useCallback(() => {
+    // Si la facturación es diferente, también necesitas validar esos campos.
+    // Por ahora, solo validamos los campos de envío.
+    const requiredFields: Array<keyof DireccionEnvio> = [
+      "nombre",
+      "apellido",
+      "direccion",
+      "telefono",
+      "cedula",
+      "ciudad",
+      "provincia",
+      "pastcode",
+    ];
+
+    return requiredFields.every(field => direccionEnvio[field] !== "");
+  }, [direccionEnvio]);
 
   const handleStartPayment = async () => {
+    // Validación previa antes de iniciar el pago
+    if (!isFormValid()) {
+      setAlertMessage("Por favor, completa todos los campos obligatorios antes de continuar.");
+      setShowAlert(true);
+      return; // Detiene la ejecución
+    }
+
     setLoadingPayment(true);
     setErrorPayment(null);
 
@@ -142,7 +185,7 @@ const Checkout = () => {
                   placeholder="Ej. instrucciones de entrega..."
                   className="w-full p-4 border rounded bg-gray-50 outline-none focus:ring-2 focus:ring-blue-300"
                   value={direccionEnvio.notas}
-                  onChange={handleNotasChange} // Use the new handler for notes
+                  onChange={handleNotasChange}
                 />
               </div>
             </div>
@@ -179,8 +222,13 @@ const Checkout = () => {
                 <button
                   type="button"
                   onClick={handleStartPayment}
-                  disabled={loadingPayment}
-                  className="w-full bg-[#FF6B00] text-white py-2 text-sm sm:text-base rounded-md hover:bg-[#FF8533] transition-colors"
+                  // El botón se deshabilita si está cargando o si el formulario no es válido
+                  disabled={loadingPayment || !isFormValid()}
+                  className={`w-full text-white py-2 text-sm sm:text-base rounded-md transition-colors ${
+                    isFormValid() && !loadingPayment
+                      ? "bg-[#FF6B00] hover:bg-[#FF8533]"
+                      : "bg-gray-400 cursor-not-allowed"
+                  }`}
                 >
                   {loadingPayment ? "Cargando formulario..." : "Pagar ahora"}
                 </button>
@@ -198,6 +246,9 @@ const Checkout = () => {
         checkoutId={checkoutId}
         onClose={() => setShowPaymentWidget(false)}
       />
+
+      {/* Alerta personalizada para campos vacíos */}
+      {showAlert && <CustomAlert message={alertMessage} onClose={() => setShowAlert(false)} />}
     </section>
   );
 };

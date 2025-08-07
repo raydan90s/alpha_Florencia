@@ -23,15 +23,72 @@ function normalizeDireccionEnvio(data: Partial<DireccionEnvio>): DireccionEnvio 
   };
 }
 
+// Helper function for validation
+const validateField = (name: string, value: string): string => {
+  switch (name) {
+
+    case "nombre":
+      if (value.trim().length < 3) {
+        return "Ingrese un nombre válido.";
+      }
+      return "";
+    case "apellido":
+      if (value.trim().length < 3) {
+        return "Ingrese un apellido válido.";
+      }
+      return "";
+    case "direccion":
+      if (value.trim().length < 5) {
+        return "Ingrese dirección válida";
+      }
+      return "";
+    case "telefono":
+      const telefonoRegex = /^\d{10}$/;
+      if (!telefonoRegex.test(value)) {
+        return "Ingrese un télefono válido.";
+      }
+      return "";
+    case "cedula":
+      const cedulaRegex = /^\d{10}$/;
+      if (!cedulaRegex.test(value)) {
+        return "Ingrese un documento válido";
+      }
+      return "";
+    case "pastcode":
+      const pastcodeRegex = /^\d{1,6}$/;
+      if (!pastcodeRegex.test(value) || value.length > 6) {
+        return "Ingrese un código válido";
+      }
+      return "";
+    case "ciudad":
+    case "provincia":
+      if (value.trim().length < 3) {
+        return "Ingrese una direccion válida.";
+      }
+      return "";
+    default:
+      return "";
+  }
+};
+
 const Shipping: React.FC<ShippingProps> = ({
   onChange,
   isAuthenticated,
   userId,
-  value, // Now explicitly used as the source of truth
+  value,
 }) => {
   const [usarDireccionPrincipal, setUsarDireccionPrincipal] = useState(false);
   const [formAutoCargado, setFormAutoCargado] = useState(false);
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({}); // Store errors for each field
+  const [errors, setErrors] = useState<Record<keyof Omit<DireccionEnvio, 'guardarDatos' | 'notas'>, string>>({
+    nombre: "",
+    apellido: "",
+    direccion: "",
+    telefono: "",
+    cedula: "",
+    ciudad: "",
+    provincia: "",
+    pastcode: "",
+  });
 
   useEffect(() => {
     const fetchDireccionGuardada = async () => {
@@ -46,32 +103,27 @@ const Shipping: React.FC<ShippingProps> = ({
             const fetchedDireccion = normalizeDireccionEnvio({
               ...(Array.isArray(data) ? data[0] : data),
               guardarDatos: false,
-              // Preserve current notes from the 'value' prop if not provided by fetched data
               notas: (Array.isArray(data) ? data[0]?.notas : data?.notas) ?? value.notas,
             });
-            onChange(fetchedDireccion); // Update parent's state directly
+            onChange(fetchedDireccion);
             setFormAutoCargado(true);
           } else {
-            // If no data, clear form but preserve notes from the current 'value' prop
             onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
             setFormAutoCargado(false);
           }
         } catch (error) {
           console.error("Error cargando dirección guardada:", error);
-          // On error, clear form but preserve notes from the current 'value' prop
           onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
           setFormAutoCargado(false);
         }
       } else {
-        // If not authenticated or not using principal address, reset to current 'value' prop
-        // This ensures the form reflects the parent's state accurately.
         onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
         setFormAutoCargado(false);
       }
     };
 
     fetchDireccionGuardada();
-  }, [isAuthenticated, userId, usarDireccionPrincipal, onChange, value.notas]); // Added onChange and value.notas to dependencies
+  }, [isAuthenticated, userId, usarDireccionPrincipal, onChange, value.notas]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value: inputValue, type, checked } = e.target;
@@ -80,13 +132,19 @@ const Shipping: React.FC<ShippingProps> = ({
       setFormAutoCargado(false);
     }
 
-    // Directly call onChange with the updated value
     onChange({
-      ...value, // Start with the current value from props
+      ...value,
       [name]: type === "checkbox" ? checked : inputValue,
-      // 'notas' is managed by the parent, so we don't explicitly set it here.
-      // It will be updated by the 'value' prop if the parent sends a new 'value'.
     });
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value: inputValue } = e.target;
+    const errorMessage = validateField(name, inputValue);
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: errorMessage,
+    }));
   };
 
   const handleUsarDireccionPrincipalChange = (
@@ -96,36 +154,20 @@ const Shipping: React.FC<ShippingProps> = ({
     setUsarDireccionPrincipal(checked);
 
     if (!checked) {
-      // If unchecking, clear form by sending an empty-ish object to parent, preserving notes
+      // Clear errors when unchecking the box
+      setErrors({
+        nombre: "",
+        apellido: "",
+        direccion: "",
+        telefono: "",
+        cedula: "",
+        ciudad: "",
+        provincia: "",
+        pastcode: "",
+      });
       onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
       setFormAutoCargado(false);
     }
-    // If checked, the useEffect for fetchDireccionGuardada will handle the update.
-  };
-
-  // Validate form before allowing to proceed
-  const validateForm = () => {
-    const errors: { [key: string]: string } = {};
-
-    if (!value.nombre) errors.nombre = "El nombre es obligatorio.";
-    if (!value.apellido) errors.apellido = "El apellido es obligatorio.";
-    if (!value.direccion) errors.direccion = "La dirección es obligatoria.";
-    if (!value.telefono) errors.telefono = "El teléfono es obligatorio.";
-    if (!value.cedula) errors.cedula = "La cédula es obligatoria.";
-    if (!value.ciudad) errors.ciudad = "La ciudad es obligatoria.";
-    if (!value.provincia) errors.provincia = "La provincia es obligatoria.";
-    if (!value.pastcode) errors.pastcode = "El código postal es obligatorio.";
-
-    setFormErrors(errors);
-
-    return Object.keys(errors).length === 0; // If there are no errors, return true
-  };
-
-  const handleStartPayment = () => {
-    if (!validateForm()) {
-      return; // If validation fails, don't proceed
-    }
-    // Proceed with the payment
   };
 
   return (
@@ -152,134 +194,148 @@ const Shipping: React.FC<ShippingProps> = ({
       <div className="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
           <label className="block mb-2.5">
-            Nombres <span className="text-red">*</span>
+            Nombres <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             name="nombre"
             value={value.nombre}
             onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="Juan"
-            className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.nombre ? 'border-red-500' : ''}`}
+            className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.nombre ? 'border-red-500' : ''
+              }`}
             disabled={usarDireccionPrincipal}
           />
-          {formErrors.nombre && <p className="text-red-500 text-xs">{formErrors.nombre}</p>}
+          {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre}</p>}
         </div>
-
         <div>
           <label className="block mb-2.5">
-            Apellidos <span className="text-red">*</span>
+            Apellidos <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             name="apellido"
             value={value.apellido}
             onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="Pérez"
-            className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.apellido ? 'border-red-500' : ''}`}
+            className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.apellido ? 'border-red-500' : ''
+              }`}
             disabled={usarDireccionPrincipal}
           />
-          {formErrors.apellido && <p className="text-red-500 text-xs">{formErrors.apellido}</p>}
+          {errors.apellido && <p className="text-red-500 text-sm mt-1">{errors.apellido}</p>}
         </div>
       </div>
 
       <div className="mb-5">
         <label className="block mb-2.5">
-          Dirección <span className="text-red">*</span>
+          Dirección <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           name="direccion"
           value={value.direccion}
           onChange={handleChange}
+          onBlur={handleBlur}
           placeholder="Av. Siempre Viva 123"
-          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.direccion ? 'border-red-500' : ''}`}
+          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.direccion ? 'border-red-500' : ''
+            }`}
           disabled={usarDireccionPrincipal}
         />
-        {formErrors.direccion && <p className="text-red-500 text-xs">{formErrors.direccion}</p>}
+        {errors.direccion && <p className="text-red-500 text-sm mt-1">{errors.direccion}</p>}
       </div>
 
       <div className="mb-5">
         <label className="block mb-2.5">
-          Número de Teléfono <span className="text-red">*</span>
+          Número de Teléfono <span className="text-red-500">*</span>
         </label>
         <input
           type="tel"
           name="telefono"
           value={value.telefono}
           onChange={handleChange}
-          placeholder="+593 99 999 9999"
-          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.telefono ? 'border-red-500' : ''}`}
+          onBlur={handleBlur}
+          placeholder="0999999999"
+          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.telefono ? 'border-red-500' : ''
+            }`}
           disabled={usarDireccionPrincipal}
         />
-        {formErrors.telefono && <p className="text-red-500 text-xs">{formErrors.telefono}</p>}
+        {errors.telefono && <p className="text-red-500 text-sm mt-1">{errors.telefono}</p>}
       </div>
 
       <div className="mb-5">
         <label className="block mb-2.5">
-          Número de Cédula <span className="text-red">*</span>
+          Número de Cédula <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           name="cedula"
           value={value.cedula}
           onChange={handleChange}
+          onBlur={handleBlur}
           placeholder="0975123684"
-          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.cedula ? 'border-red-500' : ''}`}
+          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.cedula ? 'border-red-500' : ''
+            }`}
           disabled={usarDireccionPrincipal}
         />
-        {formErrors.cedula && <p className="text-red-500 text-xs">{formErrors.cedula}</p>}
+        {errors.cedula && <p className="text-red-500 text-sm mt-1">{errors.cedula}</p>}
       </div>
 
       <div className="mb-5">
         <label className="block mb-2.5">
-          Ciudad <span className="text-red">*</span>
+          Ciudad <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           name="ciudad"
           value={value.ciudad}
           onChange={handleChange}
+          onBlur={handleBlur}
           placeholder="Guayaquil"
-          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.ciudad ? 'border-red-500' : ''}`}
+          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.ciudad ? 'border-red-500' : ''
+            }`}
           disabled={usarDireccionPrincipal}
         />
-        {formErrors.ciudad && <p className="text-red-500 text-xs">{formErrors.ciudad}</p>}
+        {errors.ciudad && <p className="text-red-500 text-sm mt-1">{errors.ciudad}</p>}
       </div>
 
       <div className="mb-5">
         <label className="block mb-2.5">
-          Provincia <span className="text-red">*</span>
+          Provincia <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           name="provincia"
           value={value.provincia}
           onChange={handleChange}
+          onBlur={handleBlur}
           placeholder="Guayas"
-          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${formErrors.provincia ? 'border-red-500' : ''}`}
+          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.provincia ? 'border-red-500' : ''
+            }`}
           disabled={usarDireccionPrincipal}
         />
-        {formErrors.provincia && <p className="text-red-500 text-xs">{formErrors.provincia}</p>}
+        {errors.provincia && <p className="text-red-500 text-sm mt-1">{errors.provincia}</p>}
       </div>
 
       <div className="mb-5">
         <label className="block mb-2.5">
-          Código Postal <span className="text-red">*</span>
+          Código Postal <span className="text-red-500">*</span>
         </label>
         <input
           type="number"
           name="pastcode"
           placeholder="090101"
-          className={`w-full px-5 py-2.5 border rounded bg-gray-1 outline-none no-spinner ${formErrors.pastcode ? 'border-red-500' : ''}`}
+          className={`w-full px-5 py-2.5 border rounded bg-gray-1 outline-none no-spinner ${errors.pastcode ? 'border-red-500' : ''
+            }`}
           value={value.pastcode}
           onChange={handleChange}
+          onBlur={handleBlur}
           disabled={usarDireccionPrincipal}
         />
-        {formErrors.pastcode && <p className="text-red-500 text-xs">{formErrors.pastcode}</p>}
+        {errors.pastcode && <p className="text-red-500 text-sm mt-1">{errors.pastcode}</p>}
       </div>
 
-      {/* Show "Guardar Datos" checkbox if the user is authenticated, and the form is not pre-filled */}
       {isAuthenticated && !formAutoCargado && !usarDireccionPrincipal && (
         <div className="flex items-center gap-2">
           <input
