@@ -9,6 +9,7 @@ const permisosDisponibles = [
     { id: "ver_inventario", label: "Ver inventario" },
     { id: "ver_configuracion", label: "Ver configuración" },
     { id: "ver_historial", label: "Ver historial de ventas" },
+    { id: "ver_pago", label: "Ver pagos" },
 ];
 
 const rolesDisponibles = ["Admin", "Cliente"];

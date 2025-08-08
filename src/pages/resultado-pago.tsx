@@ -65,23 +65,32 @@ const ResultadoPago = () => {
             setEsExitoso(code.startsWith('000'));
 
 
-            if (code.startsWith('000')) {
-                await registrarPago(amount, resourcePath, description, code, code.startsWith('000'), usuarioId, cartItems, direccionEnvioLocal, id_pago);
+            const esExitosoLocal = code.startsWith('000');
+            setEsExitoso(esExitosoLocal);
+
+            if (esExitosoLocal) {
+                await registrarPago(amount, resourcePath, description, code, true, usuarioId, cartItems, direccionEnvioLocal, id_pago);
                 vaciarCarrito();
             }
             sessionStorage.removeItem('direccionEnvio');
 
-            const intervalId = setInterval(() => {
-                setTiempoRestante((prev) => {
-                    if (prev === 1) {
-                        clearInterval(intervalId);
-                        if (esExitoso !== null) {
-                            if (esExitoso) {
-                                navigate('/');
-                            } else {
-                                navigate('/carrito');
-                            }
+            setTiempoRestante(7); // aseguramos que empiece en 7
+
+            const countdownInterval = setInterval(() => {
+                setTiempoRestante(prev => {
+                    if (prev <= 1) {
+                        clearInterval(countdownInterval);
+
+                        if (esExitosoLocal) {
+                            navigate('/');
+                        } else {
+                            navigate('/carrito');
                         }
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 100);
+
+                        return 0;
                     }
                     return prev - 1;
                 });

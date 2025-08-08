@@ -14,6 +14,7 @@ import ModelManager from "../../components/admin/modelos/modelos";
 import InventoryManager from "../../components/admin/inventario/inventory";
 import SettingManager from "../../components/admin/configuracion/setting";
 import HistorialManager from "../../components/admin/historial_ventas/HistorialManager";
+import PagoManager from "../../components/admin/pagos/pagosManager";
 
 export default function AdminDashboard() {
   const [isClient, setIsClient] = useState(false);
@@ -304,6 +305,15 @@ export default function AdminDashboard() {
             <p className="text-red-600 font-semibold">No tienes acceso al historial de ventas.</p>
           )
         )}
+
+        {selectedSection === "pagos" && (
+          hasPermission("ver_pago") ? (
+            <PagoManager />
+          ) : (
+            <p className="text-red-600 font-semibold">No tienes acceso al historial de ventas.</p>
+          )
+        )}
+
       </main>
     </div>
   );

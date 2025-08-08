@@ -42,13 +42,12 @@ const OrderTable: React.FC<OrderTableProps> = ({ pedidos, abrirModalDetalles }) 
               <td className="px-6 py-4">
                 {/* Resaltar el estado */}
                 <span
-                  className={`px-2 py-1 rounded text-xs font-medium ${
-                    pedido.estado === 'completado'
-                      ? 'bg-green-100 text-green-800'  // Resaltado verde si estado es completado
+                  className={`px-2 py-1 rounded text-xs font-medium ${pedido.estado === 'completado'
+                      ? 'bg-[#D1FAE5] text-[#065F46]'  // Verde suave de fondo y verde oscuro de texto
                       : pedido.estado === 'en proceso'
-                      ? 'bg-yellow-100 text-yellow-800'  // Resaltado amarillo si estado es "en proceso"
-                      : 'bg-gray-100 text-gray-800'  // Otros estados en gris
-                  }`}
+                        ? 'bg-[#FEF3C7] text-[#92400E]'  // Amarillo suave de fondo y marrón oscuro de texto
+                        : 'bg-[#F3F4F6] text-[#1F2937]'  // Gris claro de fondo y gris oscuro de texto
+                    }`}
                 >
                   {pedido.estado}
                 </span>
