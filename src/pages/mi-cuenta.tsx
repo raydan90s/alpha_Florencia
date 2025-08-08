@@ -2,18 +2,7 @@
 
 import { AuthContext } from '../context/AuthContext';
 import { useContext, useState, useEffect, useCallback } from 'react';
-
-interface ShippingAddress {
-  id: number;
-  nombre?: string;
-  apellido?: string;
-  direccion: string;
-  telefono: string;
-  cedula?: string;
-  ciudad: string;
-  provincia: string;
-  es_principal: boolean;
-}
+import type { DireccionEnvio } from '../types/direccionEnvio';
 
 const ShippingAddressesPage = () => {
   const { user } = useContext(AuthContext);
@@ -21,10 +10,10 @@ const ShippingAddressesPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [addresses, setAddresses] = useState<ShippingAddress[]>([]);
+  const [addresses, setAddresses] = useState<DireccionEnvio[]>([]);
 
-  const [editingAddress, setEditingAddress] = useState<ShippingAddress | null>(null);
-  const [formData, setFormData] = useState<Partial<ShippingAddress>>({
+  const [editingAddress, setEditingAddress] = useState<DireccionEnvio | null>(null);
+  const [formData, setFormData] = useState<Partial<DireccionEnvio>>({
     nombre: '',
     apellido: '',
     direccion: '',
@@ -128,13 +117,17 @@ const ShippingAddressesPage = () => {
     }
   };
 
-  const startEditing = (address: ShippingAddress) => {
+  const startEditing = (address: DireccionEnvio) => {
     setEditingAddress(address);
     setFormData(address);
     setShowForm(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id?: number) => {
+    if (id === undefined) {
+      alert('ID de dirección inválido');
+      return;
+    }
     if (!confirm('¿Seguro que quieres eliminar esta dirección?')) return;
 
     try {

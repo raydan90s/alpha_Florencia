@@ -136,7 +136,6 @@ const Checkout = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(direccionEnvio),
         });
-        console.log("✅ Dirección de envío guardada en la base de datos.");
       } catch (error) {
         console.error('❌ Error guardando dirección:', error);
       }

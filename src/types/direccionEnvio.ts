@@ -1,4 +1,5 @@
 export type DireccionEnvio = {
+  id?:number;
   nombre: string;
   apellido: string;
   direccion: string;
@@ -9,4 +10,5 @@ export type DireccionEnvio = {
   pastcode: string;  
   guardarDatos: boolean;
   notas: string;
+  es_principal?:boolean;
 };

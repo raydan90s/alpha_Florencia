@@ -7,8 +7,18 @@ interface ShippingProps {
   userId: number | null;
   value: DireccionEnvio; // This prop is the single source of truth for form data
 }
+type ErrorFields = {
+  nombre: string;
+  apellido: string;
+  direccion: string;
+  telefono: string;
+  cedula: string;
+  ciudad: string;
+  provincia: string;
+  pastcode: string;
+};
 
-function normalizeDireccionEnvio(data: Partial<DireccionEnvio>): DireccionEnvio {
+function normalizeDireccionEnvio(data: Partial<DireccionEnvio> & { postal?: string }): DireccionEnvio {
   return {
     nombre: data.nombre ?? "",
     apellido: data.apellido ?? "",
@@ -17,7 +27,7 @@ function normalizeDireccionEnvio(data: Partial<DireccionEnvio>): DireccionEnvio 
     cedula: data.cedula ?? "",
     ciudad: data.ciudad ?? "",
     provincia: data.provincia ?? "",
-    pastcode: data.pastcode ?? "",
+    pastcode: data.pastcode ?? data.postal ?? "",
     guardarDatos: data.guardarDatos ?? false,
     notas: data.notas ?? '',
   };
@@ -79,7 +89,7 @@ const Shipping: React.FC<ShippingProps> = ({
 }) => {
   const [usarDireccionPrincipal, setUsarDireccionPrincipal] = useState(false);
   const [formAutoCargado, setFormAutoCargado] = useState(false);
-  const [errors, setErrors] = useState<Record<keyof Omit<DireccionEnvio, 'guardarDatos' | 'notas'>, string>>({
+  const [errors, setErrors] = useState<ErrorFields>({
     nombre: "",
     apellido: "",
     direccion: "",
@@ -98,7 +108,6 @@ const Shipping: React.FC<ShippingProps> = ({
             `${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio/principal`
           );
           const data = await res.json();
-
           if (data) {
             const fetchedDireccion = normalizeDireccionEnvio({
               ...(Array.isArray(data) ? data[0] : data),
