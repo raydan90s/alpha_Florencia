@@ -1,55 +1,39 @@
 import React, { useEffect } from 'react';
 
+// Se define la interfaz para las propiedades del componente
 interface PaymentWidgetModalProps {
     show: boolean | null;
     checkoutId: string | null;
     onClose: () => void;
 }
 
+// Componente funcional de React
 const PaymentWidgetModal: React.FC<PaymentWidgetModalProps> = ({ show, checkoutId, onClose }) => {
     if (!show || !checkoutId) return null;
 
     useEffect(() => {
-        // Definir la configuración de Datafast (wpwlOptions) en el objeto global window
         (window as any).wpwlOptions = {
-            style: "card",
-            locale: "es",
-            labels: { cvv: "CVV", cardHolder: "Nombre" },
-            onBeforeSubmitCard: function () {
-                // Definir los selectores de los campos para la validación
-                const fields = [
-                    { selector: ".wpwl-control-cardHolder", message: "Nombre del titular es requerido" },
-                    { selector: ".wpwl-control-cardNumber", message: "Número de tarjeta es requerido" },
-                    { selector: ".wpwl-control-expiry", message: "Fecha de vencimiento es requerida" },
-                    { selector: ".wpwl-control-cvv", message: "CVV es requerido" }
-                ];
+            style: "card", 
+            locale: "es", 
+            labels: { cvv: "CVV", cardHolder: "Nombre" }, 
+            buttonLabels: { pay: "Pagar ahora" }, 
 
-                // Limpiar errores previos
+            hideCvv: true,
+            onBeforeSubmitCard: function () {
+                const cardHolderElement = document.querySelector(".wpwl-control-cardHolder") as HTMLInputElement;
+
                 document.querySelectorAll(".wpwl-has-error").forEach(el => el.classList.remove("wpwl-has-error"));
                 document.querySelectorAll(".wpwl-hint-error").forEach(el => el.remove());
 
-                const payButton = document.querySelector(".wpwl-button-pay");
-                payButton?.classList.remove("wpwl-button-error");
-                payButton?.removeAttribute("disabled");
-
-                let isValid = true;
-
-                // Iterar sobre los campos y validar si están vacíos
-                fields.forEach(field => {
-                    const element = document.querySelector(field.selector) as HTMLInputElement;
-                    if (element && (!element.value || element.value.trim() === "")) {
-                        element.classList.add("wpwl-has-error");
-                        element.insertAdjacentHTML("afterend", `<div class='wpwl-hint-error' style='color: red; font-size: 0.8rem; margin-top: 5px;'>${field.message}</div>`);
-                        isValid = false;
-                    }
-                });
-
-                if (!isValid) {
-                    payButton?.classList.add("wpwl-button-error");
-                    (payButton as HTMLButtonElement)?.setAttribute("disabled", "disabled");
+                if (cardHolderElement && (!cardHolderElement.value || cardHolderElement.value.trim() === "")) {
+                    cardHolderElement.classList.add("wpwl-has-error");
+                    cardHolderElement.insertAdjacentHTML("afterend", `<div class='wpwl-hint-error' style='color: red; font-size: 0.8rem; margin-top: 5px;'>Nombre del titular es requerido</div>`);
+                    return false;
                 }
+                return true;
+            },
 
-                return isValid;
+            onReady: function () {
             }
         };
 
@@ -57,22 +41,28 @@ const PaymentWidgetModal: React.FC<PaymentWidgetModalProps> = ({ show, checkoutI
         const existingScript = document.querySelector("script[src*='paymentWidgets.js']");
         if (existingScript) existingScript.remove();
 
-        // Crear el nuevo script con el checkoutId
-        const script = document.createElement("script");
-        script.src = `https://test.oppwa.com/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
-        script.async = true;
+        // Creamos una función para cargar el script después de un pequeño retraso
+        const loadScript = () => {
+            const script = document.createElement("script");
+            script.src = `https://test.oppwa.com/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
+            script.async = true;
+            document.body.appendChild(script);
+        };
 
-        // Añadir el script al final del body
-        document.body.appendChild(script);
+        // Llamamos a la función de carga con un retraso
+        const timeoutId = setTimeout(loadScript, 500);
 
-        // Limpiar el script y la configuración de wpwlOptions cuando el componente se desmonte
+        // Función de limpieza para eliminar el script y las opciones al desmontar el componente
         return () => {
-            document.body.removeChild(script);
+            clearTimeout(timeoutId); // Limpiamos el timeout
+            const script = document.querySelector("script[src*='paymentWidgets.js']");
+            if (script) document.body.removeChild(script);
             delete (window as any).wpwlOptions;
         };
     }, [checkoutId, show]);
+
     return (
-        // ... (El resto del componente sigue siendo el mismo)
+        // Renderizado del modal con el formulario de pago
         <div
             className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
             onClick={onClose}

@@ -79,7 +79,7 @@ const Checkout = () => {
       return prevState;
     });
   }, []);
-  
+
   // NUEVA FUNCIÓN DE VALIDACIÓN
   const isFormValid = useCallback(() => {
     // Si la facturación es diferente, también necesitas validar esos campos.
@@ -111,7 +111,6 @@ const Checkout = () => {
 
     try {
       sessionStorage.setItem('direccionEnvio', JSON.stringify(direccionEnvio));
-      console.log("✅ Dirección de envío guardada en sessionStorage.");
     } catch (e) {
       console.error("❌ Error al guardar en sessionStorage:", e);
     }
@@ -224,11 +223,10 @@ const Checkout = () => {
                   onClick={handleStartPayment}
                   // El botón se deshabilita si está cargando o si el formulario no es válido
                   disabled={loadingPayment || !isFormValid()}
-                  className={`w-full text-white py-2 text-sm sm:text-base rounded-md transition-colors ${
-                    isFormValid() && !loadingPayment
+                  className={`w-full text-white py-2 text-sm sm:text-base rounded-md transition-colors ${isFormValid() && !loadingPayment
                       ? "bg-[#FF6B00] hover:bg-[#FF8533]"
                       : "bg-gray-400 cursor-not-allowed"
-                  }`}
+                    }`}
                 >
                   {loadingPayment ? "Cargando formulario..." : "Pagar ahora"}
                 </button>
