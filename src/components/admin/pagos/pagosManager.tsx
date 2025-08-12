@@ -143,6 +143,9 @@ export default function PagoManager() {
 
                     <div className="p-3 bg-gray-100 rounded">
                         <p>
+                            <strong>Tipo de pago:</strong> {paymentData.paymentType || "—"}
+                        </p>
+                        <p>
                             <strong>Código de la consulta:</strong> {paymentData.result?.code || "—"}
                         </p>
                         <p>
@@ -151,6 +154,7 @@ export default function PagoManager() {
                         <p>
                             <strong>Detalle de la transacción:</strong> {paymentData.resultDetails?.ExtendedDescription || "—"}
                         </p>
+
 
                         {paymentData.id_pago && (
                             <p>
@@ -186,6 +190,7 @@ export default function PagoManager() {
                         <div className="mt-4 p-3 bg-gray-100 rounded space-y-1">
                             <h5 className="font-semibold mb-2">Resultado de la Anulación:</h5>
                             <div className="mt-2">
+                                <p><strong>Tipo de transacción:</strong> {anulacionResultado.paymentType || "—"}</p>
                                 <p><strong>Código de Anulación:</strong> {anulacionResultado.result?.code || "—"}</p>
                                 <p><strong>Descripción de Anulación:</strong> {anulacionResultado.result?.description || "—"}</p>
                             </div>

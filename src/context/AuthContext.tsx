@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: any | null;
@@ -15,9 +16,12 @@ interface AuthContextType {
 
 interface RegisterFormData {
   name: string;
+  apellido?: string; // Agregado campo apellido como opcional
   email: string;
   password: string;
   confirmPassword: string;
+  telefono?: string; // Agregado campo telefono como opcional
+  direccion?: string; // Agregado campo direccion como opcional
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -44,6 +48,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [mounted, setMounted] = useState(false);
 
   const LOAD_DELAY = 800;
+
+  // Hook para manejar la redirección después del registro/login
+  const navigate = useNavigate();
 
   const forceUpdateAuth = useCallback(() => {
     setAuthStateChanged((prev) => prev + 1);
@@ -80,6 +87,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     verifyUser();
   }, [authStateChanged, mounted]);
 
+  // Efecto para manejar redirección después de autenticación exitosa
+  useEffect(() => {
+    if (isAuthenticated && user && !initialLoading) {
+      const redirectUrl = sessionStorage.getItem('redirectAfterAuth');
+      
+      if (redirectUrl) {
+        console.log('🔄 Usuario autenticado, redirigiendo a:', redirectUrl);
+        
+        // Limpiar la URL de redirección
+        sessionStorage.removeItem('redirectAfterAuth');
+        
+        // Redirigir con un pequeño delay para asegurar que el contexto esté completamente actualizado
+        setTimeout(() => {
+          navigate(redirectUrl, { replace: true });
+        }, 500);
+      }
+    }
+  }, [isAuthenticated, user, initialLoading, navigate]);
+
   const logout = useCallback(async () => {
     setActionLoading(true);
     setAuthError(null);
@@ -91,6 +117,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (err) {
       console.warn("⚠ Error durante logout (no crítico):", err);
     }
+    
+    // Limpiar datos de redirección y checkout al hacer logout
+    sessionStorage.removeItem('redirectAfterAuth');
+    sessionStorage.removeItem('checkoutFormData');
+    sessionStorage.removeItem('direccionEnvio');
+    
     setUser(null);
     setIsAuthenticated(false);
     forceUpdateAuth();
@@ -121,6 +153,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(data.user);
         setIsAuthenticated(true);
         forceUpdateAuth();
+        
+        console.log('✅ Login exitoso para:', data.user.email);
+        
         return null;
       } else {
         const errorMsg = data.error || 'Credenciales inválidas.';
@@ -138,6 +173,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [forceUpdateAuth]);
 
   const register = useCallback(async (formData: RegisterFormData) => {
+    console.log('📝 Iniciando proceso de registro...');
+    
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/registrar`, {
         method: 'POST',
@@ -149,14 +186,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const data = await res.json();
 
       if (!res.ok) {
+        console.error('❌ Error en registro:', data.message);
         return { error: true, message: data.message || "Error al registrar." };
       }
 
-      return { error: false, message: data.message, userId: data.userId };
+      console.log('✅ Registro exitoso, iniciando sesión automática...');
+
+      // IMPORTANTE: Después del registro exitoso, iniciar sesión automáticamente
+      // para activar isAuthenticated y permitir la redirección
+      try {
+        const loginResult = await login(formData.email, formData.password);
+        
+        if (loginResult === null) {
+          // Login exitoso después del registro
+          console.log('✅ Sesión iniciada automáticamente después del registro');
+          return { 
+            error: false, 
+            message: "¡Registro exitoso! Bienvenido/a.", 
+            userId: data.userId 
+          };
+        } else {
+          // Si por alguna razón el login automático falla, pero el registro fue exitoso
+          console.warn('⚠ Registro exitoso pero login automático falló');
+          return { 
+            error: false, 
+            message: "Registro exitoso. Por favor, inicia sesión.", 
+            userId: data.userId 
+          };
+        }
+      } catch (loginError) {
+        console.error('❌ Error en login automático después del registro:', loginError);
+        return { 
+          error: false, 
+          message: "Registro exitoso. Por favor, inicia sesión.", 
+          userId: data.userId 
+        };
+      }
+
     } catch (error) {
+      console.error('❌ Error en el proceso de registro:', error);
       return { error: true, message: "Ocurrió un error en el servidor." };
     }
-  }, []);
+  }, [login]); // Agregamos login como dependencia
 
   const contextValue = useMemo(() => ({
     user,
@@ -188,10 +259,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   if (initialLoading || actionLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
-        <svg className="animate-spin h-10 w-10 text-[#003366]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-        </svg>
+        <div className="flex flex-col items-center gap-4">
+          <svg className="animate-spin h-10 w-10 text-[#003366]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+          </svg>
+          <p className="text-[#003366] text-sm font-medium">
+            {actionLoading ? "Procesando..." : "Cargando..."}
+          </p>
+        </div>
       </div>
     );
   }

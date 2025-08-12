@@ -14,7 +14,8 @@ interface DetallePedido {
     numeroTelefono?: string;
     numeroIdentificacion?: string;
     id_pago?: string;
-    estado?:string;
+    estado?: string;
+    id_anulacion?: string;
     productos?: Array<{
         id_producto: number;
         nombre_producto: string;
@@ -109,8 +110,10 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ pedidoSeleccionad
                                             <p className="text-lg font-medium text-gray-800">{detalles.id_pago || "No hay Pago Disponible"}</p>
                                         </div>
                                         <div className="col-span-2 md:col-span-1">
-                                            <span className="text-sm font-medium text-gray-600">Estado de Pago:</span>
-                                            <p className="text-lg font-medium text-gray-800">{detalles.estado || "No hay Estado Disponible"}</p>
+                                            <span className="text-sm font-medium text-gray-600">ID de anulación:</span>
+                                            <p className="text-lg font-medium text-gray-800">
+                                                {detalles.estado === "Cancelado" ? (detalles.id_anulacion || "No disponible") : "N/A"}
+                                            </p>
                                         </div>
                                     </div>
 
