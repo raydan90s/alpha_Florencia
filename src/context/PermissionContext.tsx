@@ -25,7 +25,6 @@ export const PermissionProvider = ({ children }: { children: React.ReactNode }) 
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/permissions/${user.id}`);
         if (!res.ok) throw new Error("No se pudo cargar los permisos");
         const data = await res.json();
-
         setPermissions(data.permisos);
       } catch (error) {
         console.error(error);

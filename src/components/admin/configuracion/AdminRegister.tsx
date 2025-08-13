@@ -8,7 +8,7 @@ const permisosDisponibles = [
     { id: "ver_modelos", label: "Ver modelos" },
     { id: "ver_inventario", label: "Ver inventario" },
     { id: "ver_configuracion", label: "Ver configuración" },
-    { id: "ver_historial", label: "Ver historial de ventas" },
+    { id: "ver_historial_ventas", label: "Ver historial de ventas" },
     { id: "ver_pago", label: "Ver pagos" },
 ];
 
