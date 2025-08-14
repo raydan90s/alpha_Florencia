@@ -24,6 +24,7 @@ import AdminDashboard from './pages/admin/dashboard';
 import AdminLogin from './pages/admin/login';
 import DetalleProductoPage from './pages/DetalleProductoPage';
 import ResultadoPago from './pages/resultado-pago';
+import VerificarPage from './pages/verificar';
 
 export default function App() {
   return (
@@ -34,28 +35,29 @@ export default function App() {
             <ConfiguracionProvider>
               <HistorialProvider>
                 <CartProvider>
-                    <div className="font-inter">
-                      <Header />
-                      <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/productos" element={<ProductosPage />} />
-                        <Route path="/carrito" element={<Carrito />} />
-                        <Route path="/checkout" element={<Checkout />} />
-                        <Route path="/contactanos" element={<Contactanos />} />
-                        <Route path="/envio-entrega" element={<EnvioEntrega />} />
-                        <Route path="/iniciar-sesion" element={<IniciarSesion />} />
-                        <Route path="/mi-cuenta" element={<ShippingAddressesPage />} />
-                        <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
-                        <Route path="/quienes-somos" element={<QuienesSomos />} />
-                        <Route path="/registrarse" element={<Registro />} />
-                        <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
-                        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                        <Route path="/admin/login" element={<AdminLogin />} />
-                        <Route path="/productos/:slug" element={<DetalleProductoPage />} />
-                        <Route path="/resultado-pago" element={<ResultadoPago />} />
-                      </Routes>
-                      <Footer />
-                    </div>
+                  <div className="font-inter">
+                    <Header />
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/productos" element={<ProductosPage />} />
+                      <Route path="/carrito" element={<Carrito />} />
+                      <Route path="/checkout" element={<Checkout />} />
+                      <Route path="/contactanos" element={<Contactanos />} />
+                      <Route path="/envio-entrega" element={<EnvioEntrega />} />
+                      <Route path="/iniciar-sesion" element={<IniciarSesion />} />
+                      <Route path="/mi-cuenta" element={<ShippingAddressesPage />} />
+                      <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
+                      <Route path="/quienes-somos" element={<QuienesSomos />} />
+                      <Route path="/registrarse" element={<Registro />} />
+                      <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
+                      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                      <Route path="/admin/login" element={<AdminLogin />} />
+                      <Route path="/productos/:slug" element={<DetalleProductoPage />} />
+                      <Route path="/resultado-pago" element={<ResultadoPago />} />
+                      <Route path='/verificar' element={<VerificarPage />} />
+                    </Routes>
+                    <Footer />
+                  </div>
                 </CartProvider>
               </HistorialProvider>
             </ConfiguracionProvider>

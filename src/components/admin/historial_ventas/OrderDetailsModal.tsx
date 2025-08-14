@@ -43,8 +43,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ pedidoSeleccionad
                 try {
                     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/pedidos/${pedidoSeleccionado.id_pedido}/detalles`);
                     const data = await response.json();
-                    console.log("Respuesta de datos", data);
-
                     setDetalles(data);
                 } catch (error) {
                     console.error("Error al obtener los detalles del pedido:", error);

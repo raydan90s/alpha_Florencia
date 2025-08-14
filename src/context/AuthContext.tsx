@@ -1,12 +1,13 @@
 import { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { enviarCorreoVerificacion } from '../utils/enviarCorreo';
 
 interface AuthContextType {
   user: any | null;
   isAuthenticated: boolean;
   login: (email: string, password: string, modoAdmin?: boolean) => Promise<string | null>;
   logout: () => Promise<void>;
-  register: (formData: RegisterFormData) => Promise<{ error: boolean; message: string; userId?: string }>;
+  register: (formData: RegisterFormData) => Promise<{ error: boolean; message: string; userId?: string; verificationToken?: string }>;
   authStateChanged: number;
   authError: string | null;
   setAuthError: React.Dispatch<React.SetStateAction<string | null>>;
@@ -16,12 +17,11 @@ interface AuthContextType {
 
 interface RegisterFormData {
   name: string;
-  apellido?: string; // Agregado campo apellido como opcional
+  apellido?: string;
   email: string;
   password: string;
   confirmPassword: string;
-  telefono?: string; // Agregado campo telefono como opcional
-  direccion?: string; // Agregado campo direccion como opcional
+  verificationToken?: string;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -91,14 +91,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (isAuthenticated && user && !initialLoading) {
       const redirectUrl = sessionStorage.getItem('redirectAfterAuth');
-      
+
       if (redirectUrl) {
-        console.log('🔄 Usuario autenticado, redirigiendo a:', redirectUrl);
-        
-        // Limpiar la URL de redirección
+
         sessionStorage.removeItem('redirectAfterAuth');
-        
-        // Redirigir con un pequeño delay para asegurar que el contexto esté completamente actualizado
+
         setTimeout(() => {
           navigate(redirectUrl, { replace: true });
         }, 500);
@@ -117,12 +114,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (err) {
       console.warn("⚠ Error durante logout (no crítico):", err);
     }
-    
+
     // Limpiar datos de redirección y checkout al hacer logout
     sessionStorage.removeItem('redirectAfterAuth');
     sessionStorage.removeItem('checkoutFormData');
     sessionStorage.removeItem('direccionEnvio');
-    
+
     setUser(null);
     setIsAuthenticated(false);
     forceUpdateAuth();
@@ -142,7 +139,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       const data = await res.json();
+      if (data.emailNotVerified && data.user) {
+        const errorMsg = 'Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.';
+        setAuthError(errorMsg);
 
+        try {
+          const resReenviar = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reenviar-verificacion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: data.user.email }),
+          });
+
+          const dataReenviar = await resReenviar.json();
+
+          // Solo enviamos correo si recibimos un token nuevo
+          if (dataReenviar.verificationToken) {
+            await enviarCorreoVerificacion(
+              dataReenviar.nombre,
+              data.user.email,
+              dataReenviar.verificationToken
+            );
+            console.log('✅ Correo de verificación enviado');
+          } else {
+            console.log('⏳ Token aún válido. No se reenvió correo.');
+          }
+
+        } catch (err) {
+          console.error('❌ Error al reenviar correo de verificación:', err);
+        }
+
+        return errorMsg;
+      }
+
+
+      // Caso: login exitoso
       if (res.ok && data.user) {
         if (modoAdmin && data.user.tipo !== 'Admin') {
           const errorMsg = 'Acceso restringido a administradores.';
@@ -153,15 +183,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(data.user);
         setIsAuthenticated(true);
         forceUpdateAuth();
-        
-        console.log('✅ Login exitoso para:', data.user.email);
-        
         return null;
-      } else {
-        const errorMsg = data.error || 'Credenciales inválidas.';
-        setAuthError(errorMsg);
-        return errorMsg;
       }
+
+      // Caso: credenciales inválidas u otros errores
+      const errorMsg = data.error || 'Credenciales inválidas.';
+      setAuthError(errorMsg);
+      return errorMsg;
+
     } catch (err) {
       const errorMsg = 'Error de conexión.';
       console.error("🌐 Error de red:", err);
@@ -172,9 +201,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [forceUpdateAuth]);
 
+
   const register = useCallback(async (formData: RegisterFormData) => {
-    console.log('📝 Iniciando proceso de registro...');
-    
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/registrar`, {
         method: 'POST',
@@ -189,45 +217,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('❌ Error en registro:', data.message);
         return { error: true, message: data.message || "Error al registrar." };
       }
-
-      console.log('✅ Registro exitoso, iniciando sesión automática...');
-
-      // IMPORTANTE: Después del registro exitoso, iniciar sesión automáticamente
-      // para activar isAuthenticated y permitir la redirección
-      try {
-        const loginResult = await login(formData.email, formData.password);
-        
-        if (loginResult === null) {
-          // Login exitoso después del registro
-          console.log('✅ Sesión iniciada automáticamente después del registro');
-          return { 
-            error: false, 
-            message: "¡Registro exitoso! Bienvenido/a.", 
-            userId: data.userId 
-          };
-        } else {
-          // Si por alguna razón el login automático falla, pero el registro fue exitoso
-          console.warn('⚠ Registro exitoso pero login automático falló');
-          return { 
-            error: false, 
-            message: "Registro exitoso. Por favor, inicia sesión.", 
-            userId: data.userId 
-          };
-        }
-      } catch (loginError) {
-        console.error('❌ Error en login automático después del registro:', loginError);
-        return { 
-          error: false, 
-          message: "Registro exitoso. Por favor, inicia sesión.", 
-          userId: data.userId 
-        };
-      }
+      return {
+        error: false,
+        message: "¡Registro exitoso! Te hemos enviado un correo de verificación.",
+        userId: data.userId,
+        verificationToken: data.verificationToken || data.userId || Date.now().toString()
+      };
 
     } catch (error) {
       console.error('❌ Error en el proceso de registro:', error);
       return { error: true, message: "Ocurrió un error en el servidor." };
     }
-  }, [login]); // Agregamos login como dependencia
+  }, []); // Quitamos la dependencia de login
 
   const contextValue = useMemo(() => ({
     user,
