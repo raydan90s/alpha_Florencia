@@ -27,17 +27,13 @@ export const PaymentProvider = ({ children }: { children: React.ReactNode }) => 
     const { vaciarCarrito } = useCart();
     const navigate = useNavigate();
 
-    const usuarioCorreo = user?.email;  // Usa el correo del usuario autenticado o uno temporal
+    const usuarioCorreo = user?.email;
 
-    // Función para consultar el estado del pago
     const consultarPago = async (resourcePath: string) => {
         try {
             if (consultaCompletada) {
-                console.log("✅ La consulta ya fue realizada, no se hace nuevamente.");
                 return;
             }
-
-            console.log(`🔍 Consultando resultado de pago con resourcePath: ${resourcePath}`);
             setConsultaCompletada(true);
 
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout/resultado?id=${resourcePath}`, {
@@ -47,7 +43,6 @@ export const PaymentProvider = ({ children }: { children: React.ReactNode }) => 
                 }
             });
 
-            // Verificar si la respuesta es exitosa
             if (!res.ok) {
                 console.error('❌ Error al hacer la consulta:', res.statusText);
                 setEstadoPago(`Error: ${res.statusText}`);
@@ -56,32 +51,23 @@ export const PaymentProvider = ({ children }: { children: React.ReactNode }) => 
             }
 
             const data = await res.json();
-            console.log('🔍 Respuesta del backend:', data);  // Verifica la respuesta aquí
-
             const code = data.result?.code;
             const description = data.result?.description;
 
-            // Verificar si se recibió el código de la transacción
             if (!code || !description) {
                 console.error('❌ No se recibió información completa.');
                 setEstadoPago('❌ No se recibió la información necesaria del pago.');
                 setEsExitoso(false);
                 return;
             }
-
-            console.log('✅ Resultado de la consulta:', data);
             setEstadoPago(description); // Mostrar la descripción de la respuesta
             setEsExitoso(code.startsWith('000')); // Si el código empieza con 000, se considera exitoso
 
-            // Si el pago fue exitoso, vaciar el carrito
             if (code.startsWith('000')) {
                 vaciarCarrito();
             }
-
-            // Llamada para registrar el pago en la base de datos
             await registrarPago(resourcePath, description, code, code.startsWith('000'), usuarioCorreo);
 
-            // Iniciar el conteo regresivo para redirigir
             const intervalId = setInterval(() => {
                 setTiempoRestante((prev) => {
                     if (prev === 1) {
@@ -124,7 +110,7 @@ export const PaymentProvider = ({ children }: { children: React.ReactNode }) => 
                     resourcePath,
                     estadoPago,
                     codigoPago,
-                    esExitoso: esExitoso ? 1 : 0, // Asegúrate de enviar como 1 o 0
+                    esExitoso: esExitoso ? 1 : 0, 
                     usuarioCorreo
                 }),
             });
@@ -132,9 +118,6 @@ export const PaymentProvider = ({ children }: { children: React.ReactNode }) => 
             if (!res.ok) {
                 throw new Error('❌ Error al registrar el pago');
             }
-
-            const data = await res.json();
-            console.log('✅ Pago registrado en la base de datos:', data);
         } catch (error) {
             console.error('❌ Error al registrar el pago:', error);
         }

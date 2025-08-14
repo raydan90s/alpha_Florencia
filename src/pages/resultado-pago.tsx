@@ -52,8 +52,6 @@ const ResultadoPago = () => {
             const id_pago = data.id;
 
             const amount = data.amount;
-            console.log("ID DE PAGO MANDADO", id_pago);
-
             if (!code || !description) {
                 console.error('❌ No se recibió información completa.');
                 setEstadoPago('❌ No se recibió la información necesaria del pago.');
@@ -143,9 +141,6 @@ const ResultadoPago = () => {
         if (!res.ok) {
             throw new Error('❌ Error al registrar el pago');
         }
-
-        const data = await res.json();
-        console.log('✅ Pago registrado en la base de datos:', data);
     };
 
     useEffect(() => {
@@ -154,7 +149,6 @@ const ResultadoPago = () => {
         // El efecto ahora solo se ejecuta si resourcePath está disponible
         // y la dirección de envío ya ha sido cargada en el estado inicial.
         if (!resourcePath || !direccionEnvioLocal || consultaCompletada) {
-            console.log('Esperando por el resourcePath o la dirección de envío local...');
             return;
         }
 

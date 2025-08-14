@@ -25,6 +25,7 @@ import AdminLogin from './pages/admin/login';
 import DetalleProductoPage from './pages/DetalleProductoPage';
 import ResultadoPago from './pages/resultado-pago';
 import VerificarPage from './pages/verificar';
+import RestablecerPassword from './pages/RestablecerPassword';
 
 export default function App() {
   return (
@@ -55,6 +56,7 @@ export default function App() {
                       <Route path="/productos/:slug" element={<DetalleProductoPage />} />
                       <Route path="/resultado-pago" element={<ResultadoPago />} />
                       <Route path='/verificar' element={<VerificarPage />} />
+                      <Route path="/restablecer-password" element={<RestablecerPassword />} />
                     </Routes>
                     <Footer />
                   </div>

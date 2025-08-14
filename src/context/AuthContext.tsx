@@ -159,11 +159,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               data.user.email,
               dataReenviar.verificationToken
             );
-            console.log('✅ Correo de verificación enviado');
-          } else {
-            console.log('⏳ Token aún válido. No se reenvió correo.');
-          }
-
+          } 
         } catch (err) {
           console.error('❌ Error al reenviar correo de verificación:', err);
         }

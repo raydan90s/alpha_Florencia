@@ -48,8 +48,15 @@ export default function VerificarEmail() {
       }
     };
 
-    verificarEmail();
+    const timeoutId = setTimeout(() => {
+      verificarEmail();
+    }, 3000); // 3 segundos de espera
+
+    // Limpieza del timeout si el componente se desmonta
+    return () => clearTimeout(timeoutId);
+
   }, [token]);
+
 
   if (loading) {
     return (

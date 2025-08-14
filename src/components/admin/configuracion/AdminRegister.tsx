@@ -119,7 +119,6 @@ export default function AdminRegister() {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario?email=${emailBusqueda}`);
             const data = await res.json();
-            console.log("PERMISO ENCONTRADOS", data);
             if (!res.ok) throw new Error(data.error || "Usuario no encontrado");
             setUsuarioEncontrado(data.usuario);
             setRolSeleccionado(data.usuario.rol);

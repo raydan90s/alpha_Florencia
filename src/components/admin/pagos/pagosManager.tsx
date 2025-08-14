@@ -63,8 +63,6 @@ export default function PagoManager() {
     };
 
     const handleAnularPago = async () => {
-        console.log("PAYMENT DATA", paymentData);
-
         if (!paymentData?.id) {
             alert("No hay un pago válido para anular.");
             return;
@@ -86,8 +84,6 @@ export default function PagoManager() {
                 { id_pago },
                 { withCredentials: true }
             );
-            console.log("Pago consultado:", res.data);
-
             setAnulacionResultado(res.data); // Guarda siempre el resultado
 
             if (res.data?.result?.code && res.data.result.code.startsWith("000")) {

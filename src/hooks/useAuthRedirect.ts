@@ -7,13 +7,8 @@ export const useAuthRedirect = (isAuthenticated: boolean) => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      // Verificar si hay una URL de redirección guardada
       const redirectUrl = sessionStorage.getItem('redirectAfterAuth');
-      
       if (redirectUrl) {
-        console.log('🔄 Redirigiendo después del registro exitoso a:', redirectUrl);
-        
-        // Limpiar la URL de redirección
         sessionStorage.removeItem('redirectAfterAuth');
         
         // Redirigir con un pequeño delay para asegurar que el contexto esté actualizado
@@ -29,7 +24,6 @@ export const handlePostAuthRedirect = (navigate: ReturnType<typeof useNavigate>)
   const redirectUrl = sessionStorage.getItem('redirectAfterAuth');
   
   if (redirectUrl) {
-    console.log('🔄 Redirigiendo después del registro exitoso a:', redirectUrl);
     sessionStorage.removeItem('redirectAfterAuth');
     
     setTimeout(() => {
@@ -52,7 +46,6 @@ export const cleanExpiredCheckoutData = () => {
       
       if (dataAge > oneHour) {
         sessionStorage.removeItem('checkoutFormData');
-        console.log('🧹 Datos de checkout expirados eliminados');
       }
     }
   } catch (error) {

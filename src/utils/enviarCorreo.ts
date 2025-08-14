@@ -13,6 +13,5 @@ export function enviarCorreoVerificacion(nombre: string, email: string, token: s
         },
         key
     )
-        .then(() => console.log("Correo de verificación enviado!"))
         .catch(err => console.error(err));
 }

@@ -237,27 +237,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (isAuthenticated && user?.id) {
       // Si está autenticado, vaciar el carrito del backend
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/carrito/vaciar`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/carrito/vaciar`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ id_usuario: user.id }), // Enviar el id_usuario
         });
-
-        if (res.ok) {
-          console.log('✅ Carrito vaciado con éxito desde el backend');
-        } else {
-          console.error('❌ Error al vaciar el carrito desde el backend');
-        }
       } catch (error) {
         console.error('❌ Error al vaciar el carrito:', error);
       }
-    } else {
-      // Si no está autenticado, eliminar del localStorage
-      console.log("🚨 Usuario no autenticado. Eliminando del localStorage.");
-      localStorage.removeItem("carrito");
-      console.log("✅ Carrito eliminado del localStorage");
     }
   };
 

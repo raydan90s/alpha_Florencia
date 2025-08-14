@@ -122,7 +122,6 @@ const Checkout = () => {
     
     try {
       sessionStorage.setItem('checkoutFormData', JSON.stringify(checkoutData));
-      console.log("✅ Datos del checkout guardados exitosamente");
     } catch (error) {
       console.error("❌ Error al guardar datos del checkout:", error);
     }
@@ -222,15 +221,8 @@ const Checkout = () => {
     // 4. Verificación de autenticación
     if (!isAuthenticated) {
       const handleRedirectToRegister = () => {
-        // Guardar los datos actuales del formulario
         saveCheckoutDataToSession();
-        
-        // Guardar la URL actual para regresar después del registro
         sessionStorage.setItem('redirectAfterAuth', '/checkout');
-        
-        console.log("🚀 Redirigiendo al usuario a registrarse...");
-        
-        // Redirigir al registro
         navigate('/registrarse');
       };
 
@@ -259,11 +251,7 @@ const Checkout = () => {
     setErrorPayment(null);
 
     try {
-      // Guardar dirección de envío en sessionStorage para el proceso de pago
       sessionStorage.setItem('direccionEnvio', JSON.stringify(direccionEnvio));
-      console.log("✅ Dirección de envío guardada para el proceso de pago");
-
-      // Crear checkout real con método de pago seleccionado
       await crearCheckoutReal({
         direccionEnvio,
         userId,
@@ -281,17 +269,11 @@ const Checkout = () => {
       // Guardar dirección del usuario si está habilitado
       if (isAuthenticated && direccionEnvio.guardarDatos && userId) {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
+           await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(direccionEnvio),
           });
-
-          if (response.ok) {
-            console.log("✅ Dirección guardada exitosamente en el perfil del usuario");
-          } else {
-            console.warn("⚠️ No se pudo guardar la dirección en el perfil del usuario");
-          }
         } catch (error) {
           console.error('❌ Error guardando dirección en perfil:', error);
         }
