@@ -1,6 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState} from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+
+interface ActualizarPasswordResponse{
+  message:string;
+}
 
 export default function RestablecerPassword() {
   const [searchParams] = useSearchParams();
@@ -21,7 +25,7 @@ export default function RestablecerPassword() {
 
     try {
       setLoading(true);
-      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/actualizar-contrasena`, {
+      const res = await axios.post<ActualizarPasswordResponse>(`${import.meta.env.VITE_API_BASE_URL}/api/actualizar-contrasena`, {
         token,
         nuevaPassword: password
       });

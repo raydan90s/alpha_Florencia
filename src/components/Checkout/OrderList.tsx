@@ -46,7 +46,7 @@ const OrderList = () => {
           </div>
           <div className="flex items-center justify-between border-t border-gray-300 pt-4 mt-4">
             <p className="text-lg font-semibold text-dark">Total a pagar</p>
-            <p className="text-lg font-bold text-blue">${totalConIva.toFixed(2)}</p>
+            <p className="text-lg font-bold text-blue">${(Number(totalConIva.toFixed(2)) + Number(costoEnvio.toFixed(2))).toFixed(2)}</p>
           </div>
         </div>
       </div>

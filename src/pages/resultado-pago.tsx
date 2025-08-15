@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from "../context/CartContext";
 import { AuthContext } from '../context/AuthContext';
-
+import { enviarCorreoConfirmacionCompra } from '../utils/enviarCorreo';
 const ResultadoPago = () => {
     const { user } = useContext(AuthContext);
     const [searchParams] = useSearchParams();
@@ -50,7 +50,7 @@ const ResultadoPago = () => {
             const code = data.result?.code;
             const description = data.result?.description;
             const id_pago = data.id;
-
+            const email = data.customer?.email;
             const amount = data.amount;
             if (!code || !description) {
                 console.error('❌ No se recibió información completa.');
@@ -61,18 +61,35 @@ const ResultadoPago = () => {
 
             setEstadoPago(description);
             setEsExitoso(code.startsWith('000'));
+            let precioEnvio = 0;
+            try {
+                const resConfig = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/configuracion`);
+                if (resConfig.ok) {
+                    const dataConfig = await resConfig.json();
+                    precioEnvio = dataConfig.precio_envio ?? 0;
+                }
+            } catch (err) {
+                console.error("Error cargando precio de envío:", err);
+            }
 
+            const cost = {
+                shipping: precioEnvio,
+                tax: Number(data.customParameters?.SHOPPER_VAL_IVA) || 0,
+                total: parseFloat(amount)
+            };
 
             const esExitosoLocal = code.startsWith('000');
             setEsExitoso(esExitosoLocal);
 
             if (esExitosoLocal) {
                 await registrarPago(amount, resourcePath, description, code, true, usuarioId, cartItems, direccionEnvioLocal, id_pago);
+                const idPagoFormateado = String(id_pago).padStart(6, '0');
+                await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
                 vaciarCarrito();
             }
             sessionStorage.removeItem('direccionEnvio');
 
-            setTiempoRestante(7); // aseguramos que empiece en 7
+            setTiempoRestante(7);
 
             const countdownInterval = setInterval(() => {
                 setTiempoRestante(prev => {
@@ -119,7 +136,6 @@ const ResultadoPago = () => {
             throw new Error("❌ El carrito de productos no contiene los datos necesarios.");
         }
 
-        // Verifica que la dirección de envío no sea nula antes de enviarla
         if (!direccionEnvio) {
             throw new Error("❌ No se pudo recuperar la dirección de envío.");
         }
@@ -145,9 +161,6 @@ const ResultadoPago = () => {
 
     useEffect(() => {
         const resourcePath = searchParams.get('resourcePath');
-
-        // El efecto ahora solo se ejecuta si resourcePath está disponible
-        // y la dirección de envío ya ha sido cargada en el estado inicial.
         if (!resourcePath || !direccionEnvioLocal || consultaCompletada) {
             return;
         }

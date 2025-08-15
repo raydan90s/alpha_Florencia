@@ -11,6 +11,8 @@ import { AuthContext } from '../context/AuthContext';
 import { crearCheckoutReal } from "../utils/checkout";
 import { useCart } from "../context/CartContext";
 import type { DireccionEnvio } from "../types/direccionEnvio";
+import { useConfiguracion } from "../context/SettingContext";
+
 
 interface CustomAlertProps {
   message: string;
@@ -26,15 +28,15 @@ const CustomAlert = ({ message, onClose, showCancelButton = false, onCancel }: C
       <p className="py-4">{message}</p>
       <div className="modal-action flex gap-2">
         {showCancelButton && onCancel && (
-          <button 
-            onClick={onCancel} 
+          <button
+            onClick={onCancel}
             className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-md hover:bg-gray-400 transition-colors"
           >
             Cancelar
           </button>
         )}
-        <button 
-          onClick={onClose} 
+        <button
+          onClick={onClose}
           className={`${showCancelButton ? 'flex-1' : 'w-full'} bg-[#FF6B00] text-white py-2 rounded-md hover:bg-[#FF8533] transition-colors`}
         >
           {showCancelButton ? 'Continuar' : 'Entendido'}
@@ -45,7 +47,7 @@ const CustomAlert = ({ message, onClose, showCancelButton = false, onCancel }: C
 );
 
 const Checkout = () => {
-  const { cartItems, calcularSubtotal, calcularIVA, calcularTotal } = useCart();
+  const { cartItems, calcularSubtotal, calcularIVA } = useCart();
   const { user, isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
   const userId = isAuthenticated && user?.id ? user.id : null;
@@ -62,6 +64,8 @@ const Checkout = () => {
     guardarDatos: false,
     notas: "",
   });
+
+  const { configuracion } = useConfiguracion();
 
   const [usarMismosDatos, setUsarMismosDatos] = useState(true);
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
@@ -88,11 +92,11 @@ const Checkout = () => {
         // Verificar que los datos no sean muy antiguos (más de 1 hora)
         const dataAge = Date.now() - (parsedData.timestamp || 0);
         const oneHour = 60 * 60 * 1000;
-        
+
         if (dataAge < oneHour) {
           setDireccionEnvioState(parsedData.direccionEnvio || direccionEnvio);
           setUsarMismosDatos(parsedData.usarMismosDatos !== undefined ? parsedData.usarMismosDatos : true);
-          
+
           // Mostrar mensaje de confirmación de que se restauraron los datos
           setAlertMessage("¡Bienvenido! Hemos restaurado los datos que habías ingresado anteriormente.");
           setAlertConfig({
@@ -102,7 +106,7 @@ const Checkout = () => {
           });
           setShowAlert(true);
         }
-        
+
         // Limpiar los datos guardados después de verificar
         sessionStorage.removeItem('checkoutFormData');
       } catch (error) {
@@ -119,7 +123,7 @@ const Checkout = () => {
       usarMismosDatos,
       timestamp: Date.now() // Para verificar que no sean datos muy antiguos
     };
-    
+
     try {
       sessionStorage.setItem('checkoutFormData', JSON.stringify(checkoutData));
     } catch (error) {
@@ -250,15 +254,20 @@ const Checkout = () => {
     setLoadingPayment(true);
     setErrorPayment(null);
 
+    const costoEnvio = configuracion?.precio_envio ?? 0; // $5.00
+    const subtotalProductos = calcularSubtotal(); // $28.00
+    const ivaProductos = calcularIVA(); // $4.20
+    const totalAPagar = subtotalProductos + ivaProductos + costoEnvio; // $37.20
+
     try {
       sessionStorage.setItem('direccionEnvio', JSON.stringify(direccionEnvio));
       await crearCheckoutReal({
         direccionEnvio,
         userId,
         user,
-        total: calcularTotal().toFixed(2),
-        subtotal: calcularSubtotal().toFixed(2),
-        iva: calcularIVA().toFixed(2),
+        total: totalAPagar.toFixed(2),        // $37.20
+        subtotal: subtotalProductos.toFixed(2), // $28.00
+        iva: ivaProductos.toFixed(2),         // $4.20
         producto: cartItems,
         setCheckoutId,
         setShowPaymentWidget,
@@ -269,7 +278,7 @@ const Checkout = () => {
       // Guardar dirección del usuario si está habilitado
       if (isAuthenticated && direccionEnvio.guardarDatos && userId) {
         try {
-           await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
+          await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(direccionEnvio),
@@ -289,12 +298,12 @@ const Checkout = () => {
   // Función para cerrar alertas
   const handleCloseAlert = () => {
     setShowAlert(false);
-    
+
     // Ejecutar acción de confirmación si existe
     if (alertConfig.onConfirm) {
       alertConfig.onConfirm();
     }
-    
+
     // Resetear configuración de alerta
     setAlertConfig({
       showCancelButton: false,
@@ -306,12 +315,12 @@ const Checkout = () => {
   // Función para cancelar alerta
   const handleCancelAlert = () => {
     setShowAlert(false);
-    
+
     // Ejecutar acción de cancelación si existe
     if (alertConfig.onCancel) {
       alertConfig.onCancel();
     }
-    
+
     // Resetear configuración de alerta
     setAlertConfig({
       showCancelButton: false,
@@ -371,7 +380,7 @@ const Checkout = () => {
             <div className="max-w-[455px] w-full space-y-6">
               <OrderList />
               <ShippingMethod />
-              <PaymentMethod 
+              <PaymentMethod
                 selectedMethod={selectedPaymentMethod}
                 onMethodChange={setSelectedPaymentMethod}
               />
@@ -473,11 +482,10 @@ const Checkout = () => {
                   type="button"
                   onClick={handleStartPayment}
                   disabled={loadingPayment || !isFormValid() || !isPaymentMethodSelected()}
-                  className={`w-full text-white py-3 px-4 text-sm sm:text-base rounded-md font-medium transition-all duration-200 ${
-                    isFormValid() && isPaymentMethodSelected() && !loadingPayment
-                      ? "bg-[#FF6B00] hover:bg-[#FF8533] hover:shadow-lg transform hover:-translate-y-0.5"
-                      : "bg-gray-400 cursor-not-allowed"
-                  }`}
+                  className={`w-full text-white py-3 px-4 text-sm sm:text-base rounded-md font-medium transition-all duration-200 ${isFormValid() && isPaymentMethodSelected() && !loadingPayment
+                    ? "bg-[#FF6B00] hover:bg-[#FF8533] hover:shadow-lg transform hover:-translate-y-0.5"
+                    : "bg-gray-400 cursor-not-allowed"
+                    }`}
                 >
                   {loadingPayment ? (
                     <div className="flex items-center justify-center gap-2">
@@ -522,8 +530,8 @@ const Checkout = () => {
 
       {/* Alerta personalizada */}
       {showAlert && (
-        <CustomAlert 
-          message={alertMessage} 
+        <CustomAlert
+          message={alertMessage}
           onClose={handleCloseAlert}
           showCancelButton={alertConfig.showCancelButton}
           onCancel={alertConfig.onCancel ? handleCancelAlert : undefined}
