@@ -74,7 +74,23 @@ const HistorialManager: React.FC = () => {
     };
 
     const pedidosFiltrados = aplicarFiltros();
-    const totalFiltrado = pedidosFiltrados.reduce((acc, p) => acc + p.total, 0);
+    
+    // Calcular sumas por estado
+    const calcularSumas = (pedidos: any[]) => {
+        const ganancias = pedidos
+            .filter(p => p.estado === 'En proceso' || p.estado === 'Entregado')
+            .reduce((acc, p) => acc + p.total, 0);
+            
+        const cancelados = pedidos
+            .filter(p => p.estado === 'Cancelado')
+            .reduce((acc, p) => acc + p.total, 0);
+            
+        const totalGeneral = pedidos.reduce((acc, p) => acc + p.total, 0);
+        
+        return { ganancias, cancelados, totalGeneral };
+    };
+
+    const { ganancias, cancelados, totalGeneral } = calcularSumas(pedidosFiltrados);
 
     // Función para limpiar todos los filtros
     const limpiarTodosFiltros = () => {
@@ -137,13 +153,41 @@ const HistorialManager: React.FC = () => {
                 hayFiltrosActivos={hayFiltrosActivos}
             />
 
-            {/* Resumen de resultados */}
-            <div className="bg-white p-4 rounded-lg shadow flex flex-col md:flex-row justify-between gap-4 items-center">
-                <div className="text-left">
-                    <p className="text-sm text-gray-500">{hayFiltrosActivos ? "Resultados filtrados:" : "Total de todas las compras:"}</p>
+            {/* Resumen de resultados - Ahora con múltiples métricas */}
+            <div className="bg-white p-6 rounded-lg shadow space-y-4">
+                <div className="text-center mb-4">
+                    <p className="text-sm text-gray-500 mb-2">
+                        {hayFiltrosActivos ? "Resultados filtrados:" : "Resumen de todas las compras:"}
+                    </p>
                 </div>
-                <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600">{new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(totalFiltrado)}</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Ganancias (Procesados + Entregados) */}
+                    <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                        <p className="text-sm font-medium text-green-700 mb-1">Ganancias</p>
+                        <p className="text-xs text-green-600 mb-2">(En proceso + Entregado)</p>
+                        <p className="text-xl font-bold text-green-600">
+                            {new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(ganancias)}
+                        </p>
+                    </div>
+                    
+                    {/* Cancelados */}
+                    <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
+                        <p className="text-sm font-medium text-red-700 mb-1">Cancelados</p>
+                        <p className="text-xs text-red-600 mb-2">(Pedidos cancelados)</p>
+                        <p className="text-xl font-bold text-red-600">
+                            {new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(cancelados)}
+                        </p>
+                    </div>
+                    
+                    {/* Total General */}
+                    <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <p className="text-sm font-medium text-blue-700 mb-1">Total General</p>
+                        <p className="text-xs text-blue-600 mb-2">(Todos los pedidos)</p>
+                        <p className="text-xl font-bold text-blue-600">
+                            {new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(totalGeneral)}
+                        </p>
+                    </div>
                 </div>
             </div>
 
