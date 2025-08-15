@@ -250,21 +250,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const precio_envio = configuracion?.precio_envio ?? 0;
+
+  // Subtotal de productos
   const calcularSubtotal = () => {
-    return parseFloat(cartItems.reduce((total, item) => total + item.precio * item.cantidad, 0).toFixed(2));
+    return parseFloat(
+      cartItems.reduce((total, item) => total + item.precio * item.cantidad, 0).toFixed(2)
+    );
   };
 
+  // IVA solo sobre productos
   const calcularIVA = () => {
     const subtotal = calcularSubtotal();
     const ivaRate = configuracion?.iva ?? 0;
-    return parseFloat((subtotal * (ivaRate / 100)).toFixed(2));  // Redondeamos el IVA
+    return parseFloat((subtotal * (ivaRate / 100)).toFixed(2));
   };
 
+  // Total incluye subtotal + IVA + envío
   const calcularTotal = () => {
     const subtotal = calcularSubtotal();
     const iva = calcularIVA();
-    return parseFloat((subtotal + iva).toFixed(2));  // Redondeamos el total
+    return parseFloat((subtotal + iva).toFixed(2));
   };
+
   const contarItems = () => {
     return cartItems.reduce((total, item) => total + item.cantidad, 0);
   };
