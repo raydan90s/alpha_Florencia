@@ -79,6 +79,27 @@ const Checkout = () => {
   // Estado para el método de pago seleccionado
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
 
+  // Efecto para configurar las opciones de Datafast cuando se muestre el widget de pago
+  useEffect(() => {
+    if (showPaymentWidget && checkoutId) {
+      // Configurar las opciones globales de wpwl para Datafast
+      window.wpwlOptions = {
+        onReady: function() {
+          const datafast = '<br/><br/><img src="https://www.datafast.com.ec/images/verified.png" style="display:block;margin:0 auto; width:100%;">';
+          if (window.$ && window.$('form.wpwl-form-card').length > 0) {
+            window.$('form.wpwl-form-card').find('.wpwl-button').before(datafast);
+          }
+        },
+        style: "card",
+        locale: "es",
+        labels: {
+          cvv: "CVV", 
+          cardHolder: "Nombre(Igual que en la tarjeta)"
+        }
+      };
+    }
+  }, [showPaymentWidget, checkoutId]);
+
   // Efecto para restaurar datos guardados cuando el usuario regresa después de registrarse
   useEffect(() => {
     const savedCheckoutData = sessionStorage.getItem('checkoutFormData');
@@ -509,6 +530,16 @@ const Checkout = () => {
                   )}
                 </button>
               )}
+
+              {/* Imagen de certificación Datafast - Se muestra después del botón de pago */}
+              <div className="flex justify-center py-4">
+                <img 
+                  src="https://www.datafast.com.ec/images/verified.png" 
+                  alt="Certificación Datafast" 
+                  className="w-full max-w-[600px] h-auto"
+                  style={{ display: 'block', margin: '0 auto' }}
+                />
+              </div>
 
               {/* Error de pago */}
               {errorPayment && (

@@ -56,18 +56,6 @@ const MetodoPago: React.FC<PaymentMethodProps> = ({ selectedMethod, onMethodChan
               </div>
             </div>
           </label>
-
-          {/* Imagen de certificación Datafast - Solo se muestra cuando tarjeta está seleccionada */}
-          {selectedMethod === "tarjeta" && (
-            <div className="mt-4 flex justify-center">
-              <img 
-                src="https://www.datafast.com.ec/images/verified.png" 
-                alt="Verificado por Datafast"
-                className="block w-full max-w-[200px] mx-auto"
-                style={{ display: 'block', margin: '0 auto', width: '100%' }}
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>
