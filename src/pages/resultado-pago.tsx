@@ -82,8 +82,8 @@ const ResultadoPago = () => {
             setEsExitoso(esExitosoLocal);
 
             if (esExitosoLocal) {
-                await registrarPago(amount, resourcePath, description, code, true, usuarioId, cartItems, direccionEnvioLocal, id_pago);
-                const idPagoFormateado = String(id_pago).padStart(6, '0');
+                const res = await registrarPago(amount, resourcePath, description, code, true, usuarioId, cartItems, direccionEnvioLocal, id_pago);
+                const idPagoFormateado = String(res.pedidoId).padStart(6, '0');
                 await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
                 vaciarCarrito();
             }
@@ -157,6 +157,8 @@ const ResultadoPago = () => {
         if (!res.ok) {
             throw new Error('❌ Error al registrar el pago');
         }
+        const responseData = await res.json(); 
+        return responseData;
     };
 
     useEffect(() => {

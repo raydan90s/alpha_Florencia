@@ -13,6 +13,9 @@ interface CartContextType {
   calcularIVA: () => number;
   contarItems: () => number;
   calcularTotal: () => number;
+  calcularIVAEnvio: () => number;
+  calcularSubtotalEnvio: () => number;
+  calcularTotalEnvio: () => number;
   vaciarCarrito: () => Promise<void>;
 }
 
@@ -277,6 +280,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return cartItems.reduce((total, item) => total + item.cantidad, 0);
   };
 
+  const calcularSubtotalEnvio = () => {
+    return calcularSubtotal() + precio_envio;
+  }
+
+  const calcularIVAEnvio = () => {
+    const subtotal = calcularSubtotalEnvio();
+    const ivaRate = configuracion?.iva ?? 0;
+    return parseFloat((subtotal * (ivaRate / 100)).toFixed(2));
+  };
+
+  const calcularTotalEnvio = () => {
+    const subtotal = calcularSubtotalEnvio();
+    const iva = calcularIVAEnvio();
+    return parseFloat((subtotal + iva).toFixed(2));
+  };
 
   return (
     <CartContext.Provider
@@ -289,7 +307,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         calcularIVA,
         calcularTotal,
         contarItems,
-        vaciarCarrito
+        vaciarCarrito,
+        calcularIVAEnvio,
+        calcularSubtotalEnvio,
+        calcularTotalEnvio
       }}
     >
       {children}

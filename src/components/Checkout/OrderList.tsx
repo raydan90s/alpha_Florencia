@@ -2,13 +2,13 @@ import { useCart } from "../../context/CartContext";
 import { useConfiguracion } from "../../context/SettingContext";
 
 const OrderList = () => {
-  const { cartItems, calcularSubtotal, calcularIVA, calcularTotal } = useCart();
+  const { cartItems, calcularIVAEnvio, calcularSubtotalEnvio, calcularTotalEnvio } = useCart();
   const { configuracion } = useConfiguracion();
 
   const costoEnvio = configuracion?.precio_envio ?? 0;
-  const subtotal = calcularSubtotal();
-  const iva = calcularIVA();
-  const totalConIva = calcularTotal();
+  const subtotal = calcularSubtotalEnvio();
+  const iva = calcularIVAEnvio();
+  const totalConIva = calcularTotalEnvio();
 
   return (
     <div className="bg-white shadow-1 rounded-[10px]">
@@ -33,6 +33,10 @@ const OrderList = () => {
 
         <div className="mt-5 space-y-2 text-sm">
           <div className="flex items-center justify-between">
+            <p className="text-gray-600">Costo de Envío</p>
+            <p className="text-gray-800 font-medium">${costoEnvio.toFixed(2)}</p>
+          </div>
+          <div className="flex items-center justify-between">
             <p className="text-gray-600">Subtotal</p>
             <p className="text-gray-800 font-medium">${subtotal.toFixed(2)}</p>
           </div>
@@ -40,13 +44,10 @@ const OrderList = () => {
             <p className="text-gray-600">IVA (15%)</p>
             <p className="text-gray-800 font-medium">${iva.toFixed(2)}</p>
           </div>
-          <div className="flex items-center justify-between">
-            <p className="text-gray-600">Costo de Envío</p>
-            <p className="text-gray-800 font-medium">${costoEnvio.toFixed(2)}</p>
-          </div>
+          
           <div className="flex items-center justify-between border-t border-gray-300 pt-4 mt-4">
             <p className="text-lg font-semibold text-dark">Total a pagar</p>
-            <p className="text-lg font-bold text-blue">${(Number(totalConIva.toFixed(2)) + Number(costoEnvio.toFixed(2))).toFixed(2)}</p>
+            <p className="text-lg font-bold text-blue">${Number(totalConIva.toFixed(2))}</p>
           </div>
         </div>
       </div>

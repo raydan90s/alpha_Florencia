@@ -45,7 +45,7 @@ const CustomAlert = ({ message, onClose, showCancelButton = false, onCancel }: C
 );
 
 const Checkout = () => {
-  const { cartItems, calcularSubtotal, calcularIVA, calcularTotal } = useCart();
+  const { cartItems, calcularSubtotalEnvio, calcularIVAEnvio, calcularTotalEnvio } = useCart();
   const { user, isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
   const userId = isAuthenticated && user?.id ? user.id : null;
@@ -256,9 +256,9 @@ const Checkout = () => {
         direccionEnvio,
         userId,
         user,
-        total: calcularTotal().toFixed(2),
-        subtotal: calcularSubtotal().toFixed(2),
-        iva: calcularIVA().toFixed(2),
+        total: calcularTotalEnvio().toFixed(2),
+        subtotal: calcularSubtotalEnvio().toFixed(2),
+        iva: calcularIVAEnvio().toFixed(2),
         producto: cartItems,
         setCheckoutId,
         setShowPaymentWidget,
