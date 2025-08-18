@@ -5,20 +5,26 @@ import axios from "axios";
 
 interface PaymentResponse {
     id_pago?: number | string;
+    paymentType?: string;
     result?: {
         code?: string;
         description?: string;
     };
     resultDetails?: {
         ExtendedDescription?: string;
+        AuthCode?: string;
     };
     [key: string]: any;
 }
 
 interface AnularResponse {
+    paymentType?: string;
     result?: {
         code?: string;
         description?: string;
+    };
+    resultDetails?: {
+        AuthCode?: string;
     };
     [key: string]: any;
 }
@@ -48,10 +54,7 @@ export default function PagoManager() {
         try {
             const res = await axios.get<PaymentResponse>(
                 `${import.meta.env.VITE_API_BASE_URL}/api/checkout/consultar`,
-                {
-                    params: { paymentId: id },
-                    withCredentials: true,
-                }
+                { params: { paymentId: id }, withCredentials: true }
             );
             setPaymentData(res.data);
         } catch (err: any) {
@@ -63,13 +66,12 @@ export default function PagoManager() {
     };
 
     const handleAnularPago = async () => {
-        if (!paymentData?.id) {
+        if (!paymentData?.id_pago) {
             alert("No hay un pago válido para anular.");
             return;
         }
-        const id_pago = paymentData.id;
 
-        if (!confirm(`¿Está seguro de que desea anular el pago con ID ${id_pago}?`)) {
+        if (!confirm(`¿Está seguro de que desea anular el pago con ID ${paymentData.id_pago}?`)) {
             return;
         }
 
@@ -81,28 +83,32 @@ export default function PagoManager() {
         try {
             const res = await axios.post<AnularResponse>(
                 `${import.meta.env.VITE_API_BASE_URL}/api/checkout/anular`,
-                { id_pago },
+                { id_pago: paymentData.id_pago },
                 { withCredentials: true }
             );
-            setAnulacionResultado(res.data); // Guarda siempre el resultado
+            setAnulacionResultado(res.data);
 
             if (res.data?.result?.code && res.data.result.code.startsWith("000")) {
                 setAnulacionMensaje("Pago anulado correctamente.");
-                setErrorMessage("");
-                // NO limpiar paymentData ni paymentId aquí para que se siga mostrando la respuesta
             } else {
                 setErrorMessage("No se pudo anular el pago: " + (res.data?.result?.description || "Error desconocido"));
-                setAnulacionMensaje("");
             }
-
         } catch (error: any) {
             console.error("Error al anular pago:", error);
             setErrorMessage(error.response?.data?.error || "Error al anular el pago.");
-            setAnulacionMensaje("");
         } finally {
             setAnulacionLoading(false);
         }
     };
+
+    const mostrarTipoPago = () => {
+        if (!paymentData?.paymentType) return "—";
+        if (paymentData.paymentType === "RF") return "Pago Anulado";
+        if (paymentData.paymentType === "DB") return "Pago Débito";
+        return paymentData.paymentType;
+    };
+
+    const mostrarBotonAnular = () => paymentData?.paymentType !== "RF";
 
     return (
         <div className="p-6 bg-white rounded shadow-md">
@@ -119,10 +125,11 @@ export default function PagoManager() {
             <button
                 onClick={handleConsultarPago}
                 disabled={!paymentId.trim() || loading}
-                className={`px-4 py-2 rounded w-full ${!paymentId.trim() || loading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-[#003366] hover:bg-blue-600 text-white"
-                    }`}
+                className={`px-4 py-2 rounded w-full ${
+                    !paymentId.trim() || loading
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-[#003366] hover:bg-blue-600 text-white"
+                }`}
             >
                 {loading ? "Consultando..." : "Consultar Pago"}
             </button>
@@ -138,41 +145,40 @@ export default function PagoManager() {
                     <h5 className="font-medium mb-2">Resultado de la consulta:</h5>
 
                     <div className="p-3 bg-gray-100 rounded">
-                        <p>
-                            <strong>Tipo de pago:</strong> {paymentData.paymentType || "—"}
-                        </p>
-                        <p>
-                            <strong>Código de la consulta:</strong> {paymentData.result?.code || "—"}
-                        </p>
-                        <p>
-                            <strong>Descripción de la consulta:</strong> {paymentData.result?.description || "—"}
-                        </p>
-                        <p>
-                            <strong>Detalle de la transacción:</strong> {paymentData.resultDetails?.ExtendedDescription || "—"}
-                        </p>
-
-
-                        {paymentData.id_pago && (
-                            <p>
-                                <strong>ID Pago:</strong> {paymentData.id_pago}
-                            </p>
-                        )}
+                        <p><strong>Tipo de pago:</strong> {mostrarTipoPago()}</p>
+                        <p><strong>Código de la consulta:</strong> {paymentData.result?.code || "—"}</p>
+                        <p><strong>Descripción de la consulta:</strong> {paymentData.result?.description || "—"}</p>
+                        <p><strong>Detalle de la transacción:</strong> {paymentData.resultDetails?.ExtendedDescription || "—"}</p>
+                        {paymentData.id_pago && <p><strong>ID Pago:</strong> {paymentData.id_pago}</p>}
                     </div>
 
-                    <button
-                        onClick={handleAnularPago}
-                        disabled={anulacionLoading}
-                        className={`mt-4 px-4 py-2 rounded w-full ${anulacionLoading
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-red-600 hover:bg-red-700 text-white"
+                    {mostrarBotonAnular() && (
+                        <button
+                            onClick={handleAnularPago}
+                            disabled={anulacionLoading}
+                            className={`mt-4 px-4 py-2 rounded w-full ${
+                                anulacionLoading
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-red-600 hover:bg-red-700 text-white"
                             }`}
-                    >
-                        {anulacionLoading ? "Anulando..." : "Anular Pago"}
-                    </button>
+                        >
+                            {anulacionLoading ? "Anulando..." : "Anular Pago"}
+                        </button>
+                    )}
 
                     {anulacionMensaje && (
                         <div className="mt-3 p-2 bg-green-100 text-green-800 border border-green-300 rounded">
                             {anulacionMensaje}
+                        </div>
+                    )}
+
+                    {anulacionResultado && (
+                        <div className="mt-4 p-3 bg-gray-100 rounded space-y-1">
+                            <h5 className="font-semibold mb-2">Resultado de la Anulación:</h5>
+                            <p><strong>Tipo de transacción:</strong> {anulacionResultado.paymentType || "—"}</p>
+                            <p><strong>Código de Anulación:</strong> {anulacionResultado.result?.code || "—"}</p>
+                            <p><strong>Descripción de Anulación:</strong> {anulacionResultado.result?.description || "—"}</p>
+                            <p><strong>Código de Autorización:</strong> {anulacionResultado.resultDetails?.AuthCode || "—"}</p>
                         </div>
                     )}
 
@@ -181,19 +187,6 @@ export default function PagoManager() {
                             {errorMessage}
                         </div>
                     )}
-
-                    {anulacionResultado && (
-                        <div className="mt-4 p-3 bg-gray-100 rounded space-y-1">
-                            <h5 className="font-semibold mb-2">Resultado de la Anulación:</h5>
-                            <div className="mt-2">
-                                <p><strong>Tipo de transacción:</strong> {anulacionResultado.paymentType || "—"}</p>
-                                <p><strong>Código de Anulación:</strong> {anulacionResultado.result?.code || "—"}</p>
-                                <p><strong>Descripción de Anulación:</strong> {anulacionResultado.result?.description || "—"}</p>
-                            </div>
-                            <p><strong>Código de Autorización:</strong> {anulacionResultado.resultDetails?.AuthCode || "—"}</p>
-                        </div>
-                    )}
-
                 </div>
             )}
         </div>
