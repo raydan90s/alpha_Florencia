@@ -83,11 +83,12 @@ const Checkout = () => {
   useEffect(() => {
     if (showPaymentWidget && checkoutId) {
       // Configurar las opciones globales de wpwl para Datafast
-      window.wpwlOptions = {
+      
+      (window as any).wpwlOptions = {
         onReady: function() {
           const datafast = '<br/><br/><img src="https://www.datafast.com.ec/images/verified.png" style="display:block;margin:0 auto; width:100%;">';
-          if (window.$ && window.$('form.wpwl-form-card').length > 0) {
-            window.$('form.wpwl-form-card').find('.wpwl-button').before(datafast);
+          if ((window as any).$ && (window as any).$('form.wpwl-form-card').length > 0) {
+            (window as any).$('form.wpwl-form-card').find('.wpwl-button').before(datafast);
           }
         },
         style: "card",
