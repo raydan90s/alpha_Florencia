@@ -21,6 +21,7 @@ const ShippingAddressesPage = () => {
     cedula: '',
     ciudad: '',
     provincia: '',
+    pastcode: '',
     es_principal: false,
   });
 
@@ -35,7 +36,13 @@ const ShippingAddressesPage = () => {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`);
       if (!res.ok) throw new Error('Error al cargar direcciones');
       const data = await res.json();
-      setAddresses(data);
+
+      const mapped = data.map((addr:any) => ({
+        ...addr,
+        pastcode: addr.postal,
+      }));
+
+      setAddresses(mapped);
     } catch (err: any) {
       setError(err.message || 'Error desconocido');
     } finally {
@@ -80,6 +87,7 @@ const ShippingAddressesPage = () => {
       cedula: '',
       ciudad: '',
       provincia: '',
+      pastcode: '',
       es_principal: false,
     });
   };
@@ -156,6 +164,7 @@ const ShippingAddressesPage = () => {
               cedula: newPrincipal.cedula || '',
               ciudad: newPrincipal.ciudad,
               provincia: newPrincipal.provincia,
+              pastcode: newPrincipal.pastcode,
               es_principal: true,
             }),
           });
@@ -241,6 +250,17 @@ const ShippingAddressesPage = () => {
               type="text"
               name="provincia"
               value={formData.provincia}
+              onChange={handleChange}
+              required
+              className="mt-1 p-2 w-full border rounded"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Código Postal</label>
+            <input
+              type="text"
+              name="pastcode" 
+              value={formData.pastcode}
               onChange={handleChange}
               required
               className="mt-1 p-2 w-full border rounded"
