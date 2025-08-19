@@ -1,181 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import type { DireccionEnvio } from "../../types/direccionEnvio";
+import ShippingField from "./Shipping/ShippingField";
+import ShippingCheckbox from "./Shipping/ShippingCheckbox";
+import { useDireccionPrincipal } from "./Shipping/useDireccionPrincipal";
+import { normalizeDireccionEnvio } from "./Shipping/normalizeDireccionEnvio";
+import { validateField } from "./Shipping/validateField";
 
 interface ShippingProps {
   onChange: (direccion: DireccionEnvio) => void;
   isAuthenticated: boolean;
   userId: number | null;
-  value: DireccionEnvio; // This prop is the single source of truth for form data
-}
-type ErrorFields = {
-  nombre: string;
-  apellido: string;
-  direccion: string;
-  telefono: string;
-  cedula: string;
-  ciudad: string;
-  provincia: string;
-  pastcode: string;
-};
-
-function normalizeDireccionEnvio(data: Partial<DireccionEnvio> & { postal?: string }): DireccionEnvio {
-  return {
-    nombre: data.nombre ?? "",
-    apellido: data.apellido ?? "",
-    direccion: data.direccion ?? "",
-    telefono: data.telefono ?? "",
-    cedula: data.cedula ?? "",
-    ciudad: data.ciudad ?? "",
-    provincia: data.provincia ?? "",
-    pastcode: data.pastcode ?? data.postal ?? "",
-    guardarDatos: data.guardarDatos ?? false,
-    notas: data.notas ?? '',
-  };
+  value: DireccionEnvio;
 }
 
-// Helper function for validation
-const validateField = (name: string, value: string): string => {
-  switch (name) {
+const Shipping: React.FC<ShippingProps> = ({ onChange, isAuthenticated, userId, value }) => {
+  const { tieneDireccionPrincipal, direccionPrincipalData } = useDireccionPrincipal(isAuthenticated, userId);
 
-    case "nombre":
-      if (value.trim().length < 3) {
-        return "Ingrese un nombre válido.";
-      }
-      return "";
-    case "apellido":
-      if (value.trim().length < 3) {
-        return "Ingrese un apellido válido.";
-      }
-      return "";
-    case "direccion":
-      if (value.trim().length < 5) {
-        return "Ingrese dirección válida";
-      }
-      return "";
-    case "telefono":
-      const telefonoRegex = /^\d{10}$/;
-      if (!telefonoRegex.test(value)) {
-        return "Ingrese un télefono válido.";
-      }
-      return "";
-    case "cedula":
-      const cedulaRegex = /^\d{10}$/;
-      if (!cedulaRegex.test(value)) {
-        return "Ingrese un documento válido";
-      }
-      return "";
-    case "pastcode":
-      const pastcodeRegex = /^\d{1,6}$/;
-      if (!pastcodeRegex.test(value) || value.length > 6) {
-        return "Ingrese un código válido";
-      }
-      return "";
-    case "ciudad":
-    case "provincia":
-      if (value.trim().length < 3) {
-        return "Ingrese una direccion válida.";
-      }
-      return "";
-    default:
-      return "";
-  }
-};
-
-const Shipping: React.FC<ShippingProps> = ({
-  onChange,
-  isAuthenticated,
-  userId,
-  value,
-}) => {
   const [usarDireccionPrincipal, setUsarDireccionPrincipal] = useState(false);
   const [formAutoCargado, setFormAutoCargado] = useState(false);
-  const [errors, setErrors] = useState<ErrorFields>({
-    nombre: "",
-    apellido: "",
-    direccion: "",
-    telefono: "",
-    cedula: "",
-    ciudad: "",
-    provincia: "",
-    pastcode: "",
-  });
-
-  useEffect(() => {
-    const fetchDireccionGuardada = async () => {
-      if (isAuthenticated && userId && usarDireccionPrincipal) {
-        try {
-          const res = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio/principal`
-          );
-          const data = await res.json();
-          if (data) {
-            const fetchedDireccion = normalizeDireccionEnvio({
-              ...(Array.isArray(data) ? data[0] : data),
-              guardarDatos: false,
-              notas: (Array.isArray(data) ? data[0]?.notas : data?.notas) ?? value.notas,
-            });
-            onChange(fetchedDireccion);
-            setFormAutoCargado(true);
-          } else {
-            onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
-            setFormAutoCargado(false);
-          }
-        } catch (error) {
-          console.error("Error cargando dirección guardada:", error);
-          onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
-          setFormAutoCargado(false);
-        }
-      } else {
-        onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
-        setFormAutoCargado(false);
-      }
-    };
-
-    fetchDireccionGuardada();
-  }, [isAuthenticated, userId, usarDireccionPrincipal, onChange, value.notas]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value: inputValue, type, checked } = e.target;
+    if (name !== "guardarDatos" && formAutoCargado) setFormAutoCargado(false);
 
-    if (name !== "guardarDatos" && formAutoCargado) {
-      setFormAutoCargado(false);
-    }
-
-    onChange({
-      ...value,
-      [name]: type === "checkbox" ? checked : inputValue,
-    });
+    onChange({ ...value, [name]: type === "checkbox" ? checked : inputValue });
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const { name, value: inputValue } = e.target;
     const errorMessage = validateField(name, inputValue);
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: errorMessage,
-    }));
+    setErrors((prev) => ({ ...prev, [name]: errorMessage }));
   };
 
-  const handleUsarDireccionPrincipalChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleUsarDireccionPrincipalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setUsarDireccionPrincipal(checked);
 
-    if (!checked) {
-      // Clear errors when unchecking the box
-      setErrors({
-        nombre: "",
-        apellido: "",
-        direccion: "",
-        telefono: "",
-        cedula: "",
-        ciudad: "",
-        provincia: "",
-        pastcode: "",
-      });
-      onChange(normalizeDireccionEnvio({ ...value, guardarDatos: false }));
+    if (checked && direccionPrincipalData) {
+      onChange({ ...direccionPrincipalData, guardarDatos: false });
+      setFormAutoCargado(true);
+      setErrors({});
+    } else {
+      onChange(normalizeDireccionEnvio({ guardarDatos: false }));
       setFormAutoCargado(false);
+      setErrors({});
     }
   };
 
@@ -185,179 +54,57 @@ const Shipping: React.FC<ShippingProps> = ({
         Datos de envío
       </h4>
 
-      {isAuthenticated && (
-        <div className="mb-5 flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="usarDireccionPrincipal"
-            checked={usarDireccionPrincipal}
-            onChange={handleUsarDireccionPrincipalChange}
-            className="w-5 h-5 text-blue-600 border-gray-300 rounded"
-          />
-          <label htmlFor="usarDireccionPrincipal" className="text-sm text-slate-700">
-            Usar dirección guardada principal
-          </label>
-        </div>
+      {isAuthenticated && tieneDireccionPrincipal && (
+        <ShippingCheckbox
+          id="usarDireccionPrincipal"
+          name="usarDireccionPrincipal"
+          label="Usar dirección guardada principal"
+          checked={usarDireccionPrincipal}
+          onChange={handleUsarDireccionPrincipalChange}
+        />
       )}
 
-      <div className="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <div>
-          <label className="block mb-2.5">
-            Nombres <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="nombre"
-            value={value.nombre}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="Juan"
-            className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.nombre ? 'border-red-500' : ''
-              }`}
-            disabled={usarDireccionPrincipal}
-          />
-          {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre}</p>}
-        </div>
-        <div>
-          <label className="block mb-2.5">
-            Apellidos <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="apellido"
-            value={value.apellido}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            placeholder="Pérez"
-            className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.apellido ? 'border-red-500' : ''
-              }`}
-            disabled={usarDireccionPrincipal}
-          />
-          {errors.apellido && <p className="text-red-500 text-sm mt-1">{errors.apellido}</p>}
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <ShippingField label="Nombres" name="nombre" value={value.nombre} required
+          placeholder="Juan" error={errors.nombre} disabled={usarDireccionPrincipal}
+          onChange={handleChange} onBlur={handleBlur} />
+
+        <ShippingField label="Apellidos" name="apellido" value={value.apellido} required
+          placeholder="Pérez" error={errors.apellido} disabled={usarDireccionPrincipal}
+          onChange={handleChange} onBlur={handleBlur} />
       </div>
 
-      <div className="mb-5">
-        <label className="block mb-2.5">
-          Dirección <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="direccion"
-          value={value.direccion}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="Av. Siempre Viva 123"
-          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.direccion ? 'border-red-500' : ''
-            }`}
-          disabled={usarDireccionPrincipal}
-        />
-        {errors.direccion && <p className="text-red-500 text-sm mt-1">{errors.direccion}</p>}
-      </div>
+      <ShippingField label="Dirección" name="direccion" value={value.direccion} required
+        placeholder="Av. Siempre Viva 123" error={errors.direccion} disabled={usarDireccionPrincipal}
+        onChange={handleChange} onBlur={handleBlur} />
 
-      <div className="mb-5">
-        <label className="block mb-2.5">
-          Número de Teléfono <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="tel"
-          name="telefono"
-          value={value.telefono}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="0999999999"
-          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.telefono ? 'border-red-500' : ''
-            }`}
-          disabled={usarDireccionPrincipal}
-        />
-        {errors.telefono && <p className="text-red-500 text-sm mt-1">{errors.telefono}</p>}
-      </div>
+      <ShippingField label="Número de Teléfono" name="telefono" type="tel" value={value.telefono} required
+        placeholder="0999999999" error={errors.telefono} disabled={usarDireccionPrincipal}
+        onChange={handleChange} onBlur={handleBlur} />
 
-      <div className="mb-5">
-        <label className="block mb-2.5">
-          Número de Cédula <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="cedula"
-          value={value.cedula}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="0975123684"
-          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.cedula ? 'border-red-500' : ''
-            }`}
-          disabled={usarDireccionPrincipal}
-        />
-        {errors.cedula && <p className="text-red-500 text-sm mt-1">{errors.cedula}</p>}
-      </div>
+      <ShippingField label="Número de Cédula" name="cedula" value={value.cedula} required
+        placeholder="0975123684" error={errors.cedula} disabled={usarDireccionPrincipal}
+        onChange={handleChange} onBlur={handleBlur} />
 
-      <div className="mb-5">
-        <label className="block mb-2.5">
-          Ciudad <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="ciudad"
-          value={value.ciudad}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="Guayaquil"
-          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.ciudad ? 'border-red-500' : ''
-            }`}
-          disabled={usarDireccionPrincipal}
-        />
-        {errors.ciudad && <p className="text-red-500 text-sm mt-1">{errors.ciudad}</p>}
-      </div>
+      <ShippingField label="Ciudad" name="ciudad" value={value.ciudad} required
+        placeholder="Guayaquil" error={errors.ciudad} disabled={usarDireccionPrincipal}
+        onChange={handleChange} onBlur={handleBlur} />
 
-      <div className="mb-5">
-        <label className="block mb-2.5">
-          Provincia <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="provincia"
-          value={value.provincia}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          placeholder="Guayas"
-          className={`w-full py-2.5 px-5 border rounded bg-gray-1 outline-none ${errors.provincia ? 'border-red-500' : ''
-            }`}
-          disabled={usarDireccionPrincipal}
-        />
-        {errors.provincia && <p className="text-red-500 text-sm mt-1">{errors.provincia}</p>}
-      </div>
+      <ShippingField label="Provincia" name="provincia" value={value.provincia} required
+        placeholder="Guayas" error={errors.provincia} disabled={usarDireccionPrincipal}
+        onChange={handleChange} onBlur={handleBlur} />
 
-      <div className="mb-5">
-        <label className="block mb-2.5">
-          Código Postal <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="number"
-          name="pastcode"
-          placeholder="090101"
-          className={`w-full px-5 py-2.5 border rounded bg-gray-1 outline-none no-spinner ${errors.pastcode ? 'border-red-500' : ''
-            }`}
-          value={value.pastcode}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          disabled={usarDireccionPrincipal}
-        />
-        {errors.pastcode && <p className="text-red-500 text-sm mt-1">{errors.pastcode}</p>}
-      </div>
+      <ShippingField label="Código Postal" name="pastcode" type="number" value={value.pastcode} required
+        placeholder="090101" error={errors.pastcode} disabled={usarDireccionPrincipal}
+        onChange={handleChange} onBlur={handleBlur} />
 
       {isAuthenticated && !formAutoCargado && !usarDireccionPrincipal && (
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            name="guardarDatos"
-            checked={value.guardarDatos}
-            onChange={handleChange}
-            className="w-5 h-5 text-blue-600 border-gray-300 rounded"
-          />
-          <label className="text-sm text-slate-700">
-            Guardar datos para próximos envíos
-          </label>
-        </div>
+        <ShippingCheckbox
+          name="guardarDatos"
+          label="Guardar datos para próximos envíos"
+          checked={value.guardarDatos}
+          onChange={handleChange}
+        />
       )}
     </div>
   );
