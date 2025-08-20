@@ -119,7 +119,7 @@ export default function Contactanos() {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">Dirección</h3>
-                  <p className="text-gray-600">Av. Principal 123, Lima, Perú</p>
+                  <p className="text-gray-600">Guayaquil-Ecuador</p>
                 </div>
               </div>
 

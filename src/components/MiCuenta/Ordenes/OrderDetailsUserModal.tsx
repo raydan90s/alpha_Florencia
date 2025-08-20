@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useConfiguracion } from "../../../context/SettingContext";
 
 interface ProductoPedido {
     id_producto: number;
@@ -7,6 +6,7 @@ interface ProductoPedido {
     precio_unitario: number;
     cantidad: number;
     subtotal: number;
+    iva_unitario?: number;
     imagen_producto?: string;
 }
 
@@ -17,6 +17,7 @@ interface DetallePedidoUsuario {
     numeroIdentificacion?: string;
     nota?: string;
     productos?: ProductoPedido[];
+    envio?: number; // tomado de la base
 }
 
 interface OrderDetailsUserModalProps {
@@ -27,10 +28,6 @@ interface OrderDetailsUserModalProps {
 const OrderDetailsUserModal: React.FC<OrderDetailsUserModalProps> = ({ pedidoSeleccionado, cerrarModal }) => {
     const [detalles, setDetalles] = useState<DetallePedidoUsuario | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-
-    const { configuracion } = useConfiguracion();
-    const costoEnvio = configuracion?.precio_envio ?? 0;
-    const ivaRate = configuracion?.iva ?? 0;
 
     useEffect(() => {
         const obtenerDetallesDelPedido = async () => {
@@ -53,20 +50,30 @@ const OrderDetailsUserModal: React.FC<OrderDetailsUserModalProps> = ({ pedidoSel
         obtenerDetallesDelPedido();
     }, [pedidoSeleccionado]);
 
-    // Subtotal de productos
+    // Subtotal de productos (tomado de la base)
     const calcularSubtotalProductos = () => {
         if (!detalles?.productos) return 0;
-        return detalles.productos.reduce((acc, p) => acc + p.subtotal, 0);
+        return detalles.productos.reduce((acc, p) => acc + p.precio_unitario * p.cantidad, 0);
     };
 
-    // IVA sobre subtotal + envío
-    const calcularIVA = () => {
-        return ((calcularSubtotalProductos() + costoEnvio) * ivaRate) / 100;
+    // IVA total de productos
+    const calcularIVAProductos = () => {
+        if (!detalles?.productos) return 0;
+        return detalles.productos.reduce((acc, p) => acc + (p.iva_unitario || 0), 0);
     };
 
-    // Total final incluyendo IVA y envío
+    // IVA sobre envío (15% fijo)
+    const calcularIVAEnvio = () => {
+        return (detalles?.envio || 0) * 0.15;
+    };
+
+    // Total final
     const calcularTotal = () => {
-        return calcularSubtotalProductos() + costoEnvio + calcularIVA();
+        const subtotalProductos = calcularSubtotalProductos();
+        const ivaProductos = calcularIVAProductos();
+        const envio = detalles?.envio || 0;
+        const ivaEnvio = calcularIVAEnvio();
+        return subtotalProductos + envio + ivaProductos + ivaEnvio;
     };
 
     return (
@@ -132,7 +139,7 @@ const OrderDetailsUserModal: React.FC<OrderDetailsUserModalProps> = ({ pedidoSel
                                         />
                                         <div className="flex-1">
                                             <h5 className="font-semibold text-gray-800 text-lg">{producto.nombre_producto}</h5>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-sm">
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-2 text-sm">
                                                 <div>
                                                     <span className="text-gray-600">Precio unitario:</span>
                                                     <p className="font-medium text-gray-800">
@@ -144,9 +151,9 @@ const OrderDetailsUserModal: React.FC<OrderDetailsUserModalProps> = ({ pedidoSel
                                                     <p className="font-medium text-gray-800">{producto.cantidad} unidad{producto.cantidad !== 1 ? 'es' : ''}</p>
                                                 </div>
                                                 <div>
-                                                    <span className="text-gray-600">Subtotal:</span>
-                                                    <p className="font-bold text-green-600">
-                                                        {new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(producto.subtotal)}
+                                                    <span className="text-gray-600">IVA:</span>
+                                                    <p className="font-medium text-gray-800">
+                                                        {new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(producto.iva_unitario || 0)}
                                                     </p>
                                                 </div>
                                             </div>
@@ -159,7 +166,7 @@ const OrderDetailsUserModal: React.FC<OrderDetailsUserModalProps> = ({ pedidoSel
                                 </div>
                             )}
 
-                            {/* Precio de Envío, IVA y Total */}
+                            {/* Resumen de Pago */}
                             <h4 className="text-lg font-semibold text-gray-800 mt-6 mb-2">Resumen de Pago</h4>
                             <div className="bg-gray-100 p-4 rounded-lg text-right">
                                 <div className="flex justify-between mb-1">
@@ -171,13 +178,19 @@ const OrderDetailsUserModal: React.FC<OrderDetailsUserModalProps> = ({ pedidoSel
                                 <div className="flex justify-between mb-1">
                                     <span className="text-gray-600">Envío:</span>
                                     <span className="font-medium text-gray-800">
-                                        {new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(costoEnvio)}
+                                        {new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(detalles?.envio || 0)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between mb-1">
-                                    <span className="text-gray-600">IVA ({ivaRate}%):</span>
+                                    <span className="text-gray-600">IVA productos:</span>
                                     <span className="font-medium text-gray-800">
-                                        {new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(calcularIVA())}
+                                        {new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(calcularIVAProductos())}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between mb-1">
+                                    <span className="text-gray-600">IVA envío (15%):</span>
+                                    <span className="font-medium text-gray-800">
+                                        {new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(calcularIVAEnvio())}
                                     </span>
                                 </div>
                                 <div className="flex justify-between border-t pt-2 mt-2">

@@ -3,16 +3,25 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from "../context/CartContext";
 import { AuthContext } from '../context/AuthContext';
 import { enviarCorreoConfirmacionCompra } from '../utils/enviarCorreo';
+
+type Configuracion = {
+    id: number;
+    precio_envio: number;
+    id_iva: number;
+    iva: number;
+};
+
 const ResultadoPago = () => {
     const { user } = useContext(AuthContext);
     const [searchParams] = useSearchParams();
     const [estadoPago, setEstadoPago] = useState<string>('Verificando...');
     const [esExitoso, setEsExitoso] = useState<boolean | null>(null);
     const [consultaCompletada, setConsultaCompletada] = useState<boolean>(false);
-    const [tiempoRestante, setTiempoRestante] = useState<number>(7);
+    const [tiempoRestante, setTiempoRestante] = useState<number>(10);
     const navigate = useNavigate();
     const { cartItems, vaciarCarrito } = useCart();
     const usuarioId = user?.id;
+
     const [direccionEnvioLocal] = useState<any | null>(() => {
         try {
             const storedDireccion = sessionStorage.getItem('direccionEnvio');
@@ -25,120 +34,45 @@ const ResultadoPago = () => {
         return null;
     });
 
-    const consultarPago = async (resourcePath: string) => {
-        try {
-            if (consultaCompletada) {
-                return;
-            }
-            setConsultaCompletada(true);
-
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout/resultado?id=${resourcePath}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (!res.ok) {
-                console.error('❌ Error al hacer la consulta:', res.statusText);
-                setEstadoPago(`Error: ${res.statusText}`);
-                setEsExitoso(false);
-                return;
-            }
-
-            const data = await res.json();
-            const code = data.result?.code;
-            const description = data.result?.description;
-            const id_pago = data.id;
-            const email = data.customer?.email;
-            const amount = data.amount;
-            if (!code || !description) {
-                console.error('❌ No se recibió información completa.');
-                setEstadoPago('❌ No se recibió la información necesaria del pago.');
-                setEsExitoso(false);
-                return;
-            }
-
-            setEstadoPago(description);
-            setEsExitoso(code.startsWith('000'));
-            let precioEnvio = 0;
-            try {
-                const resConfig = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/configuracion`);
-                if (resConfig.ok) {
-                    const dataConfig = await resConfig.json();
-                    precioEnvio = dataConfig.precio_envio ?? 0;
-                }
-            } catch (err) {
-                console.error("Error cargando precio de envío:", err);
-            }
-
-            const cost = {
-                shipping: precioEnvio,
-                tax: Number(data.customParameters?.SHOPPER_VAL_IVA) || 0,
-                total: parseFloat(amount)
-            };
-
-            const esExitosoLocal = code.startsWith('000');
-            setEsExitoso(esExitosoLocal);
-
-            if (esExitosoLocal) {
-                const res = await registrarPago(amount, resourcePath, description, code, true, usuarioId, cartItems, direccionEnvioLocal, id_pago);
-                const idPagoFormateado = String(res.pedidoId).padStart(6, '0');
-                await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
-                vaciarCarrito();
-            }
-            sessionStorage.removeItem('direccionEnvio');
-
-            setTiempoRestante(7);
-
-            const countdownInterval = setInterval(() => {
-                setTiempoRestante(prev => {
-                    if (prev <= 1) {
-                        clearInterval(countdownInterval);
-
-                        if (esExitosoLocal) {
-                            navigate('/');
-                        } else {
-                            navigate('/carrito');
-                        }
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 100);
-
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.error('❌ Error al hacer la consulta:', error.message);
-                setEstadoPago(`Error al realizar la consulta: ${error.message}`);
-                setEsExitoso(false);
-            } else {
-                console.error('❌ Error desconocido:', error);
-                setEstadoPago('❌ Error desconocido');
-                setEsExitoso(false);
-            }
-        }
-    };
-
-    const registrarPago = async (total: string, resourcePath: string, estadoPago: string, codigoPago: string, esExitoso: boolean, usuarioId: number, cartItems: any, direccionEnvio: any, id_pago: string) => {
-
+    // 🔹 Función para registrar pago en la API
+    const registrarPago = async (
+        total: string,
+        iva: string,
+        resourcePath: string,
+        estadoPago: string,
+        codigoPago: string,
+        esExitoso: boolean,
+        usuarioId: number,
+        cartItems: any,
+        direccionEnvio: any,
+        id_pago: string,
+        envio: string,
+    ) => {
         const productosCarrito = {
-            total: total,
-            productos: cartItems
+            total,
+            productos: cartItems,
+            iva,
+            envio: envio
         };
 
-
-        if (!productosCarrito || !productosCarrito.total || productosCarrito.productos.length === 0) {
+        if (!productosCarrito.total || productosCarrito.productos.length === 0) {
             throw new Error("❌ El carrito de productos no contiene los datos necesarios.");
         }
 
         if (!direccionEnvio) {
             throw new Error("❌ No se pudo recuperar la dirección de envío.");
         }
+
+        console.log("✅ Enviando datos a la API /payment:", {
+            resourcePath,
+            estadoPago,
+            codigoPago,
+            esExitoso: esExitoso ? 1 : 0,
+            usuarioId,
+            productosCarrito,
+            direccionEnvio,
+            id_pago
+        });
 
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payment`, {
             method: 'POST',
@@ -154,23 +88,113 @@ const ResultadoPago = () => {
                 id_pago
             }),
         });
+
         if (!res.ok) {
             throw new Error('❌ Error al registrar el pago');
         }
-        const responseData = await res.json(); 
-        return responseData;
+
+        return await res.json();
+    };
+
+    // 🔹 Función para consultar el estado del pago
+    const consultarPago = async (resourcePath: string) => {
+        try {
+            if (consultaCompletada) return;
+            setConsultaCompletada(true);
+
+            // Consulta al endpoint de checkout
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout/resultado?id=${resourcePath}`);
+            if (!res.ok) {
+                setEstadoPago(`Error: ${res.statusText}`);
+                setEsExitoso(false);
+                return;
+            }
+
+            const data = await res.json();
+            const code = data.result?.code;
+            const description = data.result?.description;
+            const id_pago = data.id;
+            const email = data.customer?.email;
+            const amount = data.amount;
+            const iva_pedido = data.customParameters?.SHOPPER_VAL_IVA;
+
+            if (!code || !description) {
+                setEstadoPago('❌ No se recibió la información necesaria del pago.');
+                setEsExitoso(false);
+                return;
+            }
+
+            setEstadoPago(description);
+            const esExitosoLocal = code.startsWith('000');
+            setEsExitoso(esExitosoLocal);
+
+            // Consulta la configuración
+            const urlConfig = `${import.meta.env.VITE_API_BASE_URL}/api/configuracion`;
+            const resConfig = await fetch(urlConfig);
+            if (!resConfig.ok) throw new Error('❌ Error cargando configuración');
+            const configData: Configuracion = await resConfig.json();
+
+            // Calcula costos
+            const cost = {
+                shipping: configData.precio_envio,
+                tax: Number(iva_pedido) || configData.iva,
+                total: parseFloat(amount)
+            };
+
+            // Registrar pago si fue exitoso
+            if (esExitosoLocal) {
+                const res = await registrarPago(
+                    amount,
+                    configData.iva.toString(),
+                    resourcePath,
+                    description,
+                    code,
+                    true,
+                    usuarioId!,
+                    cartItems,
+                    direccionEnvioLocal,
+                    id_pago,
+                    configData.precio_envio.toString(),
+                );
+                const idPagoFormateado = String(res.pedidoId).padStart(6, '0');
+                await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
+                vaciarCarrito();
+            }
+
+            sessionStorage.removeItem('direccionEnvio');
+            setTiempoRestante(7);
+
+            // Countdown para redirección
+            const countdownInterval = setInterval(() => {
+                setTiempoRestante(prev => {
+                    if (prev <= 1) {
+                        clearInterval(countdownInterval);
+                        navigate(esExitosoLocal ? '/' : '/carrito');
+                        setTimeout(() => window.location.reload(), 100);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error('❌ Error al consultar pago:', error.message);
+                setEstadoPago(`Error al consultar pago: ${error.message}`);
+            } else {
+                console.error('❌ Error desconocido:', error);
+                setEstadoPago('❌ Error desconocido');
+            }
+            setEsExitoso(false);
+        }
     };
 
     useEffect(() => {
         const resourcePath = searchParams.get('resourcePath');
-        if (!resourcePath || !direccionEnvioLocal || consultaCompletada) {
-            return;
-        }
-
+        if (!resourcePath || !direccionEnvioLocal || consultaCompletada) return;
 
         const timeoutId = setTimeout(() => {
             if (cartItems.length === 0) {
-                console.error("❌ El carrito está vacío.");
                 setEstadoPago('❌ El carrito está vacío.');
                 setEsExitoso(false);
                 return;
@@ -179,9 +203,7 @@ const ResultadoPago = () => {
         }, 2000);
 
         return () => clearTimeout(timeoutId);
-
     }, [searchParams, consultaCompletada, cartItems, navigate, direccionEnvioLocal]);
-
 
     return (
         <div className="max-w-lg mx-auto mt-20 text-center px-4 mb-20">
@@ -196,13 +218,7 @@ const ResultadoPago = () => {
 
             {esExitoso !== null && (
                 <button
-                    onClick={() => {
-                        if (esExitoso) {
-                            navigate('/');
-                        } else {
-                            navigate('/carrito');
-                        }
-                    }}
+                    onClick={() => navigate(esExitoso ? '/' : '/carrito')}
                     className={`px-6 py-2 rounded text-white transition ${esExitoso ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
                 >
                     {esExitoso ? 'Volver al inicio' : 'Volver al carrito'}
