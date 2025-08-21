@@ -56,8 +56,6 @@ export default function PagoManager() {
                 `${import.meta.env.VITE_API_BASE_URL}/api/checkout/consultar`,
                 { params: { paymentId: id }, withCredentials: true }
             );
-            
-            console.log("Datos del pago recibidos:", res.data); // Debug
             setPaymentData(res.data);
         } catch (err: any) {
             console.error("Error al consultar pago:", err);
@@ -69,13 +67,9 @@ export default function PagoManager() {
 
     const handleAnularPago = async () => {
         // Intentar obtener el ID del pago de diferentes formas
-        const idPago = paymentData?.id_pago || 
-                      (paymentData as any)?.paymentId || 
-                      paymentId.trim();
-        
-        console.log("ID de pago para anular:", idPago); // Debug
-        console.log("Datos completos del pago:", paymentData); // Debug
-        
+        const idPago = paymentData?.id_pago ||
+            (paymentData as any)?.paymentId ||
+            paymentId.trim();
         if (!idPago) {
             alert("No hay un pago válido para anular.");
             return;
@@ -136,8 +130,8 @@ export default function PagoManager() {
                 onClick={handleConsultarPago}
                 disabled={!paymentId.trim() || loading}
                 className={`px-4 py-2 rounded w-full ${!paymentId.trim() || loading
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-[#003366] hover:bg-blue-600 text-white"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#003366] hover:bg-blue-600 text-white"
                     }`}
             >
                 {loading ? "Consultando..." : "Consultar Pago"}
@@ -159,7 +153,7 @@ export default function PagoManager() {
                         <p><strong>Descripción de la consulta:</strong> {paymentData.result?.description || "—"}</p>
                         <p><strong>Detalle de la transacción:</strong> {paymentData.resultDetails?.ExtendedDescription || "—"}</p>
                         {paymentData.id_pago && <p><strong>ID Pago:</strong> {paymentData.id_pago}</p>}
-                        
+
                         {/* Mostrar información de debug temporalmente */}
                         <details className="mt-2">
                             <summary className="cursor-pointer text-sm text-gray-600">Ver datos completos (debug)</summary>
@@ -174,8 +168,8 @@ export default function PagoManager() {
                             onClick={handleAnularPago}
                             disabled={anulacionLoading}
                             className={`mt-4 px-4 py-2 rounded w-full ${anulacionLoading
-                                    ? "bg-gray-400 cursor-not-allowed"
-                                    : "bg-red-600 hover:bg-red-700 text-white"
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-red-600 hover:bg-red-700 text-white"
                                 }`}
                         >
                             {anulacionLoading ? "Anulando..." : "Anular Pago"}
