@@ -62,18 +62,7 @@ const ResultadoPago = () => {
         if (!direccionEnvio) {
             throw new Error("❌ No se pudo recuperar la dirección de envío.");
         }
-
-        console.log("✅ Enviando datos a la API /payment:", {
-            resourcePath,
-            estadoPago,
-            codigoPago,
-            esExitoso: esExitoso ? 1 : 0,
-            usuarioId,
-            productosCarrito,
-            direccionEnvio,
-            id_pago
-        });
-
+        
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

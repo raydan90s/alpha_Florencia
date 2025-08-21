@@ -76,9 +76,6 @@ export async function enviarCorreoConfirmacionCompra(
         </table>
     `;
 
-    // Para debugging - ver el HTML generado
-    console.log("HTML de productos generado:", ordersHtml);
-
     try {
         const response = await emailjs.send(
             service,
