@@ -88,7 +88,7 @@ const ProductDetailsFields: React.FC<ProductDetailsFieldsProps> = ({
           onChange={(e) =>
             setCurrentProduct({
               ...currentProduct,
-              category: e.target.value as "TONER" | "TINTA",
+              category: e.target.value as "TONER" | "TINTA" | "CUCHILLA" | "CILINDRO",
             })
           }
           className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -97,6 +97,8 @@ const ProductDetailsFields: React.FC<ProductDetailsFieldsProps> = ({
           <option value="">Seleccionar categoría</option>
           <option value="TONER">Tóner</option>
           <option value="TINTA">Tinta</option>
+          <option value="CUCHILLA">Cuchilla</option>
+          <option value="CILINDRO">Cilindro</option>
         </select>
       </div>
 
