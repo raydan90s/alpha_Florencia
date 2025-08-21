@@ -90,7 +90,6 @@ export async function enviarCorreoConfirmacionCompra(
             },
             key
         );
-        console.log("✅ Correo de compra enviado:", response);
         return response;
     } catch (err) {
         console.error("❌ Error sending purchase confirmation:", err);
