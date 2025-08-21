@@ -22,7 +22,6 @@ const HistorialManager: React.FC = () => {
 
     const [modalAbierto, setModalAbierto] = useState<boolean>(false);
     const [pedidoSeleccionado, setPedidoSeleccionado] = useState<any>(null);
-    const [cargandoDetalles, setCargandoDetalles] = useState<boolean>(false);
 
     useEffect(() => { }, [pedidos]);
 
@@ -91,14 +90,11 @@ const HistorialManager: React.FC = () => {
     const abrirModalDetalles = (pedido: any) => {
         setPedidoSeleccionado(pedido);
         setModalAbierto(true);
-        setCargandoDetalles(true);
-        setTimeout(() => setCargandoDetalles(false), 800);
     };
 
     const cerrarModal = () => {
         setModalAbierto(false);
         setPedidoSeleccionado(null);
-        setCargandoDetalles(false);
     };
 
     if (loading) {
@@ -154,7 +150,6 @@ const HistorialManager: React.FC = () => {
             {modalAbierto && (
                 <OrderDetailsModal
                     pedidoSeleccionado={pedidoSeleccionado}
-                    cargandoDetalles={cargandoDetalles}
                     cerrarModal={cerrarModal}
                 />
             )}

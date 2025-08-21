@@ -10,7 +10,6 @@ interface OrderCost {
 
 export function enviarCorreoVerificacion(nombre: string, email: string, token: string) {
     const link = `https://tonerexpress-ec.com/verificar?token=${token}`;
-
     emailjs.send(
         service,
         "template_lgrk88a",
@@ -21,8 +20,11 @@ export function enviarCorreoVerificacion(nombre: string, email: string, token: s
         },
         key
     )
-        .catch(err => console.error(err));
+        .catch(err => {
+            console.error("❌ Error al enviar correo:", err);
+        });
 }
+
 
 export async function enviarCorreoConfirmacionCompra(
     email: string,

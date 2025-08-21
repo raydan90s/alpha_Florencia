@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { DireccionEnvio } from "../../types/direccionEnvio";
+import type { DireccionEnvio } from "../../../types/direccionEnvio";
 import { normalizeDireccionEnvio } from "./normalizeDireccionEnvio";
 
 export function useDireccionPrincipal(isAuthenticated: boolean, userId: number | null) {
