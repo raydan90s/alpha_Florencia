@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from "../context/CartContext";
 import { AuthContext } from '../context/AuthContext';
 import { enviarCorreoConfirmacionCompra } from '../utils/enviarCorreo';
+import Billing, { type BillingHandle } from '../components/Checkout/Billing';
+
 
 type BillingHandle = {
     enviarFacturacion: () => Promise<void>;
@@ -150,7 +152,7 @@ const ResultadoPago = () => {
                         direccionEnvioLocal,
                         id_pago,
                         configData.precio_envio.toString(),
-                        facturacionId // ✅ ahora es number seguro
+                        facturacionId
                     );
 
                     const idPagoFormateado = String(res.pedidoId).padStart(6, '0');
@@ -205,7 +207,13 @@ const ResultadoPago = () => {
     }, [searchParams, consultaCompletada, cartItems, navigate, direccionEnvioLocal]);
 
     return (
+
         <div className="max-w-lg mx-auto mt-20 text-center px-4 mb-20">
+            <div style={{ display: 'none' }}>
+
+                <Billing ref={billingRef} />
+            </div>
+
             <h1 className="text-2xl font-bold mb-4">Resultado del Pago</h1>
             <p className="text-lg mb-6">{estadoPago}</p>
 

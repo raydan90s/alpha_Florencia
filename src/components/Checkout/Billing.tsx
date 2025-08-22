@@ -1,7 +1,8 @@
 import React, { useState, useContext, forwardRef, useImperativeHandle } from "react";
 import { AuthContext } from "../../context/AuthContext";
 
-interface BillingHandle {
+
+export type BillingHandle = {
   enviarFacturacion: () => Promise<number | null>;
 }
 
@@ -28,7 +29,7 @@ const Billing = forwardRef<BillingHandle>((_props, ref) => {
   const enviarFacturacion = async (): Promise<number | null> => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/usuario/facturacion`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/facturacion`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
