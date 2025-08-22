@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import BillingModal from "./BillingModal";
 
 interface ProductoAdmin {
   id_producto: number;
@@ -37,6 +38,7 @@ interface OrderDetailsAdminModalProps {
 }
 
 const OrderHistoryModal: React.FC<OrderDetailsAdminModalProps> = ({ pedidoSeleccionado, cerrarModal }) => {
+  const [showBillingModal, setShowBillingModal] = useState(false);
   const [detalles, setDetalles] = useState<DetallePedidoAdmin | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -93,7 +95,7 @@ const OrderHistoryModal: React.FC<OrderDetailsAdminModalProps> = ({ pedidoSelecc
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={(e) => e.target === e.currentTarget && cerrarModal()}
     >
@@ -168,6 +170,16 @@ const OrderHistoryModal: React.FC<OrderDetailsAdminModalProps> = ({ pedidoSelecc
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <span className="text-sm font-medium text-gray-600">IVA Porcentaje:</span>
                       <p className="text-base font-medium text-gray-800">{detalles.iva_valor || 0}%</p>
+                    </div>
+
+                    {/* Botón de facturación */}
+                    <div className="p-3 rounded-lg flex justify-start">
+                      <button
+                        onClick={() => setShowBillingModal(true)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+                      >
+                        Ver datos de facturación
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -272,6 +284,14 @@ const OrderHistoryModal: React.FC<OrderDetailsAdminModalProps> = ({ pedidoSelecc
           </button>
         </div>
       </div>
+
+      {/* Modal de facturación */}
+      {showBillingModal && (
+        <BillingModal
+          pedidoId={detalles?.id_pedido || 0}
+          cerrarModal={() => setShowBillingModal(false)}
+        />
+      )}
     </div>
   );
 };

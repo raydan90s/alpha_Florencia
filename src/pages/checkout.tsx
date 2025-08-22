@@ -371,7 +371,7 @@ const Checkout = () => {
                 </label>
               </div>
 
-              {!usarMismosDatos && <Billing onChange={() => { }} />}
+              {!usarMismosDatos && <Billing  />}
 
               <div className="bg-white shadow rounded p-6">
                 <label htmlFor="notes" className="block mb-2 font-medium">

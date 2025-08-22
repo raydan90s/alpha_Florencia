@@ -14,8 +14,9 @@ export default function ProductDetailsHeader({ name, price }: ProductDetailsHead
         </h1>
 
         <span className="text-xl md:text-3xl font-black text-[#003366] bg-clip-text bg-gradient-to-r from-orange-500 via-red-500 to-yellow-400 animate-gradient-x">
-          ${price.toFixed(2)}
+          ${price.toFixed(2)} <span className="text-sm text-red-500">+ IVA</span>
         </span>
+
       </div>
     </div>
   );

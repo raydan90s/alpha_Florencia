@@ -1,9 +1,12 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from "../context/CartContext";
 import { AuthContext } from '../context/AuthContext';
 import { enviarCorreoConfirmacionCompra } from '../utils/enviarCorreo';
 
+type BillingHandle = {
+    enviarFacturacion: () => Promise<void>;
+};
 type Configuracion = {
     id: number;
     precio_envio: number;
@@ -21,6 +24,7 @@ const ResultadoPago = () => {
     const navigate = useNavigate();
     const { cartItems, vaciarCarrito } = useCart();
     const usuarioId = user?.id;
+    const billingRef = useRef<BillingHandle>(null);
 
     const [direccionEnvioLocal] = useState<any | null>(() => {
         try {
@@ -34,7 +38,6 @@ const ResultadoPago = () => {
         return null;
     });
 
-    // 🔹 Función para registrar pago en la API
     const registrarPago = async (
         total: string,
         iva: string,
@@ -47,6 +50,7 @@ const ResultadoPago = () => {
         direccionEnvio: any,
         id_pago: string,
         envio: string,
+        facturacionId: number,
     ) => {
         const productosCarrito = {
             total,
@@ -62,7 +66,7 @@ const ResultadoPago = () => {
         if (!direccionEnvio) {
             throw new Error("❌ No se pudo recuperar la dirección de envío.");
         }
-        
+
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -74,7 +78,8 @@ const ResultadoPago = () => {
                 usuarioId,
                 productosCarrito,
                 direccionEnvio,
-                id_pago
+                id_pago,
+                facturacionId
             }),
         });
 
@@ -85,7 +90,6 @@ const ResultadoPago = () => {
         return await res.json();
     };
 
-    // 🔹 Función para consultar el estado del pago
     const consultarPago = async (resourcePath: string) => {
         try {
             if (consultaCompletada) return;
@@ -130,26 +134,32 @@ const ResultadoPago = () => {
                 total: parseFloat(amount)
             };
 
-            // Registrar pago si fue exitoso
             if (esExitosoLocal) {
-                const res = await registrarPago(
-                    amount,
-                    configData.iva.toString(),
-                    resourcePath,
-                    description,
-                    code,
-                    true,
-                    usuarioId!,
-                    cartItems,
-                    direccionEnvioLocal,
-                    id_pago,
-                    configData.precio_envio.toString(),
-                );
-                const idPagoFormateado = String(res.pedidoId).padStart(6, '0');
-                await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
-                vaciarCarrito();
-            }
+                const facturacionId = await billingRef.current?.enviarFacturacion();
 
+                if (facturacionId !== null && facturacionId !== undefined) {
+                    const res = await registrarPago(
+                        amount,
+                        configData.iva.toString(),
+                        resourcePath,
+                        description,
+                        code,
+                        true,
+                        usuarioId!,
+                        cartItems,
+                        direccionEnvioLocal,
+                        id_pago,
+                        configData.precio_envio.toString(),
+                        facturacionId // ✅ ahora es number seguro
+                    );
+
+                    const idPagoFormateado = String(res.pedidoId).padStart(6, '0');
+                    await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
+                    vaciarCarrito();
+                } else {
+                    console.error("❌ No se pudo registrar la facturación, facturacionId es null");
+                }
+            }
             sessionStorage.removeItem('direccionEnvio');
             setTiempoRestante(7);
 

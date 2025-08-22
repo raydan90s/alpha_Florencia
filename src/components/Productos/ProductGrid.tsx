@@ -28,7 +28,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
             {/* Usamos solo el slug para redirigir */}
             <Link to={`/productos/${product.slug}`}>
-              <div className="relative h-48 cursor-pointer">
+              <div className="relative h-72 cursor-pointer">
                 {/* Usamos el elemento img estándar */}
                 {sortedImages?.[0]?.url && (
                   <img
