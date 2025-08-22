@@ -3,12 +3,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from "../context/CartContext";
 import { AuthContext } from '../context/AuthContext';
 import { enviarCorreoConfirmacionCompra } from '../utils/enviarCorreo';
-import Billing, { type BillingHandle } from '../components/Checkout/Billing';
+import Billing from '../components/Checkout/Billing';
+import type {BillingHandle } from '../components/Checkout/Billing';
 
-
-type BillingHandle = {
-    enviarFacturacion: () => Promise<void>;
-};
 type Configuracion = {
     id: number;
     precio_envio: number;
