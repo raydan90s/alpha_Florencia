@@ -10,7 +10,7 @@ interface CrearCheckoutRealParams {
     ciudad?: string;
     provincia?: string;
     middleName?: string;
-    pastcode: string;
+    pastcode?: string;
   };
   userId: string | number | null;
   user: { email?: string } | null;

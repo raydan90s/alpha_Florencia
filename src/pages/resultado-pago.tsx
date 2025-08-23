@@ -4,7 +4,8 @@ import { useCart } from "../context/CartContext";
 import { AuthContext } from '../context/AuthContext';
 import { enviarCorreoConfirmacionCompra } from '../utils/enviarCorreo';
 import Billing from '../components/Checkout/Billing';
-import type {BillingHandle } from '../components/Checkout/Billing';
+import type { BillingHandle } from '../components/Checkout/Billing';
+import type { DireccionEnvio } from '../types/direccionEnvio';
 
 type Configuracion = {
     id: number;
@@ -94,7 +95,6 @@ const ResultadoPago = () => {
             if (consultaCompletada) return;
             setConsultaCompletada(true);
 
-            // Consulta al endpoint de checkout
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout/resultado?id=${resourcePath}`);
             if (!res.ok) {
                 setEstadoPago(`Error: ${res.statusText}`);
@@ -120,13 +120,12 @@ const ResultadoPago = () => {
             const esExitosoLocal = code.startsWith('000');
             setEsExitoso(esExitosoLocal);
 
-            // Consulta la configuración
+            // Consulta configuración
             const urlConfig = `${import.meta.env.VITE_API_BASE_URL}/api/configuracion`;
             const resConfig = await fetch(urlConfig);
             if (!resConfig.ok) throw new Error('❌ Error cargando configuración');
             const configData: Configuracion = await resConfig.json();
 
-            // Calcula costos
             const cost = {
                 shipping: configData.precio_envio,
                 tax: Number(iva_pedido) || configData.iva,
@@ -134,9 +133,24 @@ const ResultadoPago = () => {
             };
 
             if (esExitosoLocal) {
-                const facturacionId = await billingRef.current?.enviarFacturacion();
+                let facturacionId: number | null = null;
+                let billingDataLocal: DireccionEnvio | null = null;
 
-                if (facturacionId !== null && facturacionId !== undefined) {
+                if (billingRef.current) {
+                    facturacionId = await billingRef.current.enviarFacturacion();
+                } else {
+                    const stored = sessionStorage.getItem('direccionFacturacion');
+                    if (stored) {
+                        try {
+                            billingDataLocal = JSON.parse(stored);
+                            facturacionId = billingDataLocal?.id || null;
+                        } catch (error) {
+                            console.error('❌ Error parseando billingData desde sessionStorage:', error);
+                        }
+                    }
+                }
+
+                if (facturacionId !== null) {
                     const res = await registrarPago(
                         amount,
                         configData.iva.toString(),
@@ -146,34 +160,34 @@ const ResultadoPago = () => {
                         true,
                         usuarioId!,
                         cartItems,
-                        direccionEnvioLocal,
+                        direccionEnvioLocal!,
                         id_pago,
                         configData.precio_envio.toString(),
                         facturacionId
                     );
 
                     const idPagoFormateado = String(res.pedidoId).padStart(6, '0');
-                    await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
+                    //await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
                     vaciarCarrito();
                 } else {
                     console.error("❌ No se pudo registrar la facturación, facturacionId es null");
                 }
-            }
-            sessionStorage.removeItem('direccionEnvio');
-            setTiempoRestante(7);
 
-            // Countdown para redirección
-            const countdownInterval = setInterval(() => {
-                setTiempoRestante(prev => {
-                    if (prev <= 1) {
-                        clearInterval(countdownInterval);
-                        navigate(esExitosoLocal ? '/' : '/carrito');
-                        setTimeout(() => window.location.reload(), 100);
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
+                sessionStorage.removeItem('direccionEnvio');
+                setTiempoRestante(7);
+
+                const countdownInterval = setInterval(() => {
+                    setTiempoRestante(prev => {
+                        if (prev <= 1) {
+                            clearInterval(countdownInterval);
+                            navigate(esExitosoLocal ? '/' : '/carrito');
+                            setTimeout(() => window.location.reload(), 100);
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+            }
 
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -207,8 +221,7 @@ const ResultadoPago = () => {
 
         <div className="max-w-lg mx-auto mt-20 text-center px-4 mb-20">
             <div style={{ display: 'none' }}>
-
-                <Billing ref={billingRef} />
+                <Billing ref={billingRef} value={direccionEnvioLocal} onChange={() => { }} />
             </div>
 
             <h1 className="text-2xl font-bold mb-4">Resultado del Pago</h1>
