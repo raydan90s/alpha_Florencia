@@ -1,9 +1,10 @@
-import React, { useState, useContext, forwardRef, useImperativeHandle, useEffect } from "react";
+import React, { useState, useContext, forwardRef, useImperativeHandle, useEffect, useCallback } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import type { DireccionEnvio } from "../../types/direccionEnvio";
 
 export type BillingHandle = {
   enviarFacturacion: () => Promise<number | null>;
+  prepararFacturacion: () => void; // Nueva función para solo preparar datos
 }
 
 type BillingProps = {
@@ -15,93 +16,139 @@ type BillingProps = {
 
 const Billing = forwardRef<BillingHandle, BillingProps>(({ value, onChange, datosEnvio }, ref) => {
   const { user } = useContext(AuthContext);
+  
+  // Datos vacíos para reset
+  const emptyFormData: DireccionEnvio = {
+    nombre: "",
+    apellido: "",
+    direccion: "",
+    telefono: "",
+    cedula: "",
+    ciudad: "",
+    provincia: "",
+    pastcode: "",
+    guardarDatos: false,
+    notas: "",
+  };
 
-  // Estado del checkbox "Igual que envío"
-  const [igualQueEnvio, setIgualQueEnvio] = useState(true);
-
-  // Inicializar formData desde sessionStorage si existe, sino fallback a value
-  const initialFormData: DireccionEnvio = (() => {
+  // Inicializar formData desde sessionStorage si existe, sino fallback a datos vacíos
+  const [initialCheckboxState, setInitialCheckboxStateOnce] = useState(() => {
     try {
       const stored = sessionStorage.getItem('direccionFacturacion');
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        // Si hay datos guardados, probablemente el usuario había desmarcado antes
+        return false;
+      }
     } catch (error) {
       console.error('❌ Error leyendo datos de facturación de sessionStorage:', error);
     }
-    return value;
+    return true; // Por defecto marcado
+  });
+
+  const initialFormData: DireccionEnvio = (() => {
+    try {
+      const stored = sessionStorage.getItem('direccionFacturacion');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('❌ Error leyendo datos de facturación de sessionStorage:', error);
+    }
+    return emptyFormData;
   })();
 
+  // Estado del checkbox "Igual que envío" - inicializado correctamente
+  const [igualQueEnvio, setIgualQueEnvio] = useState(initialCheckboxState);
+
   const [formData, setFormData] = useState<DireccionEnvio>(initialFormData);
+
+  // Optimizar onChange con useCallback
+  const handleFormDataChange = useCallback((newData: DireccionEnvio) => {
+    onChange(newData);
+  }, [onChange]);
 
   // Efecto para sincronizar datos cuando cambia igualQueEnvio o datosEnvio
   useEffect(() => {
     if (igualQueEnvio && datosEnvio) {
-      // Cuando "igual que envío" está marcado, usar los datos de envío actuales
+      // Solo si se marca "igual que envío", usamos datos de envío
       const datosFacturacion = { ...datosEnvio };
       setFormData(datosFacturacion);
-      onChange(datosFacturacion);
-      
-      // Guardar en sessionStorage inmediatamente
+      handleFormDataChange(datosFacturacion);
+
+      // Guardar en sessionStorage
       sessionStorage.setItem('direccionFacturacion', JSON.stringify(datosFacturacion));
       console.log('✅ Facturación sincronizada con envío:', datosFacturacion);
-    } else if (!igualQueEnvio) {
-      // Cuando se desmarca, asegurar que onChange tenga los datos actuales del formulario
-      onChange(formData);
-      sessionStorage.setItem('direccionFacturacion', JSON.stringify(formData));
-      console.log('✅ Facturación usando datos específicos:', formData);
     }
-  }, [igualQueEnvio, datosEnvio, onChange]);
+  }, [igualQueEnvio, datosEnvio]); // Removido onChange de las dependencias
+
+  // Manejo del checkbox
+  const handleCheckboxChange = () => {
+    const newIgualQueEnvio = !igualQueEnvio;
+    setIgualQueEnvio(newIgualQueEnvio);
+
+    if (newIgualQueEnvio && datosEnvio) {
+      // Si marca "igual que envío", usar datos de envío
+      const datosFacturacion = { ...datosEnvio };
+      setFormData(datosFacturacion);
+      handleFormDataChange(datosFacturacion);
+      sessionStorage.setItem('direccionFacturacion', JSON.stringify(datosFacturacion));
+      console.log('✅ Cambiado a usar datos de envío para facturación:', datosFacturacion);
+    } else {
+      // Si desmarca, limpiar todos los campos
+      setFormData(emptyFormData);
+      handleFormDataChange(emptyFormData);
+      // Limpiar también de sessionStorage
+      sessionStorage.removeItem('direccionFacturacion');
+      console.log('✅ Campos de facturación limpiados al desmarcar "igual que envío"');
+    }
+  };
 
   // Manejo de cambios en los inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const updated = { ...formData, [name]: value };
     setFormData(updated);
-    
+
     // Solo llamar onChange si NO es "igual que envío"
     if (!igualQueEnvio) {
-      onChange(updated);
+      handleFormDataChange(updated);
       // Guardar en sessionStorage inmediatamente
       sessionStorage.setItem('direccionFacturacion', JSON.stringify(updated));
       console.log('✅ Datos de facturación específicos actualizados:', updated);
     }
   };
 
-  // Manejo del checkbox
-  const handleCheckboxChange = () => {
-    const newIgualQueEnvio = !igualQueEnvio;
-    setIgualQueEnvio(newIgualQueEnvio);
-    
-    if (newIgualQueEnvio && datosEnvio) {
-      // Si marca "igual que envío", usar datos de envío
-      const datosFacturacion = { ...datosEnvio };
-      setFormData(datosFacturacion);
-      onChange(datosFacturacion);
-      sessionStorage.setItem('direccionFacturacion', JSON.stringify(datosFacturacion));
-      console.log('✅ Cambiado a usar datos de envío para facturación:', datosFacturacion);
-    } else {
-      // Si desmarca, usar los datos específicos del formulario actual
-      onChange(formData);
-      sessionStorage.setItem('direccionFacturacion', JSON.stringify(formData));
-      console.log('✅ Cambiado a usar datos específicos de facturación:', formData);
-    }
-  };
-
-  // Función para enviar facturación y devolver ID
-  const enviarFacturacion = async (): Promise<number | null> => {
+  // Función para solo preparar los datos de facturación (sin enviar al backend)
+  const prepararFacturacion = (): void => {
     try {
       let dataFacturacion: DireccionEnvio;
 
       if (igualQueEnvio && datosEnvio) {
-        // Usar datos de envío actuales pasados como prop
         dataFacturacion = { ...datosEnvio };
       } else {
-        // Usar datos del formulario de facturación
         dataFacturacion = { ...formData };
       }
 
-      // Guardar siempre en sessionStorage
+      // Solo guardar en sessionStorage, NO enviar al backend aún
       sessionStorage.setItem('direccionFacturacion', JSON.stringify(dataFacturacion));
-      console.log('✅ Facturación guardada en sessionStorage:', dataFacturacion);
+      console.log('✅ Facturación preparada y guardada en sessionStorage (sin enviar):', dataFacturacion);
+    } catch (error) {
+      console.error("❌ Error en prepararFacturacion:", error);
+    }
+  };
+
+  // Función para enviar facturación y devolver ID (solo cuando el pago sea exitoso)
+  const enviarFacturacion = async (): Promise<number | null> => {
+    try {
+      // Leer los datos preparados de sessionStorage
+      const storedData = sessionStorage.getItem('direccionFacturacion');
+      if (!storedData) {
+        console.error("❌ No hay datos de facturación preparados");
+        return null;
+      }
+
+      const dataFacturacion: DireccionEnvio = JSON.parse(storedData);
+      console.log('✅ Enviando facturación al backend:', dataFacturacion);
 
       // Llamada al backend
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/facturacion`, {
@@ -120,7 +167,13 @@ const Billing = forwardRef<BillingHandle, BillingProps>(({ value, onChange, dato
       });
 
       const data = await res.json();
-      if (data.success) return data.facturacionId;
+      if (data.success) {
+        // ✅ Una vez enviado correctamente, borrar del sessionStorage
+        sessionStorage.removeItem('direccionFacturacion');
+        console.log('✅ Facturación enviada exitosamente. Datos eliminados de sessionStorage tras envío');
+        return data.facturacionId;
+      }
+
       console.error("❌ Error al registrar facturación:", data.error);
       return null;
     } catch (error) {
@@ -129,9 +182,10 @@ const Billing = forwardRef<BillingHandle, BillingProps>(({ value, onChange, dato
     }
   };
 
-  // Exponer la función al padre
+  // Exponer ambas funciones al padre
   useImperativeHandle(ref, () => ({
     enviarFacturacion,
+    prepararFacturacion,
   }));
 
   return (

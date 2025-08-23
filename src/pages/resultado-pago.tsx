@@ -167,7 +167,7 @@ const ResultadoPago = () => {
                     );
 
                     const idPagoFormateado = String(res.pedidoId).padStart(6, '0');
-                    //await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
+                    await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
                     vaciarCarrito();
                 } else {
                     console.error("❌ No se pudo registrar la facturación, facturacionId es null");

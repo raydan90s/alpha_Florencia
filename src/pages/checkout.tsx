@@ -28,7 +28,7 @@ const Checkout = () => {
   const { user, isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
   const userId = isAuthenticated && user?.id ? user.id : null;
-  
+
   // Ref para acceder a las funciones del componente Billing
   const billingRef = useRef<BillingHandle>(null);
 
@@ -204,25 +204,25 @@ const Checkout = () => {
     // Para la facturación, verificamos si los datos de sessionStorage están listos
     // o si tenemos datos básicos en billingData
     let billingValid = false;
-    
+
     try {
       const storedBilling = sessionStorage.getItem('direccionFacturacion');
       if (storedBilling) {
         const billingFromStorage = JSON.parse(storedBilling);
-        billingValid = billingFromStorage.nombre !== "" && 
-                      billingFromStorage.apellido !== "" &&
-                      billingFromStorage.cedula !== "";
+        billingValid = billingFromStorage.nombre !== "" &&
+          billingFromStorage.apellido !== "" &&
+          billingFromStorage.cedula !== "";
       } else {
         // Fallback a billingData si no hay nada en storage
-        billingValid = billingData.nombre !== "" && 
-                      billingData.apellido !== "" &&
-                      billingData.cedula !== "";
+        billingValid = billingData.nombre !== "" &&
+          billingData.apellido !== "" &&
+          billingData.cedula !== "";
       }
     } catch (error) {
       // Si hay error leyendo storage, usar billingData
-      billingValid = billingData.nombre !== "" && 
-                    billingData.apellido !== "" &&
-                    billingData.cedula !== "";
+      billingValid = billingData.nombre !== "" &&
+        billingData.apellido !== "" &&
+        billingData.cedula !== "";
     }
 
     return shippingValid && billingValid;
@@ -314,7 +314,7 @@ const Checkout = () => {
       // El componente Billing ya se encarga de guardar sus datos en sessionStorage
       // Llamar a la función de enviarFacturacion para asegurar que los datos estén guardados
       if (billingRef.current) {
-        await billingRef.current.enviarFacturacion();
+        billingRef.current.prepararFacturacion(); // ✅ Solo preparar, no enviar
       }
 
       await crearCheckoutReal({
@@ -427,7 +427,7 @@ const Checkout = () => {
 
               <PrivacyPolicyNotice />
 
-              <TermsConditionsCheckbox 
+              <TermsConditionsCheckbox
                 termsAccepted={termsAccepted}
                 onTermsChange={setTermsAccepted}
               />
