@@ -14,7 +14,7 @@ type BillingProps = {
   datosEnvio?: DireccionEnvio;
 }
 
-const Billing = forwardRef<BillingHandle, BillingProps>(({ value, onChange, datosEnvio }, ref) => {
+const Billing = forwardRef<BillingHandle, BillingProps>(({onChange, datosEnvio }, ref) => {
   const { user } = useContext(AuthContext);
   
   // Datos vacíos para reset
@@ -32,7 +32,7 @@ const Billing = forwardRef<BillingHandle, BillingProps>(({ value, onChange, dato
   };
 
   // Inicializar formData desde sessionStorage si existe, sino fallback a datos vacíos
-  const [initialCheckboxState, setInitialCheckboxStateOnce] = useState(() => {
+  const [initialCheckboxState] = useState(() => {
     try {
       const stored = sessionStorage.getItem('direccionFacturacion');
       if (stored) {

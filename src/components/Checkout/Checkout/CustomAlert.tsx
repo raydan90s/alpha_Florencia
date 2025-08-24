@@ -1,6 +1,4 @@
 // components/Checkout/CustomAlert.tsx
-import React from 'react';
-
 interface CustomAlertProps {
   message: string;
   onClose: () => void;

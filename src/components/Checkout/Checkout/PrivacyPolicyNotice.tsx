@@ -1,6 +1,4 @@
 // components/Checkout/PrivacyPolicyNotice.tsx
-import React from 'react';
-
 const PrivacyPolicyNotice = () => {
   return (
     <div className="text-xs text-gray-600">

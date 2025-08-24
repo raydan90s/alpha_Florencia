@@ -1,6 +1,4 @@
 // components/Checkout/PaymentErrorDisplay.tsx
-import React from 'react';
-
 interface PaymentErrorDisplayProps {
   errorPayment: string | null;
 }

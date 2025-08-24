@@ -1,6 +1,3 @@
-// components/Checkout/ValidationIndicators.tsx
-import React from 'react';
-
 interface ValidationIndicatorsProps {
   isFormValid: boolean;
   isPaymentMethodSelected: boolean;

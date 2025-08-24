@@ -1,6 +1,4 @@
 // components/Checkout/AuthenticationNotice.tsx
-import React from 'react';
-
 interface AuthenticationNoticeProps {
   isAuthenticated: boolean;
 }
