@@ -82,7 +82,7 @@ const Shipping: React.FC<ShippingProps> = ({ onChange, isAuthenticated, userId, 
         placeholder="0999999999" error={errors.telefono} disabled={usarDireccionPrincipal}
         onChange={handleChange} onBlur={handleBlur} />
 
-      <ShippingField label="Número de Cédula" name="cedula" value={value.cedula} required
+      <ShippingField label="Número de Cédula/RUC" name="cedula" value={value.cedula} required
         placeholder="0975123684" error={errors.cedula} disabled={usarDireccionPrincipal}
         onChange={handleChange} onBlur={handleBlur} />
 

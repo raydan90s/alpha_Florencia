@@ -28,9 +28,9 @@ export const validateField = (name: string, value: string): string => {
     }
 
     case "cedula": {
-      const cedulaRegex = /^\d{10}$/;
+      const cedulaRegex = /^\d{13}$/;
       if (!cedulaRegex.test(value)) {
-        return "Ingrese un documento válido (10 dígitos).";
+        return "Ingrese un documento válido.";
       }
       return "";
     }

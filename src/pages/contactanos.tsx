@@ -1,4 +1,5 @@
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
+import { numero } from '../utils/numero';
 
 export default function Contactanos() {
   return (
@@ -99,7 +100,7 @@ export default function Contactanos() {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">Teléfono</h3>
-                  <p className="text-gray-600">+51 999 999 999</p>
+                  <p className="text-gray-600">{numero}</p>
                 </div>
               </div>
 
