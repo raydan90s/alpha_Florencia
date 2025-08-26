@@ -67,6 +67,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/verify`, {
           credentials: 'include',
+          headers: {
+            'X-API-Key': import.meta.env.VITE_API_KEY,
+          },
         });
         const data = await res.json();
         if (res.ok && data.user && data.user.nombre) {
@@ -126,88 +129,90 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setTimeout(() => setActionLoading(false), LOAD_DELAY);
   }, [forceUpdateAuth]);
 
-const login = useCallback(
-  async (email: string, password: string, modoAdmin = false) => {
-    setActionLoading(true);
-    setAuthError(null);
+  const login = useCallback(
+    async (email: string, password: string, modoAdmin = false) => {
+      setActionLoading(true);
+      setAuthError(null);
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "include",
+          body: JSON.stringify({ email, password }),
+        });
 
-      const data = await res.json();
-      // Caso: correo no verificado
-      if (data.emailNotVerified && data.user) {
-        const errorMsg =
-          "Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.";
-        console.warn("⚠️ Usuario con email no verificado:", data.user.email);
-        setAuthError(errorMsg);
-
-        try {
-          const resReenviar = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/api/reenviar-verificacion`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email: data.user.email }),
-            }
-          );
-
-          const dataReenviar = await resReenviar.json();
-
-          // Solo enviamos correo si recibimos un token nuevo
-          if (dataReenviar.verificationToken) {
-            await enviarCorreoVerificacion(
-              dataReenviar.nombre,
-              data.user.email,
-              dataReenviar.verificationToken
-            );
-          } else {
-          }
-        } catch (err) {
-          console.error("❌ Error al reenviar correo de verificación:", err);
-        }
-
-        return errorMsg;
-      }
-
-      // Caso: login exitoso
-      if (res.ok && data.user) {
-        if (modoAdmin && data.user.tipo !== "Admin") {
-          const errorMsg = "Acceso restringido a administradores.";
-          console.warn("⛔ Usuario no tiene rol admin:", data.user.email);
+        const data = await res.json();
+        // Caso: correo no verificado
+        if (data.emailNotVerified && data.user) {
+          const errorMsg =
+            "Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.";
+          console.warn("⚠️ Usuario con email no verificado:", data.user.email);
           setAuthError(errorMsg);
+
+          try {
+            const resReenviar = await fetch(
+              `${import.meta.env.VITE_API_BASE_URL}/api/reenviar-verificacion`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: data.user.email }),
+              }
+            );
+
+            const dataReenviar = await resReenviar.json();
+
+            // Solo enviamos correo si recibimos un token nuevo
+            if (dataReenviar.verificationToken) {
+              await enviarCorreoVerificacion(
+                dataReenviar.nombre,
+                data.user.email,
+                dataReenviar.verificationToken
+              );
+            } else {
+            }
+          } catch (err) {
+            console.error("❌ Error al reenviar correo de verificación:", err);
+          }
+
           return errorMsg;
         }
 
-        setUser(data.user);
-        setIsAuthenticated(true);
-        forceUpdateAuth();
-        return null;
-      }
+        // Caso: login exitoso
+        if (res.ok && data.user) {
+          if (modoAdmin && data.user.tipo !== "Admin") {
+            const errorMsg = "Acceso restringido a administradores.";
+            console.warn("⛔ Usuario no tiene rol admin:", data.user.email);
+            setAuthError(errorMsg);
+            return errorMsg;
+          }
 
-      // Caso: credenciales inválidas u otros errores
-      const errorMsg = data.error || "Credenciales inválidas.";
-      console.warn("⚠️ Login fallido:", errorMsg);
-      setAuthError(errorMsg);
-      return errorMsg;
-    } catch (err) {
-      const errorMsg = "Error de conexión.";
-      console.error("🌐 Error de red en login:", err);
-      setAuthError(errorMsg);
-      return errorMsg;
-    } finally {
-      setTimeout(() => {
-        setActionLoading(false);
-      }, 1000);
-    }
-  },
-  [forceUpdateAuth]
-);
+          setUser(data.user);
+          setIsAuthenticated(true);
+          forceUpdateAuth();
+          return null;
+        }
+
+        // Caso: credenciales inválidas u otros errores
+        const errorMsg = data.error || "Credenciales inválidas.";
+        console.warn("⚠️ Login fallido:", errorMsg);
+        setAuthError(errorMsg);
+        return errorMsg;
+      } catch (err) {
+        const errorMsg = "Error de conexión.";
+        console.error("🌐 Error de red en login:", err);
+        setAuthError(errorMsg);
+        return errorMsg;
+      } finally {
+        setTimeout(() => {
+          setActionLoading(false);
+        }, 1000);
+      }
+    },
+    [forceUpdateAuth]
+  );
 
 
 

@@ -32,8 +32,11 @@ export default function VerificarEmail() {
     const verificarEmail = async () => {
       try {
         const response = await axios.get<ApiVerificationResponse>(
-          `${import.meta.env.VITE_API_BASE_URL}/api/verificar-email/${token}`
-        );
+          `${import.meta.env.VITE_API_BASE_URL}/api/verificar-email/${token}`, {
+          headers: {
+            'X-API-Key': import.meta.env.VITE_API_KEY,
+          },
+        });
         setResult({
           verified: response.data.verified,
           message: response.data.message,

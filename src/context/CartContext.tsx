@@ -42,7 +42,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const obtenerCarritoDB = useCallback(async (id_usuario: number): Promise<CartItem[]> => {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart?id_usuario=${id_usuario}`);
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart?id_usuario=${id_usuario}`, {
+      headers: {
+        'X-API-Key': import.meta.env.VITE_API_KEY,
+      },
+    });
     const data = await res.json();
     if (!data.success) throw new Error(data.error);
     return data.cartItems;

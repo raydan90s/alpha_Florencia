@@ -29,7 +29,11 @@ export default function DetalleProductoPage() {
       setLoading(false);
     } else {
       // Si no lo encontramos, hacemos la llamada a la API
-      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/por-slug/${slug}`)
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/por-slug/${slug}`, {
+        headers: {
+          'X-API-Key': import.meta.env.VITE_API_KEY,
+        },
+      })
         .then((res) => res.ok ? res.json() : Promise.reject("Error al cargar"))
         .then((data: Product) => {
           setProducto(data);  // Guardamos el producto en el estado
@@ -72,7 +76,7 @@ export default function DetalleProductoPage() {
             productName={producto.name}
             productId={producto.id}
             price={producto.price}
-            images={producto.images?.map(img => ({ url: img.url })) ?? [{ url: "https://via.placeholder.com/400x300/FCF8E6/1A1A1A?text=Sin+Imagen" }] }
+            images={producto.images?.map(img => ({ url: img.url })) ?? [{ url: "https://via.placeholder.com/400x300/FCF8E6/1A1A1A?text=Sin+Imagen" }]}
           />
           <ShippingInfo />
           <PaymentMethods />

@@ -117,13 +117,17 @@ export default function AdminRegister() {
 
     const handleBuscarUsuario = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario?email=${emailBusqueda}`);
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario?email=${emailBusqueda}`, {
+                headers: {
+                    'X-API-Key': import.meta.env.VITE_API_KEY,
+                },
+            });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Usuario no encontrado");
             setUsuarioEncontrado(data.usuario);
             setRolSeleccionado(data.usuario.rol);
             setPermisosSeleccionadosRegistro(data.usuario.permisos);
-            setPermisosUsuarioOriginal(data.usuario.permisos); 
+            setPermisosUsuarioOriginal(data.usuario.permisos);
 
         } catch (err: any) {
             setUsuarioEncontrado(null);
