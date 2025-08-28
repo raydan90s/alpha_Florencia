@@ -44,7 +44,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <Link to={`/productos/${product.slug}`}>
                 <h3 className="text-lg font-semibold cursor-pointer">{product.name}</h3>
               </Link>
-              <p className="text-sm text-gray-600">{product.description}</p>
+              <p className="text-sm text-gray-600 text-justify">{product.description}</p>
               <p className="text-sm text-gray-500 mb-2">Modelo: {product.model}</p>
               <div className="flex items-center justify-between mt-2">
                 <span className="text-xl font-bold text-[#003366]">

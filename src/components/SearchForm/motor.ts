@@ -52,17 +52,33 @@ export const buscarTodos = (
 };
 
 export function obtenerMarcasDisponibles(productos: Product[]): string[] {
-  return Array.from(new Set(productos.map(p => p.brand).filter((brand): brand is string => brand !== undefined)));
+  return Array.from(
+    new Set(
+      productos
+        .filter(p => p.estado === "Activo") // Solo productos activos
+        .map(p => p.brand)
+        .filter((brand): brand is string => brand !== undefined)
+    )
+  );
 }
 
 export function obtenerModelosDisponibles(productos: Product[], marca: string): string[] {
   if (!marca) return [];
-  return Array.from(new Set(
-    productos.filter(p => p.brand?.toLowerCase() === marca.toLowerCase())
-      .map(p => p.model)
-      .filter(Boolean)
-  ));
+
+  return Array.from(
+    new Set(
+      productos
+        .filter(
+          p =>
+            p.brand?.toLowerCase() === marca.toLowerCase() &&
+            p.estado === "Activo" 
+        )
+        .map(p => p.model)
+        .filter(Boolean)
+    )
+  );
 }
+
 
 export const obtenerMarcasDisponibleApi = async (): Promise<{ id: number; nombre: string }[]> => {
   try {

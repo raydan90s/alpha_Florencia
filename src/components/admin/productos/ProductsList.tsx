@@ -146,9 +146,10 @@ const ProductsList: React.FC<ProductsListProps> = ({
                         </div>
                       )}
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]">
                           {product.name}
                         </div>
+
                         <div className="text-sm text-gray-500">
                           {product.description?.substring(0, 50)}
                           {product.description?.length > 50 && "..."}

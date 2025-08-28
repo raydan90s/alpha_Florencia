@@ -6,10 +6,11 @@ import ProductAvailability from "../components/admin/productos/productosID/Produ
 import ProductActions from "../components/admin/productos/productosID/ProductActions";
 import ShippingInfo from "../components/admin/productos/productosID/ShippingInfo";
 import PaymentMethods from "../components/admin/productos/productosID/PaymentMethods";
-import RelatedProductsByBrand from "../components/admin/productos/productosID/RelatedProductsByBrand";
+import RelatedProductsByBrand from "../components/Productos/RelatedProductsByBrand";
 import ProductDescription from "../components/admin/productos/productosID/ProductDescription";
 import type { Product } from "../types/product";
-import { useProducts } from "../context/ProductContext"; // Usamos el contexto para obtener los productos
+import { useProducts } from "../context/ProductContext";
+import { handleScrollToTop } from "../utils/scrollUtils";
 
 export default function DetalleProductoPage() {
   const { slug } = useParams<{ slug: string }>();  // Usamos el slug de la URL
@@ -18,6 +19,7 @@ export default function DetalleProductoPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    handleScrollToTop();
     if (!slug) return;  // Si no hay slug, no hacemos nada
 
     setLoading(true);
@@ -84,7 +86,7 @@ export default function DetalleProductoPage() {
       </div>
       <div
         className="mt-12 rounded-lg p-6 shadow-inner"
-        style={{ backgroundColor: "#FCF8E6" }}
+        style={{ backgroundColor: "#F8F9FA" }}
       >
         <h2 className="text-2xl font-semibold mb-4" style={{ color: "#1A1A1A" }}>
           Información Técnica
@@ -105,7 +107,7 @@ export default function DetalleProductoPage() {
         </div>
       </div>
       <div className="mt-16">
-        <RelatedProductsByBrand currentProduct={producto} maxProducts={4} />
+        <RelatedProductsByBrand currentProduct={producto} />
       </div>
     </div>
   );

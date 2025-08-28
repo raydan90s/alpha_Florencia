@@ -4,7 +4,7 @@ interface ProductDescriptionProps {
 
 export default function ProductDescription({ description }: ProductDescriptionProps) {
   return (
-    <div className="mt-4 text-gray-700 text-lg leading-relaxed">
+    <div className="mt-4 text-gray-700 text-lg leading-relaxed text-justify">
       {description}
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 import React, { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom"; // Usamos useLocation de react-router-dom
-import ProductGrid from "../../components/Productos/ProductGrid";
+import ProductGrid from "./ProductGrid";
 import { useFilter } from "../../context/FilterContext";
 import { useCart } from "../../context/CartContext";
 import { filtrarProductos } from "../../components/SearchForm/motor";
