@@ -95,7 +95,11 @@ const ResultadoPago = () => {
             if (consultaCompletada) return;
             setConsultaCompletada(true);
 
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout/resultado?id=${resourcePath}`);
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout/resultado?id=${resourcePath}`, {
+                headers: {
+                    'X-API-Key': import.meta.env.VITE_API_KEY,
+                }
+            });
             if (!res.ok) {
                 setEstadoPago(`Error: ${res.statusText}`);
                 setEsExitoso(false);

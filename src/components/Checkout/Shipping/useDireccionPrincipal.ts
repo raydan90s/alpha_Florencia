@@ -11,8 +11,11 @@ export function useDireccionPrincipal(isAuthenticated: boolean, userId: number |
       if (isAuthenticated && userId) {
         try {
           const res = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio/principal`
-          );
+            `${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio/principal`, {
+            headers: {
+              'X-API-Key': import.meta.env.VITE_API_KEY,
+            }
+          });
 
           if (res.ok) {
             const data = await res.json();

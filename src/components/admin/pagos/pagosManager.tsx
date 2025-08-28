@@ -54,7 +54,13 @@ export default function PagoManager() {
         try {
             const res = await axios.get<PaymentResponse>(
                 `${import.meta.env.VITE_API_BASE_URL}/api/checkout/consultar`,
-                { params: { paymentId: id }, withCredentials: true }
+                {
+                    params: { paymentId: id },
+                    withCredentials: true,
+                    headers: {
+                        'X-API-Key': import.meta.env.VITE_API_KEY,
+                    },
+                }
             );
             setPaymentData(res.data);
         } catch (err: any) {

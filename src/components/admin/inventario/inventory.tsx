@@ -25,7 +25,11 @@ export default function InventoryManager() {
 
   const fetchInventariosConProductos = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/inventario-productos`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/inventario-productos`, {
+        headers: {
+          'X-API-Key': import.meta.env.VITE_API_KEY,
+        }
+      });
       const data = await res.json();
       setInventarios(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -43,7 +47,10 @@ export default function InventoryManager() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/inventario`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          'X-API-Key': import.meta.env.VITE_API_KEY,
+        },
         credentials: "include",
         body: JSON.stringify({ ubicacion: trimmedUbicacion }),
       });
@@ -89,9 +96,8 @@ export default function InventoryManager() {
 
       <button
         onClick={handleAddInventory}
-        className={`px-4 py-2 rounded w-full mb-6 ${
-          isButtonDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-[#003366] hover:bg-blue-600 text-white"
-        }`}
+        className={`px-4 py-2 rounded w-full mb-6 ${isButtonDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-[#003366] hover:bg-blue-600 text-white"
+          }`}
         disabled={isButtonDisabled}
       >
         Guardar Ubicación

@@ -24,8 +24,11 @@ const BillingModal: React.FC<BillingModalProps> = ({ pedidoId, cerrarModal }) =>
             setIsLoading(true);
             try {
                 const response = await fetch(
-                    `${import.meta.env.VITE_API_BASE_URL}/api/facturacion/${pedidoId}`
-                );
+                    `${import.meta.env.VITE_API_BASE_URL}/api/facturacion/${pedidoId}`, {
+                    headers: {
+                        'X-API-Key': import.meta.env.VITE_API_KEY,
+                    }
+                });
                 const data = await response.json();
                 setDatos(data);
             } catch (error) {

@@ -38,7 +38,11 @@ const OrderDetailsUserModal: React.FC<OrderDetailsUserModalProps> = ({ pedidoSel
             const id = pedidoSeleccionado.id_pedido ?? pedidoSeleccionado.id;
             setIsLoading(true);
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/pedidos/${id}/detalles`);
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/pedidos/${id}/detalles`, {
+                    headers: {
+                        'X-API-Key': import.meta.env.VITE_API_KEY,
+                    }
+                });
                 const data = await response.json();
                 setDetalles(data);
             } catch (error) {

@@ -40,6 +40,7 @@ export const PaymentProvider = ({ children }: { children: React.ReactNode }) => 
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-API-Key': import.meta.env.VITE_API_KEY,
                 }
             });
 
@@ -110,7 +111,7 @@ export const PaymentProvider = ({ children }: { children: React.ReactNode }) => 
                     resourcePath,
                     estadoPago,
                     codigoPago,
-                    esExitoso: esExitoso ? 1 : 0, 
+                    esExitoso: esExitoso ? 1 : 0,
                     usuarioCorreo
                 }),
             });

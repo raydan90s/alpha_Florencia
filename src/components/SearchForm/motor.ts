@@ -71,7 +71,7 @@ export function obtenerModelosDisponibles(productos: Product[], marca: string): 
         .filter(
           p =>
             p.brand?.toLowerCase() === marca.toLowerCase() &&
-            p.estado === "Activo" 
+            p.estado === "Activo"
         )
         .map(p => p.model)
         .filter(Boolean)
@@ -92,8 +92,12 @@ export const obtenerMarcasDisponibleApi = async (): Promise<{ id: number; nombre
 
 export const obtenerInventariosPorProductoId = async (productId: number) => {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/producto/${productId}`);
-    return response.data; // [{ nombre: "Guayaquil", cantidad: 12 }, ...]
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/producto/${productId}`, {
+      headers: {
+        'X-API-Key': import.meta.env.VITE_API_KEY,
+      }
+    });
+    return response.data;   
   } catch (error) {
     console.error("Error al obtener inventario desde la API:", error);
     return [];

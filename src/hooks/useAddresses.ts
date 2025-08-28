@@ -11,7 +11,11 @@ export const useAddresses = (userId?: number) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/direccion-envio`, {
+        headers: {
+          'X-API-Key': import.meta.env.VITE_API_KEY,
+        }
+      });
       if (!res.ok) throw new Error('Error al cargar direcciones');
       const data = await res.json();
 
@@ -39,7 +43,9 @@ export const useAddresses = (userId?: number) => {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json', 'X-API-Key': import.meta.env.VITE_API_KEY,
+        },
         body: JSON.stringify(formData),
       });
 
@@ -62,8 +68,8 @@ export const useAddresses = (userId?: number) => {
     try {
       const addressToDelete = addresses.find(addr => addr.id === id);
 
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/direccion-envio/${id}`, { 
-        method: 'DELETE' 
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/direccion-envio/${id}`, {
+        method: 'DELETE'
       });
       if (!res.ok) throw new Error('Error al eliminar dirección');
 

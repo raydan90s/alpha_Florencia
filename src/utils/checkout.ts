@@ -43,7 +43,11 @@ export const crearCheckoutReal = async ({
     setErrorPayment(null);
 
     // Obtener IP desde backend
-    const ipResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cliente-ip`);
+    const ipResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cliente-ip`, {
+      headers: {
+        'X-API-Key': import.meta.env.VITE_API_KEY,
+      }
+    });
     const ipData = await ipResponse.json();
     const ip = ipData?.ip || "0.0.0.0";
 

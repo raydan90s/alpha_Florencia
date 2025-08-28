@@ -52,10 +52,10 @@ export const useOrders = (userId?: number) => {
 
   const fetchOrders = useCallback(async (params: FetchOrdersParams = {}) => {
     if (!userId) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const queryParams = new URLSearchParams();
       if (params.status && params.status !== 'all') queryParams.append('status', params.status);
@@ -64,17 +64,16 @@ export const useOrders = (userId?: number) => {
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.limit) queryParams.append('limit', params.limit.toString());
 
-      const url = `${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/pedidos${
-        queryParams.toString() ? `?${queryParams.toString()}` : ''
-      }`;
+      const url = `${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/pedidos${queryParams.toString() ? `?${queryParams.toString()}` : ''
+        }`;
 
       const res = await fetch(url);
       if (!res.ok) {
         throw new Error(`Error ${res.status}: ${res.statusText}`);
       }
-      
+
       const data = await res.json();
-      
+
       setOrders(data.orders || []);
       setPagination(data.pagination || {
         currentPage: 1,
@@ -93,13 +92,17 @@ export const useOrders = (userId?: number) => {
 
   const fetchOrderDetail = useCallback(async (orderId: number) => {
     if (!userId) return null;
-    
+
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/pedidos/${orderId}`);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/pedidos/${orderId}`, {
+        headers: {
+          'X-API-Key': import.meta.env.VITE_API_KEY,
+        }
+      });
       if (!res.ok) {
         throw new Error(`Error ${res.status}: ${res.statusText}`);
       }
-      
+
       const data = await res.json();
       return data;
     } catch (err: any) {

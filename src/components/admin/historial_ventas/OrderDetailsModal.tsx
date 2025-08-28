@@ -47,7 +47,11 @@ const OrderHistoryModal: React.FC<OrderDetailsAdminModalProps> = ({ pedidoSelecc
       if (!pedidoSeleccionado?.id_pedido) return;
       setIsLoading(true);
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/pedidos/${pedidoSeleccionado.id_pedido}/detalles`);
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/pedidos/${pedidoSeleccionado.id_pedido}/detalles`, {
+          headers: {
+            'X-API-Key': import.meta.env.VITE_API_KEY,
+          }
+        });
         const data = await response.json();
         setDetalles(data);
       } catch (error) {
