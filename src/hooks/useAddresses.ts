@@ -44,7 +44,8 @@ export const useAddresses = (userId?: number) => {
       const res = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json', 'X-API-Key': import.meta.env.VITE_API_KEY,
+          'Content-Type': 'application/json',
+          'X-API-Key': import.meta.env.VITE_API_KEY,
         },
         body: JSON.stringify(formData),
       });
@@ -69,7 +70,10 @@ export const useAddresses = (userId?: number) => {
       const addressToDelete = addresses.find(addr => addr.id === id);
 
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/direccion-envio/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'X-API-Key': import.meta.env.VITE_API_KEY,
+        }
       });
       if (!res.ok) throw new Error('Error al eliminar dirección');
 
@@ -81,7 +85,10 @@ export const useAddresses = (userId?: number) => {
 
           const updateRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/direccion-envio/${newPrincipal.id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-Key': import.meta.env.VITE_API_KEY,
+            },
             body: JSON.stringify({
               ...newPrincipal,
               nombre: newPrincipal.nombre || '',

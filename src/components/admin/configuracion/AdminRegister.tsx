@@ -46,7 +46,10 @@ export default function AdminRegister() {
             try {
                 const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario/rol`, {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        'X-API-Key': import.meta.env.VITE_API_KEY
+                    },
                     body: JSON.stringify({ id_usuario: usuarioEncontrado.id, nuevoRol: rolSeleccionado }),
                 });
 
@@ -57,7 +60,10 @@ export default function AdminRegister() {
                     setPermisosSeleccionadosRegistro([]);
                     await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario/permisos`, {
                         method: "PUT",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                            "Content-Type": "application/json",
+                            'X-API-Key': import.meta.env.VITE_API_KEY
+                        },
                         body: JSON.stringify({
                             id_usuario: usuarioEncontrado.id,
                             permisos: [],
@@ -139,7 +145,10 @@ export default function AdminRegister() {
         try {
             await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario/rol`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    'X-API-Key': import.meta.env.VITE_API_KEY
+                },
                 body: JSON.stringify({ id_usuario: usuarioEncontrado.id, nuevoRol: rolSeleccionado }),
             });
             alert("Rol actualizado correctamente");
@@ -152,7 +161,10 @@ export default function AdminRegister() {
         try {
             await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuario/permisos`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    'X-API-Key': import.meta.env.VITE_API_KEY
+                },
                 body: JSON.stringify({
                     id_usuario: usuarioEncontrado.id,
                     permisos: permisosSeleccionadosRegistro

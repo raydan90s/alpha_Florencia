@@ -95,6 +95,7 @@ export default function AdminDashboard() {
         method,
         headers: {
           "Content-Type": "application/json",
+          'X-API-Key': import.meta.env.VITE_API_KEY,
         },
         body: JSON.stringify(currentProduct),
       });
@@ -172,7 +173,8 @@ export default function AdminDashboard() {
     try {
       await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/${id}/inactivar`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 
+          'X-API-Key': import.meta.env.VITE_API_KEY },
       });
 
       setProducts((prev) =>
@@ -187,7 +189,9 @@ export default function AdminDashboard() {
     try {
       await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/${id}/activar`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 
+          'X-API-Key': import.meta.env.VITE_API_KEY },
+        
       });
 
       setProducts((prev) =>

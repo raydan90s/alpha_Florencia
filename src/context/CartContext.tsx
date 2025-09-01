@@ -127,7 +127,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }) => {
     const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart/update/${id_producto}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': import.meta.env.VITE_API_KEY
+      },
       body: JSON.stringify({ id_usuario, id_producto, nueva_cantidad }),
     });
     const data = await res.json();
@@ -143,7 +146,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }) => {
     const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart/remove/${id_producto}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',  
+        'X-API-Key': import.meta.env.VITE_API_KEY },
       body: JSON.stringify({ id_usuario, id_producto })
     });
     const data = await res.json();
