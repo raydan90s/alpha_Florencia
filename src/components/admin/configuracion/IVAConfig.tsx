@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useConfiguracion } from "../../../context/SettingContext";
 import axios from "axios";
-import { headers } from "next/headers";
 
 export default function IVAConfig() {
     const { reload } = useConfiguracion();
