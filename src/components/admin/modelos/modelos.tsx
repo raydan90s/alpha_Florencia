@@ -33,7 +33,7 @@ export default function ModelManager() {
     if (selectedBrandId) {
       axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/modelos/${selectedBrandId}`, {
         headers: {
-          'X-API-Key': import.meta.env.VITE_API_KEY,
+          'X-API-Key': import.meta.env.VITE_API_KEY
         }
       })
         .then(res => setModels(res.data as Model[])) // Afirmación de tipo
@@ -54,7 +54,7 @@ export default function ModelManager() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/modelos`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",'X-API-Key': import.meta.env.VITE_API_KEY, },
         credentials: "include",
         body: JSON.stringify({ nombre, id_marca: selectedBrandId }),
       });

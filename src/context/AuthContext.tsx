@@ -157,7 +157,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               `${import.meta.env.VITE_API_BASE_URL}/api/reenviar-verificacion`,
               {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json",'X-API-Key': import.meta.env.VITE_API_KEY },
                 body: JSON.stringify({ email: data.user.email }),
               }
             );
@@ -220,7 +220,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/registrar`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json','X-API-Key': import.meta.env.VITE_API_KEY },
         credentials: 'include',
         body: JSON.stringify(formData),
       });

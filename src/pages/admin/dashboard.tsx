@@ -94,7 +94,7 @@ export default function AdminDashboard() {
       const response = await fetch(url, {
         method,
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json",'X-API-Key': import.meta.env.VITE_API_KEY,
         },
         body: JSON.stringify(currentProduct),
       });
