@@ -112,6 +112,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/logout`, {
         method: 'POST',
+        headers:{
+          'X-API-Key': import.meta.env.VITE_API_KEY
+        },
         credentials: 'include',
       });
     } catch (err) {
@@ -138,7 +141,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/login`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",'X-API-Key': import.meta.env.VITE_API_KEY,
           },
           credentials: "include",
           body: JSON.stringify({ email, password }),
