@@ -34,7 +34,7 @@ export default function BrandManager() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/marcas`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",'X-API-Key': import.meta.env.VITE_API_KEY},
         credentials: "include",
         body: JSON.stringify({ nombre }),
       });
