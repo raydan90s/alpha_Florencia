@@ -73,7 +73,7 @@ const PaymentWidgetModal: React.FC<PaymentWidgetModalProps> = ({ show, checkoutI
             >
                 <h3 className="text-lg font-semibold text-center mb-4">Formulario de Pago</h3>
                 <form
-                    action="http://localhost:5173/resultado-pago"
+                    action="https://tonerexpress-ec.com/resultado-pago"
                     method="GET"
                     className="paymentWidgets"
                     data-brands="VISA MASTER AMEX DINERS"
