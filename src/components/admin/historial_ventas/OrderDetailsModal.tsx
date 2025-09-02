@@ -153,12 +153,13 @@ const OrderHistoryModal: React.FC<OrderDetailsAdminModalProps> = ({ pedidoSelecc
                       <span className="text-sm font-medium text-gray-600">Teléfono / Identificación:</span>
                       <p className="text-base font-medium text-gray-800">{detalles.numeroTelefono || ""} / {detalles.numeroIdentificacion || ""}</p>
                     </div>
-                    {detalles.nota && (
-                      <div className="bg-gray-50 p-3 rounded-lg col-span-2">
-                        <span className="text-sm font-medium text-gray-600">Nota:</span>
-                        <p className="text-base font-medium text-gray-800">{detalles.nota}</p>
-                      </div>
-                    )}
+                    <div className="bg-gray-50 p-3 rounded-lg col-span-2">
+                      <span className="text-sm font-medium text-gray-600">Nota:</span>
+                      <p className="text-base font-medium text-gray-800">
+                        {detalles.nota ? detalles.nota : "No disponible"}
+                      </p>
+                    </div>
+
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <span className="text-sm font-medium text-gray-600">ID de pago:</span>
                       <p className="text-base font-medium text-gray-800 break-all">{detalles.id_pago || "No disponible"}</p>

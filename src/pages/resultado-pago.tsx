@@ -20,7 +20,7 @@ const ResultadoPago = () => {
     const [estadoPago, setEstadoPago] = useState<string>('Verificando...');
     const [esExitoso, setEsExitoso] = useState<boolean | null>(null);
     const [consultaCompletada, setConsultaCompletada] = useState<boolean>(false);
-    const [tiempoRestante, setTiempoRestante] = useState<number>(10);
+    const [tiempoRestante, setTiempoRestante] = useState<number>(7);
     const navigate = useNavigate();
     const { cartItems, vaciarCarrito } = useCart();
     const usuarioId = user?.id;
@@ -93,6 +93,23 @@ const ResultadoPago = () => {
         return await res.json();
     };
 
+    // Nueva función para iniciar la redirección con countdown
+    const iniciarRedirección = (esExitosoLocal: boolean) => {
+        setTiempoRestante(7);
+        
+        const countdownInterval = setInterval(() => {
+            setTiempoRestante(prev => {
+                if (prev <= 1) {
+                    clearInterval(countdownInterval);
+                    navigate(esExitosoLocal ? '/' : '/carrito');
+                    setTimeout(() => window.location.reload(), 100);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
     const consultarPago = async (resourcePath: string) => {
         try {
             if (consultaCompletada) return;
@@ -106,6 +123,8 @@ const ResultadoPago = () => {
             if (!res.ok) {
                 setEstadoPago(`Error: ${res.statusText}`);
                 setEsExitoso(false);
+                // Iniciar redirección para caso de error
+                iniciarRedirección(false);
                 return;
             }
 
@@ -120,6 +139,8 @@ const ResultadoPago = () => {
             if (!code || !description) {
                 setEstadoPago('❌ No se recibió la información necesaria del pago.');
                 setEsExitoso(false);
+                // Iniciar redirección para caso de error
+                iniciarRedirección(false);
                 return;
             }
 
@@ -185,20 +206,10 @@ const ResultadoPago = () => {
                 }
 
                 sessionStorage.removeItem('direccionEnvio');
-                setTiempoRestante(7);
-
-                const countdownInterval = setInterval(() => {
-                    setTiempoRestante(prev => {
-                        if (prev <= 1) {
-                            clearInterval(countdownInterval);
-                            navigate(esExitosoLocal ? '/' : '/carrito');
-                            setTimeout(() => window.location.reload(), 100);
-                            return 0;
-                        }
-                        return prev - 1;
-                    });
-                }, 1000);
             }
+
+            // Iniciar redirección independientemente del resultado
+            iniciarRedirección(esExitosoLocal);
 
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -209,6 +220,8 @@ const ResultadoPago = () => {
                 setEstadoPago('❌ Error desconocido');
             }
             setEsExitoso(false);
+            // Iniciar redirección para caso de error
+            iniciarRedirección(false);
         }
     };
 
@@ -220,6 +233,8 @@ const ResultadoPago = () => {
             if (cartItems.length === 0) {
                 setEstadoPago('❌ El carrito está vacío.');
                 setEsExitoso(false);
+                // Iniciar redirección para caso de error
+                iniciarRedirección(false);
                 return;
             }
             consultarPago(resourcePath);
@@ -229,7 +244,6 @@ const ResultadoPago = () => {
     }, [searchParams, consultaCompletada, cartItems, navigate, direccionEnvioLocal]);
 
     return (
-
         <div className="max-w-lg mx-auto mt-20 text-center px-4 mb-20">
             <div style={{ display: 'none' }}>
                 <Billing ref={billingRef} value={direccionEnvioLocal} onChange={() => { }} />
