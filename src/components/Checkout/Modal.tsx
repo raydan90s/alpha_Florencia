@@ -44,7 +44,7 @@ const PaymentWidgetModal: React.FC<PaymentWidgetModalProps> = ({ show, checkoutI
         // Creamos una función para cargar el script después de un pequeño retraso
         const loadScript = () => {
             const script = document.createElement("script");
-            script.src = `https://test.oppwa.com/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
+            script.src = `https://eu-prod.oppwa.com/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
             script.async = true;
             document.body.appendChild(script);
         };

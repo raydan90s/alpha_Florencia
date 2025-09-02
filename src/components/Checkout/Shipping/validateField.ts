@@ -28,13 +28,17 @@ export const validateField = (name: string, value: string): string => {
     }
 
     case "cedula": {
-      const cedulaRegex = /^\d{13}$/;
+      const length = value.length;
+      if (length !== 10 && length !== 13) {
+        return "El documento debe tener 10 o 13 dígitos.";
+      }
+
+      const cedulaRegex = /^\d+$/;
       if (!cedulaRegex.test(value)) {
-        return "Ingrese un documento válido.";
+        return "Ingrese solo números.";
       }
       return "";
     }
-
     case "pastcode": {
       const pastcodeRegex = /^\d{1,6}$/;
       if (!pastcodeRegex.test(value) || value.length > 6) {
