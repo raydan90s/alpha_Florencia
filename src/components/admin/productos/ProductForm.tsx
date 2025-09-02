@@ -66,8 +66,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const cargarInventarios = async () => {
       if (isNewProduct) {
         try {
-          const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/inventario`);
-          const adaptados = (response.data as any[]).map((inv: any) => ({ // Afirmamos el tipo
+          const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/inventario`, {
+            headers: {
+              'X-API-Key': import.meta.env.VITE_API_KEY
+            }
+          });
+          const adaptados = (response.data as any[]).map((inv: any) => ({
             id: inv.id,
             nombre: inv.ubicacion,
           }));

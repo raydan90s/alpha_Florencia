@@ -177,8 +177,11 @@ const Billing = forwardRef<BillingHandle, BillingProps>(
         const res = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/api/facturacion`,
           {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json",
+              'X-API-Key': import.meta.env.VITE_API_KEY
+            },
             body: JSON.stringify({
               id_usuario: user?.id,
               nombre: dataFacturacion.nombre,

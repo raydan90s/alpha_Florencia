@@ -67,7 +67,13 @@ export const useOrders = (userId?: number) => {
       const url = `${import.meta.env.VITE_API_BASE_URL}/api/usuarios/${userId}/pedidos${queryParams.toString() ? `?${queryParams.toString()}` : ''
         }`;
 
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: {
+          'X-API-Key': import.meta.env.VITE_API_KEY
+        },
+        credentials: 'include'
+      });
+
       if (!res.ok) {
         throw new Error(`Error ${res.status}: ${res.statusText}`);
       }
@@ -115,7 +121,10 @@ export const useOrders = (userId?: number) => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/pedidos/${orderId}/cancelar`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': import.meta.env.VITE_API_KEY,
+        },
       });
 
       if (!res.ok) {
@@ -134,7 +143,10 @@ export const useOrders = (userId?: number) => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/pedidos/${orderId}/reordenar`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': import.meta.env.VITE_API_KEY
+        },
       });
 
       if (!res.ok) {

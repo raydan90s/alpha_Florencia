@@ -1,9 +1,9 @@
-import { useState} from "react";
+import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-interface ActualizarPasswordResponse{
-  message:string;
+interface ActualizarPasswordResponse {
+  message: string;
 }
 
 export default function RestablecerPassword() {
@@ -25,11 +25,19 @@ export default function RestablecerPassword() {
 
     try {
       setLoading(true);
-      const res = await axios.post<ActualizarPasswordResponse>(`${import.meta.env.VITE_API_BASE_URL}/api/actualizar-contrasena`, {
-        token,
-        nuevaPassword: password
-      });
-
+      const res = await axios.post<ActualizarPasswordResponse>(
+        `${import.meta.env.VITE_API_BASE_URL}/api/actualizar-contrasena`,
+        {
+          token,
+          nuevaPassword: password
+        },
+        {
+          withCredentials: true, // si necesitas enviar cookies
+          headers: {
+            'X-API-Key': import.meta.env.VITE_API_KEY
+          }
+        }
+      );
       setMessage(res.data.message || "Contraseña actualizada exitosamente.");
       setTimeout(() => navigate("/iniciar-sesion"), 2000);
     } catch (error: any) {

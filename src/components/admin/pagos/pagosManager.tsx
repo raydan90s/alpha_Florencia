@@ -94,7 +94,12 @@ export default function PagoManager() {
             const res = await axios.post<AnularResponse>(
                 `${import.meta.env.VITE_API_BASE_URL}/api/checkout/anular`,
                 { id_pago: idPago },
-                { withCredentials: true }
+                {
+                    withCredentials: true,
+                    headers: {
+                        'X-API-Key': import.meta.env.VITE_API_KEY
+                    }
+                }
             );
             setAnulacionResultado(res.data);
 

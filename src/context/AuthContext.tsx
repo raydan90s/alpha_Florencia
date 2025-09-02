@@ -112,7 +112,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/logout`, {
         method: 'POST',
-        headers:{
+        headers: {
           'X-API-Key': import.meta.env.VITE_API_KEY
         },
         credentials: 'include',
@@ -139,9 +139,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       try {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/login`, {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",'X-API-Key': import.meta.env.VITE_API_KEY,
+            "Content-Type": "application/json",
+            'X-API-Key': import.meta.env.VITE_API_KEY,
           },
           credentials: "include",
           body: JSON.stringify({ email, password }),
@@ -160,7 +161,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               `${import.meta.env.VITE_API_BASE_URL}/api/reenviar-verificacion`,
               {
                 method: "POST",
-                headers: { "Content-Type": "application/json",'X-API-Key': import.meta.env.VITE_API_KEY },
+                headers: {
+                  "Content-Type": "application/json",
+                  'X-API-Key': import.meta.env.VITE_API_KEY
+                },
                 body: JSON.stringify({ email: data.user.email }),
               }
             );
@@ -223,7 +227,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/registrar`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json','X-API-Key': import.meta.env.VITE_API_KEY },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': import.meta.env.VITE_API_KEY
+        },
         credentials: 'include',
         body: JSON.stringify(formData),
       });

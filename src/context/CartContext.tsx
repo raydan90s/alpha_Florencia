@@ -31,7 +31,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     async ({ id_usuario, id_producto, cantidad }: { id_usuario: number; id_producto: number; cantidad: number }) => {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart/add`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': import.meta.env.VITE_API_KEY
+        },
         body: JSON.stringify({ id_usuario, id_producto, cantidad }),
       });
 
@@ -254,6 +257,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'X-API-Key': import.meta.env.VITE_API_KEY,
           },
           body: JSON.stringify({ id_usuario: user.id }), // Enviar el id_usuario
         });

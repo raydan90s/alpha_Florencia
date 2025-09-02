@@ -94,7 +94,10 @@ export default function AdminRegister() {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/registrar/admin`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json",'X-API-Key': import.meta.env.VITE_API_KEY},
+                headers: {
+                    "Content-Type": "application/json",
+                    'X-API-Key': import.meta.env.VITE_API_KEY
+                },
                 credentials: "include",
                 body: JSON.stringify({
                     tipo: "Admin",

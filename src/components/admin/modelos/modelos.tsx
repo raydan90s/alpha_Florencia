@@ -23,8 +23,12 @@ export default function ModelManager() {
 
   // Obtener marcas al cargar el componente
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/marcas`)
-      .then(res => setBrands(res.data as Brand[])) // Afirmación de tipo
+    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/marcas`, {
+      headers: {
+        'X-API-Key': import.meta.env.VITE_API_KEY,
+      }
+    })
+      .then(res => setBrands(res.data as Brand[]))
       .catch(err => console.error("Error al obtener marcas:", err));
   }, []);
 
@@ -54,7 +58,10 @@ export default function ModelManager() {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/modelos`, {
         method: "POST",
-        headers: { "Content-Type": "application/json",'X-API-Key': import.meta.env.VITE_API_KEY, },
+        headers: {
+          "Content-Type": "application/json",
+          'X-API-Key': import.meta.env.VITE_API_KEY,
+        },
         credentials: "include",
         body: JSON.stringify({ nombre, id_marca: selectedBrandId }),
       });

@@ -21,7 +21,11 @@ export const filtrarProductos = (
 
 export const obtenerModelosPorMarca = async (id_marca: number) => {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/modelos/${id_marca}`);
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/modelos/${id_marca}`, {
+      headers: {
+        'X-API-Key': import.meta.env.VITE_API_KEY
+      }
+    });
     return response.data; // se espera un array de modelos [{ id, nombre, id_marca }]
   } catch (error) {
     console.error("Error al obtener modelos:", error);
@@ -82,7 +86,11 @@ export function obtenerModelosDisponibles(productos: Product[], marca: string): 
 
 export const obtenerMarcasDisponibleApi = async (): Promise<{ id: number; nombre: string }[]> => {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/marcas`);
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/marcas`, {
+      headers: {
+        'X-API-Key': import.meta.env.VITE_API_KEY
+      }
+    });
     return response.data as { id: number; nombre: string }[]; // Especificamos el tipo correcto
   } catch (error) {
     console.error("Error al obtener marcas desde la API:", error);
@@ -97,7 +105,7 @@ export const obtenerInventariosPorProductoId = async (productId: number) => {
         'X-API-Key': import.meta.env.VITE_API_KEY,
       }
     });
-    return response.data;   
+    return response.data;
   } catch (error) {
     console.error("Error al obtener inventario desde la API:", error);
     return [];

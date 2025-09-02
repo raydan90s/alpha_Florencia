@@ -17,11 +17,11 @@ const ProductProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await axios.get<Product[]>(`${import.meta.env.VITE_API_BASE_URL}/api/productos-con-imagenes`,{
-                        headers: {
-                            'X-API-Key': import.meta.env.VITE_API_KEY,
-                        }
-                    });
+                const response = await axios.get<Product[]>(`${import.meta.env.VITE_API_BASE_URL}/api/productos-con-imagenes`, {
+                    headers: {
+                        'X-API-Key': import.meta.env.VITE_API_KEY,
+                    }
+                });
                 setProducts(response.data);
             } catch (error) {
                 console.error("Error al cargar productos:", error);

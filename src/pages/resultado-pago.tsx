@@ -69,7 +69,10 @@ const ResultadoPago = () => {
 
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payment`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': import.meta.env.VITE_API_KEY
+            },
             body: JSON.stringify({
                 resourcePath,
                 estadoPago,
@@ -126,7 +129,11 @@ const ResultadoPago = () => {
 
             // Consulta configuración
             const urlConfig = `${import.meta.env.VITE_API_BASE_URL}/api/configuracion`;
-            const resConfig = await fetch(urlConfig);
+            const resConfig = await fetch(urlConfig, {
+                headers: {
+                    'X-API-Key': import.meta.env.VITE_API_KEY
+                }
+            });
             if (!resConfig.ok) throw new Error('❌ Error cargando configuración');
             const configData: Configuracion = await resConfig.json();
 
