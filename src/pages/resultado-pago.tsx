@@ -165,17 +165,12 @@ const ResultadoPago = () => {
 
             if (esExitosoLocal) {
                 let facturacionId: number | null = null;
-                let billingDataLocal: BillingData | null = null;
-
                 if (billingRef.current) {
                     facturacionId = await billingRef.current.enviarFacturacion();
                 } else {
                     const stored = sessionStorage.getItem('direccionFacturacion');
                     if (stored) {
                         try {
-                            billingDataLocal = JSON.parse(stored);
-                            // Como BillingData no tiene propiedad id, necesitamos manejar esto diferente
-                            // Asumimos que facturacionId se obtiene del resultado de enviarFacturacion
                             console.warn('❌ No se pudo obtener facturacionId desde billingRef');
                         } catch (error) {
                             console.error('❌ Error parseando billingData desde sessionStorage:', error);

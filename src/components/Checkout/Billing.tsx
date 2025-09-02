@@ -74,24 +74,29 @@ const Billing = forwardRef<BillingHandle, BillingProps>(
       [onChange]
     );
 
+    // 1. Mantener formData local
     useEffect(() => {
       if (igualQueEnvio && datosEnvio) {
         const datosFacturacion = { ...datosEnvio };
-        // Solo actualizar si son diferentes
-        setFormData((prev) => {
+        setFormData(prev => {
           const isDifferent = JSON.stringify(prev) !== JSON.stringify(datosFacturacion);
-          if (isDifferent) {
-            handleFormDataChange(datosFacturacion);
-            sessionStorage.setItem(
-              "direccionFacturacion",
-              JSON.stringify(datosFacturacion)
-            );
-            return datosFacturacion;
-          }
-          return prev;
+          return isDifferent ? datosFacturacion : prev;
         });
       }
     }, [igualQueEnvio, datosEnvio]);
+
+    // 2. Notificar a Checkout SOLO después de actualizar formData
+    useEffect(() => {
+      if (!igualQueEnvio) return; // solo cuando igualQueEnvio está activo
+      if (formData && datosEnvio) {
+        const isDifferent = JSON.stringify(formData) !== JSON.stringify(datosEnvio);
+        if (isDifferent) {
+          handleFormDataChange(formData);
+          sessionStorage.setItem("direccionFacturacion", JSON.stringify(formData));
+        }
+      }
+    }, [formData, handleFormDataChange, igualQueEnvio, datosEnvio]);
+
 
 
     const handleCheckboxChange = () => {
