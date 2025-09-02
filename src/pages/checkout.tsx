@@ -7,7 +7,7 @@ import ShippingMethod from "../components/Checkout/ShippingMethod";
 import PaymentMethod from "../components/Checkout/PaymentMethod";
 import OrderList from "../components/Checkout/OrderList";
 import Billing from "../components/Checkout/Billing";
-import type { BillingHandle } from "../components/Checkout/Billing";
+import type { BillingHandle, BillingData } from "../components/Checkout/Billing";
 import CheckoutSteps from "../components/Checkout/CheckoutSteps";
 import CustomAlert from "../components/Checkout/Checkout/CustomAlert";
 import ValidationIndicators from "../components/Checkout/Checkout/ValidationIndicators";
@@ -32,7 +32,7 @@ const Checkout = () => {
   // Ref para acceder a las funciones del componente Billing
   const billingRef = useRef<BillingHandle>(null);
 
-  // Estado para dirección de envío
+  // Estado para dirección de envío (mantiene DireccionEnvio porque incluye campos adicionales)
   const [direccionEnvio, setDireccionEnvioState] = useState<DireccionEnvio>({
     nombre: "",
     apellido: "",
@@ -46,8 +46,8 @@ const Checkout = () => {
     notas: "",
   });
 
-  // Estado para datos de facturación (separado del envío)
-  const [billingData, setBillingData] = useState<DireccionEnvio>({
+  // Estado para datos de facturación (ahora usa BillingData)
+  const [billingData, setBillingData] = useState<BillingData>({
     nombre: "",
     apellido: "",
     direccion: "",
@@ -55,12 +55,8 @@ const Checkout = () => {
     cedula: "",
     ciudad: "",
     provincia: "",
-    pastcode: "",
-    guardarDatos: false,
-    notas: "",
   });
 
-  // Removido: const [usarMismosDatos, setUsarMismosDatos] = useState(true);
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
   const [showPaymentWidget, setShowPaymentWidget] = useState(false);
   const [loadingPayment, setLoadingPayment] = useState(false);
@@ -96,12 +92,11 @@ const Checkout = () => {
   // Estado para forzar re-evaluación de validación
   const [validationTrigger, setValidationTrigger] = useState(0);
 
-  // Función para actualizar datos de facturación (separada)
-  const handleChangeBilling = useCallback((updatedBilling: DireccionEnvio) => {
+  // Función para actualizar datos de facturación (ahora recibe BillingData)
+  const handleChangeBilling = useCallback((updatedBilling: BillingData) => {
     setBillingData(prev => ({
       ...prev,
       ...updatedBilling,
-      notas: updatedBilling.notas !== undefined ? updatedBilling.notas : prev.notas
     }));
     // Forzar re-evaluación de validación
     setValidationTrigger(prev => prev + 1);
@@ -115,6 +110,19 @@ const Checkout = () => {
       }
       return prevState;
     });
+  }, []);
+
+  // Función para convertir DireccionEnvio a BillingData
+  const convertToBillingData = useCallback((direccion: DireccionEnvio): BillingData => {
+    return {
+      nombre: direccion.nombre,
+      apellido: direccion.apellido,
+      direccion: direccion.direccion,
+      telefono: direccion.telefono,
+      cedula: direccion.cedula,
+      ciudad: direccion.ciudad,
+      provincia: direccion.provincia,
+    };
   }, []);
 
   // Efecto para configurar las opciones de Datafast cuando se muestre el widget de pago
@@ -182,7 +190,7 @@ const Checkout = () => {
     }
   }, [direccionEnvio, billingData]);
 
-  // Función de validación del formulario (simplificada)
+  // Función de validación del formulario
   const isFormValid = useCallback(() => {
     // Campos obligatorios para envío (pastcode sí es requerido)
     const shippingRequiredFields: Array<keyof DireccionEnvio> = [
@@ -400,9 +408,8 @@ const Checkout = () => {
               />
               <Billing
                 ref={billingRef}
-                value={billingData}
                 onChange={handleChangeBilling}
-                datosEnvio={direccionEnvio}
+                datosEnvio={convertToBillingData(direccionEnvio)}
               />
 
               <OrderNotes

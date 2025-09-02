@@ -4,8 +4,7 @@ import { useCart } from "../context/CartContext";
 import { AuthContext } from '../context/AuthContext';
 import { enviarCorreoConfirmacionCompra } from '../utils/enviarCorreo';
 import Billing from '../components/Checkout/Billing';
-import type { BillingHandle } from '../components/Checkout/Billing';
-import type { DireccionEnvio } from '../types/direccionEnvio';
+import type { BillingHandle, BillingData } from '../components/Checkout/Billing';
 
 type Configuracion = {
     id: number;
@@ -26,7 +25,7 @@ const ResultadoPago = () => {
     const usuarioId = user?.id;
     const billingRef = useRef<BillingHandle>(null);
 
-    const [direccionEnvioLocal] = useState<any | null>(() => {
+    const [direccionEnvioLocal] = useState<BillingData | null>(() => {
         try {
             const storedDireccion = sessionStorage.getItem('direccionEnvio');
             if (storedDireccion) {
@@ -47,7 +46,7 @@ const ResultadoPago = () => {
         esExitoso: boolean,
         usuarioId: number,
         cartItems: any,
-        direccionEnvio: any,
+        direccionEnvio: BillingData,
         id_pago: string,
         envio: string,
         facturacionId: number,
@@ -166,7 +165,7 @@ const ResultadoPago = () => {
 
             if (esExitosoLocal) {
                 let facturacionId: number | null = null;
-                let billingDataLocal: DireccionEnvio | null = null;
+                let billingDataLocal: BillingData | null = null;
 
                 if (billingRef.current) {
                     facturacionId = await billingRef.current.enviarFacturacion();
@@ -175,7 +174,9 @@ const ResultadoPago = () => {
                     if (stored) {
                         try {
                             billingDataLocal = JSON.parse(stored);
-                            facturacionId = billingDataLocal?.id || null;
+                            // Como BillingData no tiene propiedad id, necesitamos manejar esto diferente
+                            // Asumimos que facturacionId se obtiene del resultado de enviarFacturacion
+                            console.warn('❌ No se pudo obtener facturacionId desde billingRef');
                         } catch (error) {
                             console.error('❌ Error parseando billingData desde sessionStorage:', error);
                         }
@@ -243,10 +244,20 @@ const ResultadoPago = () => {
         return () => clearTimeout(timeoutId);
     }, [searchParams, consultaCompletada, cartItems, navigate, direccionEnvioLocal]);
 
+    // Handler para el onChange del componente Billing (aunque no se use en este caso)
+    const handleBillingChange = (data: BillingData) => {
+        // No necesitamos hacer nada aquí ya que es solo para resultado del pago
+        console.log('Billing data changed:', data);
+    };
+
     return (
         <div className="max-w-lg mx-auto mt-20 text-center px-4 mb-20">
             <div style={{ display: 'none' }}>
-                <Billing ref={billingRef} value={direccionEnvioLocal} onChange={() => { }} />
+                <Billing 
+                    ref={billingRef} 
+                    datosEnvio={direccionEnvioLocal || undefined} 
+                    onChange={handleBillingChange} 
+                />
             </div>
 
             <h1 className="text-2xl font-bold mb-4">Resultado del Pago</h1>
