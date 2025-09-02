@@ -95,7 +95,7 @@ const ResultadoPago = () => {
     // Nueva función para iniciar la redirección con countdown
     const iniciarRedirección = (esExitosoLocal: boolean) => {
         setTiempoRestante(7);
-        
+
         const countdownInterval = setInterval(() => {
             setTiempoRestante(prev => {
                 if (prev <= 1) {
@@ -239,19 +239,14 @@ const ResultadoPago = () => {
         return () => clearTimeout(timeoutId);
     }, [searchParams, consultaCompletada, cartItems, navigate, direccionEnvioLocal]);
 
-    // Handler para el onChange del componente Billing (aunque no se use en este caso)
-    const handleBillingChange = (data: BillingData) => {
-        // No necesitamos hacer nada aquí ya que es solo para resultado del pago
-        console.log('Billing data changed:', data);
-    };
 
     return (
         <div className="max-w-lg mx-auto mt-20 text-center px-4 mb-20">
             <div style={{ display: 'none' }}>
-                <Billing 
-                    ref={billingRef} 
-                    datosEnvio={direccionEnvioLocal || undefined} 
-                    onChange={handleBillingChange} 
+                <Billing
+                    ref={billingRef}
+                    datosEnvio={direccionEnvioLocal || undefined}
+                    onChange={() => { }}  
                 />
             </div>
 
