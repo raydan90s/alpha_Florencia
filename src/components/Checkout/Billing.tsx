@@ -7,7 +7,6 @@ import React, {
   useCallback,
 } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import type { DireccionEnvio } from "../../types/direccionEnvio";
 import { validateField } from "./Shipping/validateField";
 
 export type BillingHandle = {
@@ -15,17 +14,26 @@ export type BillingHandle = {
   prepararFacturacion: () => void;
 };
 
+export type BillingData = {
+  nombre: string;
+  apellido: string;
+  direccion: string;
+  telefono: string;
+  cedula: string;
+  ciudad: string;
+  provincia: string;
+};
+
 type BillingProps = {
-  value: DireccionEnvio;
-  onChange: (updatedBilling: DireccionEnvio) => void;
-  datosEnvio?: DireccionEnvio;
+  onChange: (data: BillingData) => void;
+  datosEnvio?: BillingData;
 };
 
 const Billing = forwardRef<BillingHandle, BillingProps>(
   ({ onChange, datosEnvio }, ref) => {
     const { user } = useContext(AuthContext);
 
-    const emptyFormData: DireccionEnvio = {
+    const emptyFormData: BillingData = {
       nombre: "",
       apellido: "",
       direccion: "",
@@ -33,9 +41,6 @@ const Billing = forwardRef<BillingHandle, BillingProps>(
       cedula: "",
       ciudad: "",
       provincia: "",
-      pastcode: "",
-      guardarDatos: false,
-      notas: "",
     };
 
     const [initialCheckboxState] = useState(() => {
@@ -48,7 +53,7 @@ const Billing = forwardRef<BillingHandle, BillingProps>(
       return true;
     });
 
-    const initialFormData: DireccionEnvio = (() => {
+    const initialFormData: BillingData = (() => {
       try {
         const stored = sessionStorage.getItem("direccionFacturacion");
         if (stored) return JSON.parse(stored);
@@ -59,11 +64,11 @@ const Billing = forwardRef<BillingHandle, BillingProps>(
     })();
 
     const [igualQueEnvio, setIgualQueEnvio] = useState(initialCheckboxState);
-    const [formData, setFormData] = useState<DireccionEnvio>(initialFormData);
+    const [formData, setFormData] = useState<BillingData>(initialFormData);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleFormDataChange = useCallback(
-      (newData: DireccionEnvio) => {
+      (newData: BillingData) => {
         onChange(newData);
       },
       [onChange]
@@ -173,7 +178,7 @@ const Billing = forwardRef<BillingHandle, BillingProps>(
         const storedData = sessionStorage.getItem("direccionFacturacion");
         if (!storedData) return null;
 
-        const dataFacturacion: DireccionEnvio = JSON.parse(storedData);
+        const dataFacturacion: BillingData = JSON.parse(storedData);
         const res = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/api/facturacion`,
           {

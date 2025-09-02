@@ -106,6 +106,7 @@ const ResultadoPago = () => {
                 return;
             }
 
+
             const data = await res.json();
             const code = data.result?.code;
             const description = data.result?.description;
@@ -126,7 +127,11 @@ const ResultadoPago = () => {
 
             // Consulta configuración
             const urlConfig = `${import.meta.env.VITE_API_BASE_URL}/api/configuracion`;
-            const resConfig = await fetch(urlConfig);
+            const resConfig = await fetch(urlConfig, {
+                headers:{
+                    'X-API-Key': import.meta.env.VITE_API_KEY,
+                }
+            });
             if (!resConfig.ok) throw new Error('❌ Error cargando configuración');
             const configData: Configuracion = await resConfig.json();
 
@@ -153,6 +158,9 @@ const ResultadoPago = () => {
                         }
                     }
                 }
+                console.log("🔹 Dirección de envío:", direccionEnvioLocal);
+                console.log("🔹 Carrito de productos:", cartItems);
+                console.log("🔹 Facturación ID:", facturacionId);
 
                 if (facturacionId !== null) {
                     const res = await registrarPago(
@@ -171,9 +179,11 @@ const ResultadoPago = () => {
                     );
 
                     const idPagoFormateado = String(res.pedidoId).padStart(6, '0');
-                    await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
+                    //await enviarCorreoConfirmacionCompra(email, idPagoFormateado, cartItems, cost);
                     vaciarCarrito();
-                } else {
+                }
+
+                else {
                     console.error("❌ No se pudo registrar la facturación, facturacionId es null");
                 }
 

@@ -9,6 +9,6 @@ export type DireccionEnvio = {
   provincia: string;
   pastcode: string;  
   guardarDatos: boolean;
-  notas: string;
+  notas?: string;
   es_principal?:boolean;
 };

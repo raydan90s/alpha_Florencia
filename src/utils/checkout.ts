@@ -99,7 +99,7 @@ export const crearCheckoutReal = async ({
 
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", 'X-API-Key': import.meta.env.VITE_API_KEY, },
       body: JSON.stringify(body)
     });
 
