@@ -3,6 +3,7 @@ import { FaShoppingCart, FaWhatsapp, FaChevronUp, FaChevronDown } from "react-ic
 import { useState } from "react";
 import { useCart } from "../../../../context/CartContext"; // Ejemplo: usa contexto para agregar al carrito
 import type { ProductoAgregar } from "../../../../types/carContext";
+import { numero, formatNumeroWhatsApp } from "../../../../utils/numero";
 
 interface ProductActionsProps {
   productId: number;
@@ -48,8 +49,9 @@ export default function ProductActions({
   };
 
   const handleChatWithAdvisor = () => {
+    const phone = formatNumeroWhatsApp(numero);
     window.open(
-      `https://wa.me/YOUR_PHONE_NUMBER?text=Hola,%20quisiera%20saber%20más%20sobre%20el%20producto:%20${encodeURIComponent(productId)}`,
+      `https://wa.me/${phone}?text=Hola,%20quisiera%20saber%20más%20sobre%20el%20producto:%20${encodeURIComponent(productName)}`,
       "_blank"
     );
   };

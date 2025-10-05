@@ -30,7 +30,13 @@ export const ConfiguracionProvider: React.FC<{ children: React.ReactNode }> = ({
         try {
             setLoading(true);
             const url = `${import.meta.env.VITE_API_BASE_URL}/api/configuracion`;
-            const res = await axios.get<Configuracion>(url);
+
+            const res = await axios.get<Configuracion>(url, {
+                headers: {
+                    'X-API-Key': import.meta.env.VITE_API_KEY,
+                },
+            });
+
             setConfiguracion(res.data);
         } catch (err: any) {
             console.error("Error al cargar configuración:", err);
@@ -38,6 +44,7 @@ export const ConfiguracionProvider: React.FC<{ children: React.ReactNode }> = ({
             setLoading(false);
         }
     };
+
 
     useEffect(() => {
         fetchConfiguracion();

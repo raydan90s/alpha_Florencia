@@ -1,34 +1,39 @@
 import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { Link, useNavigate } from "react-router-dom"; // react-router-dom para navegación
+import { enviarCorreoVerificacion } from "../utils/enviarCorreo";
+import { useAuthRedirect } from "../hooks/useAuthRedirect";
+import type { RegisterFormData } from "../types/RegisterTypes";
+import AlreadyRegisteredScreen from "../components/registrarse/AlreadyRegisteredScreen";
+import VerificationSuccessScreen from "../components/registrarse/VerificationSuccessScreen";
+import SuccessNotification from "../components/registrarse/SuccessNotification";
+import RegisterForm from "../components/registrarse/RegisterForm";
 
 export default function Registro() {
-  const { register, authError, setAuthError, user } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const { register, authError, setAuthError, user, isAuthenticated } = useContext(AuthContext);
+  useAuthRedirect(isAuthenticated);
 
-  // Estado para controlar si el componente ya está montado (cliente)
   const [mounted, setMounted] = useState(false);
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
-  // Limpia errores al montar el componente y marca como montado
+  const isFromCheckout = sessionStorage.getItem('redirectAfterAuth') === '/checkout';
+
   useEffect(() => {
     setMounted(true);
     setAuthError(null);
   }, [setAuthError]);
 
-  // Estado del formulario
-  const [formData, setFormData] = useState({
-    nombre: "",
+  const [formData, setFormData] = useState<RegisterFormData>({
+    name: "",
     apellido: "",
     email: "",
     password: "",
-    confirmarPassword: "",
+    confirmPassword: "",
     telefono: "",
     direccion: "",
   });
 
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -37,7 +42,28 @@ export default function Registro() {
   }
 
   if (user) {
-    return <p>Ya estás registrado y logueado.</p>;
+    return <AlreadyRegisteredScreen />;
+  }
+
+  if (registrationComplete) {
+    return (
+      <VerificationSuccessScreen
+        userEmail={userEmail}
+        isFromCheckout={isFromCheckout}
+        onRegisterAnother={() => {
+          setRegistrationComplete(false);
+          setFormData({
+            name: "",
+            apellido: "",
+            email: "",
+            password: "",
+            confirmPassword: "",
+            telefono: "",
+            direccion: "",
+          });
+        }}
+      />
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -45,14 +71,13 @@ export default function Registro() {
 
     setError("");
     setSuccess(false);
-    setSuccessMessage("");
 
-    if (formData.password !== formData.confirmarPassword) {
+    if (formData.password !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden");
       setFormData((prev) => ({
         ...prev,
         password: "",
-        confirmarPassword: "",
+        confirmPassword: "",
       }));
       return;
     }
@@ -63,20 +88,36 @@ export default function Registro() {
       const result = await register(formData);
 
       if (!result.error) {
+        if (result.verificationToken) {
+          await enviarCorreoVerificacion(
+            formData.name,
+            formData.email,
+            result.verificationToken
+          );
+        }
+
+        setUserEmail(formData.email);
+        setRegistrationComplete(true);
         setSuccess(true);
-        setSuccessMessage(result.message);
         setError("");
 
-        setTimeout(() => {
-          navigate("/iniciar-sesion");
-        }, 3000);
+        // Limpiar el formulario
+        setFormData({
+          name: "",
+          apellido: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          telefono: "",
+          direccion: "",
+        });
       } else {
         setError(result.message || "Error al registrarse");
         setSuccess(false);
         setFormData((prev) => ({
           ...prev,
           password: "",
-          confirmarPassword: "",
+          confirmPassword: "",
         }));
       }
     } catch (err) {
@@ -85,7 +126,7 @@ export default function Registro() {
       setFormData((prev) => ({
         ...prev,
         password: "",
-        confirmarPassword: "",
+        confirmPassword: "",
       }));
     } finally {
       setLoading(false);
@@ -98,175 +139,20 @@ export default function Registro() {
       [e.target.name]: e.target.value,
     });
     setError("");
-    setSuccessMessage("");
   };
 
   return (
     <>
-      {success && (
-        <p className="pt-8 text-lg font-semibold text-green-700 text-center">
-          {successMessage}
-        </p>
-      )}
-
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full mx-auto space-y-8">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Crear una cuenta
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              ¿Ya tienes una cuenta?{" "}
-              <Link
-                to="/iniciar-sesion"
-                className="font-medium text-[#003366] hover:text-[#004488]"
-              >
-                Inicia sesión
-              </Link>
-            </p>
-          </div>
-
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="rounded-md shadow-sm space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="nombre"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Nombre
-                  </label>
-                  <input
-                    id="nombre"
-                    name="nombre"
-                    type="text"
-                    required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#003366] focus:border-[#003366]"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="apellido"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Apellido
-                  </label>
-                  <input
-                    id="apellido"
-                    name="apellido"
-                    type="text"
-                    required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#003366] focus:border-[#003366]"
-                    value={formData.apellido}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Correo electrónico
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#003366] focus:border-[#003366]"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Contraseña
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#003366] focus:border-[#003366]"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="confirmarPassword"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Confirmar contraseña
-                </label>
-                <input
-                  id="confirmarPassword"
-                  name="confirmarPassword"
-                  type="password"
-                  required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#003366] focus:border-[#003366]"
-                  value={formData.confirmarPassword}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className="text-center mt-4">
-              {formError && <p className="text-red-600 text-sm">{formError}</p>}
-              {authError && <p className="text-red-600 text-sm">{authError}</p>}
-              {loading && (
-                <div className="flex justify-center mt-2">
-                  <svg
-                    className="animate-spin h-5 w-5 text-[#003366]"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                    />
-                  </svg>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                  loading ? "bg-gray-400" : "bg-[#FF6B00] hover:bg-[#FF8533]"
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003366]`}
-              >
-                {loading ? "Registrando..." : "Registrarse"}
-              </button>
-            </div>
-
-            {error && (
-              <p className="text-red-600 text-center text-sm mt-2">{error}</p>
-            )}
-          </form>
-        </div>
-      </div>
+      <SuccessNotification show={success && !registrationComplete} />
+      <RegisterForm
+        formData={formData}
+        onSubmit={handleSubmit}
+        onChange={handleChange}
+        loading={loading}
+        error={error}
+        authError={authError}
+        isFromCheckout={isFromCheckout}
+      />
     </>
   );
 }

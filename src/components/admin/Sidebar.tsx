@@ -15,6 +15,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedSection, onSelect }) => {
         { id: "modelos", label: "Modelos", permission: "ver_modelos" },
         { id: "inventario", label: "Inventario", permission: "ver_inventario" },
         { id: "historial", label: "Historial de Ventas", permission: "ver_historial_admin" },
+        { id: "pagos", label: "Pagos", permission: "ver_pagos" },
         { id: "config", label: "Configuración", permission: "ver_configuracion" },
     ];
 

@@ -1,4 +1,3 @@
-// components/admin/productos/productosID/ProductAvailability.tsx
 interface ProductAvailabilityProps {
   stock: number;
 }

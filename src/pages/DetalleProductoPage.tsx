@@ -1,4 +1,3 @@
-// Componente DetalleProductoPage
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"; // Usamos react-router-dom para obtener el slug
 import ProductImageGallery from "../components/admin/productos/productosID/ProductImageGallery";
@@ -7,31 +6,49 @@ import ProductAvailability from "../components/admin/productos/productosID/Produ
 import ProductActions from "../components/admin/productos/productosID/ProductActions";
 import ShippingInfo from "../components/admin/productos/productosID/ShippingInfo";
 import PaymentMethods from "../components/admin/productos/productosID/PaymentMethods";
-import RelatedProductsByBrand from "../components/admin/productos/productosID/RelatedProductsByBrand";
+import RelatedProductsByBrand from "../components/Productos/RelatedProductsByBrand";
 import ProductDescription from "../components/admin/productos/productosID/ProductDescription";
 import type { Product } from "../types/product";
+import { useProducts } from "../context/ProductContext";
+import { handleScrollToTop } from "../utils/scrollUtils";
 
 export default function DetalleProductoPage() {
   const { slug } = useParams<{ slug: string }>();  // Usamos el slug de la URL
-  console.log(slug);
   const [producto, setProducto] = useState<Product | null>(null);
+  const { products, setProducts } = useProducts(); // Obtenemos los productos desde el contexto
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    handleScrollToTop();
     if (!slug) return;  // Si no hay slug, no hacemos nada
 
     setLoading(true);
 
-    // Llamamos a la API usando el slug
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/por-slug/${slug}`)
-      .then((res) => res.ok ? res.json() : Promise.reject("Error al cargar"))
-      .then((data: Product) => setProducto(data))  // Guardamos el producto en el estado
-      .catch((err) => {
-        console.error(err);
-        setProducto(null);  // Si ocurre un error, mostramos null
+    // Intentamos obtener el producto desde el contexto de productos cargados
+    const foundProduct = products.find(product => product.slug === slug);
+    if (foundProduct) {
+      setProducto(foundProduct);
+      setLoading(false);
+    } else {
+      // Si no lo encontramos, hacemos la llamada a la API
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/por-slug/${slug}`, {
+        headers: {
+          'X-API-Key': import.meta.env.VITE_API_KEY,
+        },
       })
-      .finally(() => setLoading(false));  // Dejamos de mostrar el loading cuando se haya completado la solicitud
-  }, [slug]);  // Dependemos del slug, que cambia en cada navegación
+        .then((res) => res.ok ? res.json() : Promise.reject("Error al cargar"))
+        .then((data: Product) => {
+          setProducto(data);  // Guardamos el producto en el estado
+          // Puedes agregar el producto a la lista global de productos si lo deseas
+          setProducts((prevProducts) => [...prevProducts, data]);
+        })
+        .catch((err) => {
+          console.error(err);
+          setProducto(null);  // Si ocurre un error, mostramos null
+        })
+        .finally(() => setLoading(false));  // Dejamos de mostrar el loading cuando se haya completado la solicitud
+    }
+  }, [slug, products, setProducts]);  // Dependemos del slug y de los productos
 
   if (loading) {
     return <div>Cargando producto...</div>;
@@ -69,7 +86,7 @@ export default function DetalleProductoPage() {
       </div>
       <div
         className="mt-12 rounded-lg p-6 shadow-inner"
-        style={{ backgroundColor: "#FCF8E6" }}
+        style={{ backgroundColor: "#F8F9FA" }}
       >
         <h2 className="text-2xl font-semibold mb-4" style={{ color: "#1A1A1A" }}>
           Información Técnica
@@ -90,7 +107,7 @@ export default function DetalleProductoPage() {
         </div>
       </div>
       <div className="mt-16">
-        <RelatedProductsByBrand currentProduct={producto} maxProducts={4} />
+        <RelatedProductsByBrand currentProduct={producto} />
       </div>
     </div>
   );

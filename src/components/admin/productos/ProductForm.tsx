@@ -36,23 +36,23 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   // Validar el formulario
   const isFormValid = (): boolean => {
-  const requiredFields = ['name', 'price', 'category', 'stock', 'model', 'brand', 'description'];
+    const requiredFields = ['name', 'price', 'category', 'stock', 'model', 'brand', 'description'];
 
-  // Aseguramos que todos los campos requeridos tengan un valor válido (ni undefined, null, ni vacío)
-  const allFieldsFilled = requiredFields.every((field) => {
-    const value = (currentProduct as any)[field];
-    return value !== undefined && value !== '' && value !== null; // Asegura que no sea undefined ni null
-  });
+    // Aseguramos que todos los campos requeridos tengan un valor válido (ni undefined, null, ni vacío)
+    const allFieldsFilled = requiredFields.every((field) => {
+      const value = (currentProduct as any)[field];
+      return value !== undefined && value !== '' && value !== null; // Asegura que no sea undefined ni null
+    });
 
-  // Validar que el inventario no sea "Total"
-  const isInventarioValido = inventarioSeleccionado !== 'Total';
+    // Validar que el inventario no sea "Total"
+    const isInventarioValido = inventarioSeleccionado !== 'Total';
 
-  // Validar si las imágenes son válidas
-  const hayImagenesValidas = currentProduct.images && currentProduct.images.some(img => img.url && img.url.trim() !== '');
+    // Validar si las imágenes son válidas
+    const hayImagenesValidas = currentProduct.images && currentProduct.images.some(img => img.url && img.url.trim() !== '');
 
-  // Devuelve true solo si todos los campos están completos y el inventario es válido y hay imágenes válidas
-  return Boolean(allFieldsFilled && isInventarioValido && hayImagenesValidas);
-};
+    // Devuelve true solo si todos los campos están completos y el inventario es válido y hay imágenes válidas
+    return Boolean(allFieldsFilled && isInventarioValido && hayImagenesValidas);
+  };
 
 
   const scrollToTop = () => {
@@ -66,8 +66,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const cargarInventarios = async () => {
       if (isNewProduct) {
         try {
-          const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/inventario`);
-          const adaptados = (response.data as any[]).map((inv: any) => ({ // Afirmamos el tipo
+          const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/inventario`, {
+            headers: {
+              'X-API-Key': import.meta.env.VITE_API_KEY
+            }
+          });
+          const adaptados = (response.data as any[]).map((inv: any) => ({
             id: inv.id,
             nombre: inv.ubicacion,
           }));
@@ -78,7 +82,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
       } else {
         if (!currentProduct?.id) return;
         try {
-          const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/inventario/producto/${currentProduct.id}`);
+          const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/inventario/producto/${currentProduct.id}`, {
+            headers: {
+              'X-API-Key': import.meta.env.VITE_API_KEY,
+            }
+          });
           const inventarios = response.data as any[]; // Afirmamos el tipo
           const adaptados = inventarios.map((inv: any) => ({
             id: inv.id_inventario,
@@ -198,6 +206,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             resetForm={resetForm}
             scrollToTop={scrollToTop}
             isFormInvalid={!isFormValid()} // Validación invertida
+            handleSubmit={handleSubmit}
           />
         )}
       </form>

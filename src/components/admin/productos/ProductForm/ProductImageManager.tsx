@@ -1,6 +1,7 @@
 // components/ProductForm/ProductImageManager.tsx
-import React from 'react';
-import type { Images } from '../../../../types/product'; // Assuming your Image type is here
+import React from "react";
+import type { Images } from "../../../../types/product";
+import { subirImagen } from "../../../../utils/claudinary"; // importa tu función
 
 interface ProductImageManagerProps {
   images: Images[];
@@ -17,9 +18,13 @@ const ProductImageManager: React.FC<ProductImageManagerProps> = ({
 }) => {
   return (
     <div className="md:col-span-2">
-      <label className="block text-sm font-medium text-gray-700 mb-2">Imágenes (URLs)</label>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Imágenes
+      </label>
+
       {(images ?? []).map((img, idx) => (
         <div key={idx} className="flex items-center gap-4 mb-4">
+          {/* Miniatura */}
           <div className="w-20 h-20 flex-shrink-0 border rounded overflow-hidden bg-gray-100">
             {img.url ? (
               <img
@@ -28,17 +33,25 @@ const ProductImageManager: React.FC<ProductImageManagerProps> = ({
                 className="object-cover w-full h-full"
               />
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-400 text-sm">Sin imagen</div>
+              <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                Sin imagen
+              </div>
             )}
           </div>
+
+          {/* Input para subir archivo */}
           <input
-            type="text"
-            value={img.url}
-            onChange={(e) => onImageChange(idx, e.target.value)}
+            type="file"
+            accept="image/*"
+            onChange={async (e) => {
+              if (!e.target.files?.[0]) return;
+              const url = await subirImagen(e.target.files[0]);
+              onImageChange(idx, url);
+            }}
             className="flex-grow px-3 py-2 border border-gray-300 rounded-md"
-            placeholder={`URL de imagen #${idx + 1}`}
-            required
           />
+
+          {/* Botón eliminar */}
           <button
             type="button"
             onClick={() => onRemoveImage(idx)}

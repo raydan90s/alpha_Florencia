@@ -12,6 +12,11 @@ interface CartContextType {
   calcularSubtotal: () => number;
   calcularIVA: () => number;
   contarItems: () => number;
+  calcularTotal: () => number;
+  calcularIVAEnvio: () => number;
+  calcularSubtotalEnvio: () => number;
+  calcularTotalEnvio: () => number;
+  vaciarCarrito: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -26,7 +31,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     async ({ id_usuario, id_producto, cantidad }: { id_usuario: number; id_producto: number; cantidad: number }) => {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart/add`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': import.meta.env.VITE_API_KEY
+        },
         body: JSON.stringify({ id_usuario, id_producto, cantidad }),
       });
 
@@ -37,7 +45,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const obtenerCarritoDB = useCallback(async (id_usuario: number): Promise<CartItem[]> => {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart?id_usuario=${id_usuario}`);
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart?id_usuario=${id_usuario}`, {
+      headers: {
+        'X-API-Key': import.meta.env.VITE_API_KEY,
+      },
+    });
     const data = await res.json();
     if (!data.success) throw new Error(data.error);
     return data.cartItems;
@@ -98,7 +110,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, user, agregarAlCarritoDB, obtenerCarritoDB]);
 
 
-  // ✅ Guardar en localStorage cuando cambia el carrito (solo si no autenticado)
   useEffect(() => {
     if (!isAuthenticated && cargadoDesdeLocalStorage) {
       localStorage.setItem("carrito", JSON.stringify(cartItems));
@@ -119,7 +130,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }) => {
     const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart/update/${id_producto}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': import.meta.env.VITE_API_KEY
+      },
       body: JSON.stringify({ id_usuario, id_producto, nueva_cantidad }),
     });
     const data = await res.json();
@@ -135,7 +149,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }) => {
     const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cart/remove/${id_producto}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': import.meta.env.VITE_API_KEY
+      },
       body: JSON.stringify({ id_usuario, id_producto })
     });
     const data = await res.json();
@@ -166,6 +183,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     setCartItems(newCartItems);
+
     if (!isAuthenticated) {
       localStorage.setItem("carrito", JSON.stringify(newCartItems));
     }
@@ -231,20 +249,66 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const calcularSubtotal = () => {
-    return cartItems.reduce((total, item) => total + item.precio * item.cantidad, 0);
+  const vaciarCarrito = async () => {
+    if (isAuthenticated && user?.id) {
+      // Si está autenticado, vaciar el carrito del backend
+      try {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/carrito/vaciar`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': import.meta.env.VITE_API_KEY,
+          },
+          body: JSON.stringify({ id_usuario: user.id }), // Enviar el id_usuario
+        });
+      } catch (error) {
+        console.error('❌ Error al vaciar el carrito:', error);
+      }
+    }
   };
 
+  const precio_envio = configuracion?.precio_envio ?? 0;
+
+  // Subtotal de productos
+  const calcularSubtotal = () => {
+    return parseFloat(
+      cartItems.reduce((total, item) => total + item.precio * item.cantidad, 0).toFixed(2)
+    );
+  };
+
+  // IVA solo sobre productos
   const calcularIVA = () => {
     const subtotal = calcularSubtotal();
     const ivaRate = configuracion?.iva ?? 0;
-    return subtotal * (ivaRate / 100);
+    return parseFloat((subtotal * (ivaRate / 100)).toFixed(2));
+  };
+
+  // Total incluye subtotal + IVA + envío
+  const calcularTotal = () => {
+    const subtotal = calcularSubtotal();
+    const iva = calcularIVA();
+    return parseFloat((subtotal + iva).toFixed(2));
   };
 
   const contarItems = () => {
     return cartItems.reduce((total, item) => total + item.cantidad, 0);
   };
 
+  const calcularSubtotalEnvio = () => {
+    return calcularSubtotal() + precio_envio;
+  }
+
+  const calcularIVAEnvio = () => {
+    const subtotal = calcularSubtotalEnvio();
+    const ivaRate = configuracion?.iva ?? 0;
+    return parseFloat((subtotal * (ivaRate / 100)).toFixed(2));
+  };
+
+  const calcularTotalEnvio = () => {
+    const subtotal = calcularSubtotalEnvio();
+    const iva = calcularIVAEnvio();
+    return parseFloat((subtotal + iva).toFixed(2));
+  };
 
   return (
     <CartContext.Provider
@@ -255,7 +319,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         eliminarItem,
         calcularSubtotal,
         calcularIVA,
+        calcularTotal,
         contarItems,
+        vaciarCarrito,
+        calcularIVAEnvio,
+        calcularSubtotalEnvio,
+        calcularTotalEnvio
       }}
     >
       {children}

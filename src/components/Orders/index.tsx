@@ -1,11 +1,7 @@
-import  { useState } from "react";
 import SingleOrder from "./SingleOrder";
 import ordersData from "./ordersData";
 
 const Orders = () => {
-  const [orders, setOrders] = useState<any>([]);
-
-
   return (
     <>
       <div className="w-full overflow-x-auto">

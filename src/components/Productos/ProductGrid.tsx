@@ -28,7 +28,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
             {/* Usamos solo el slug para redirigir */}
             <Link to={`/productos/${product.slug}`}>
-              <div className="relative h-48 cursor-pointer">
+              <div className="relative h-72 cursor-pointer">
                 {/* Usamos el elemento img estándar */}
                 {sortedImages?.[0]?.url && (
                   <img
@@ -44,7 +44,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               <Link to={`/productos/${product.slug}`}>
                 <h3 className="text-lg font-semibold cursor-pointer">{product.name}</h3>
               </Link>
-              <p className="text-sm text-gray-600">{product.description}</p>
+              <p className="text-sm text-gray-600 text-justify">{product.description}</p>
               <p className="text-sm text-gray-500 mb-2">Modelo: {product.model}</p>
               <div className="flex items-center justify-between mt-2">
                 <span className="text-xl font-bold text-[#003366]">

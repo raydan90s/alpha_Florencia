@@ -135,10 +135,6 @@ export default function IniciarSesion() {
           <LegalLinks />
         </div>
       </div>
-
-      <footer className="mt-6 text-center text-sm text-gray-500">
-        © 2025 Toner Express · Todos los derechos reservados
-      </footer>
     </div>
   );
 }

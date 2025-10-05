@@ -1,3 +1,5 @@
+import { numero } from "../../utils/numero";
+
 const Footer = () => {
   return (
     <footer className="bg-[#1A1A1A] text-white py-8">
@@ -17,7 +19,7 @@ const Footer = () => {
           </p>
           <p className="flex items-center gap-2 pt-2">
             <img src="/images/footer/phone.png" alt="phone icon" width={20} height={20} />
-            +593 96 585 256
+            {numero}
           </p>
           <p className="flex items-center gap-2 pt-2">
             <img src="/images/footer/mail.png" alt="mail icon" width={20} height={20} />

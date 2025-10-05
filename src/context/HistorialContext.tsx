@@ -16,6 +16,8 @@ export interface ResumenPedido {
   fecha_pedido: string;
   total: number;
   estado: string;
+  provincia: string;  // Asegúrate de agregar esta propiedad
+  ciudad: string;     // Asegúrate de agregar esta propiedad
 }
 
 interface HistorialContextType {
@@ -58,7 +60,11 @@ export const HistorialProvider: React.FC<HistorialProviderProps> = ({
     setError(null);
     try {
       const url = `${import.meta.env.VITE_API_BASE_URL}/api/historial-pedidos`;
-      const res = await axios.get<ResumenPedido[]>(url);
+      const res = await axios.get<ResumenPedido[]>(url, {
+        headers: {
+          'X-API-Key': import.meta.env.VITE_API_KEY,
+        }
+      });
       setPedidos(res.data);
     } catch (err: any) {
       console.error("❌ Error al obtener pedidos:", err);
